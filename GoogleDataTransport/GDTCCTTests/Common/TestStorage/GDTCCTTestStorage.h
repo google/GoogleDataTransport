@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-import XCTest
+#import <Foundation/Foundation.h>
 
-import GoogleDataTransport_TestApp
+#import <GoogleDataTransport/GDTCORStorageProtocol.h>
 
-class GDTMonkeyTest: XCTestCase {
-  func testGDT() {
-    let viewController: ViewController? = Globals.SharedViewController
-    XCTAssertNotNil(viewController)
+@interface GDTCCTTestStorage : NSObject <GDTCORStorageProtocol>
 
-    let expectation: XCTestExpectation = self.expectation(description: "Runs without crashing")
-    viewController?.beginMonkeyTest {
-      expectation.fulfill()
-    }
-    waitForExpectations(timeout: Globals.MonkeyTestLengthPlusBuffer, handler: nil)
-  }
-}
+@end

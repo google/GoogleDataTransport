@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-import XCTest
+import Foundation
 
-import GoogleDataTransport_TestApp
+public struct Globals {
+  public static var SharedViewController: ViewController?
 
-class GDTMonkeyTest: XCTestCase {
-  func testGDT() {
-    let viewController: ViewController? = Globals.SharedViewController
-    XCTAssertNotNil(viewController)
+  public static var IsMonkeyTesting: Bool = false
 
-    let expectation: XCTestExpectation = self.expectation(description: "Runs without crashing")
-    viewController?.beginMonkeyTest {
-      expectation.fulfill()
-    }
-    waitForExpectations(timeout: Globals.MonkeyTestLengthPlusBuffer, handler: nil)
-  }
+  public static let MonkeyTestLength: TimeInterval = 60.0
+
+  public static let MonkeyTestLengthPlusBuffer: TimeInterval = MonkeyTestLength + 10.0
 }

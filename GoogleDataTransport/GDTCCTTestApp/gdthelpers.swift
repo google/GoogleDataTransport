@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import XCTest
+import GoogleDataTransport
 
-import GoogleDataTransport_TestApp
+class FirelogTestMessageHolder: NSObject, GDTCOREventDataObject {
+  public var root: FirelogTestMessage = FirelogTestMessage()
 
-class GDTMonkeyTest: XCTestCase {
-  func testGDT() {
-    let viewController: ViewController? = Globals.SharedViewController
-    XCTAssertNotNil(viewController)
-
-    let expectation: XCTestExpectation = self.expectation(description: "Runs without crashing")
-    viewController?.beginMonkeyTest {
-      expectation.fulfill()
+  func transportBytes() -> Data {
+    do {
+      let data: Data? = try root.serializedData()
+      return data!
+    } catch {
+      print("There was an error producing proto bytes.")
+      return Data()
     }
-    waitForExpectations(timeout: Globals.MonkeyTestLengthPlusBuffer, handler: nil)
   }
 }

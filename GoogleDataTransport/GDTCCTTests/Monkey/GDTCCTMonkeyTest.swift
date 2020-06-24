@@ -16,10 +16,10 @@
 
 import XCTest
 
-import GoogleDataTransport_TestApp
+import GoogleDataTransport_CCTTestApp
 
 class GDTMonkeyTest: XCTestCase {
-  func testGDT() {
+  func testGDTCCTAndFLL() {
     let viewController: ViewController? = Globals.SharedViewController
     XCTAssertNotNil(viewController)
 
