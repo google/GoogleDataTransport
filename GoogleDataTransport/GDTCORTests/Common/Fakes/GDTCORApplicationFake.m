@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORApplicationFake.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage.h"
+@implementation GDTCORApplicationFake
 
-@class GDTCORDirectorySizeTracker;
+@synthesize isRunningInBackground;
 
-NS_ASSUME_NONNULL_BEGIN
+- (GDTCORBackgroundIdentifier)beginBackgroundTaskWithName:(NSString *)name
+                                        expirationHandler:(void (^__nullable)(void))handler {
+  return self.beginTaskHandler(name, handler);
+}
 
-/** Testing-only methods for GDTCORFlatFileStorage. */
-@interface GDTCORFlatFileStorage (Testing)
-
-/** Resets the properties of the singleon, but does not reallocate a new singleton. This also
- * doesn't remove stored files from disk.
- */
-- (void)reset;
-
-@property(nonatomic, readonly) GDTCORDirectorySizeTracker *sizeTracker;
+- (void)endBackgroundTask:(GDTCORBackgroundIdentifier)bgID {
+  self.endTaskHandler(bgID);
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
