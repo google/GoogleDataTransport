@@ -9,6 +9,27 @@
 This library is for internal Google use only. It allows the logging of data and
 telemetry from Google SDKs.
 
+## Integration Testing
+These instructions apply to minor and patch version updates. Major versions need
+a customized adaptation.
+
+After the CI is green:
+  * Update the version in the podspec
+  * Add the CocoaPods tag
+    * `git tag CocoaPods-{version}`
+    * `git push origin CocoaPods-{version}`
+  * Push the podspec to SpecsStaging
+    * `pod repo push staging GoogleDataTransport.podspec`
+  * Run Firebase CI by waiting until next nightly or adding a PR that touches `Gemfile`
+  * On google3, copybara and run a global TAP which should kick off automatically after each PR.
+
+## Publishing
+  * Add a version tag for Swift PM
+    * `git tag {version}`
+    * `git push origin {version}`
+  * `pod trunk push GoogleDataTransport.podspec`
+  * Clean up SpecsStaging
+
 ## Set logging level
 
 ### Swift
