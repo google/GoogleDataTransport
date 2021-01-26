@@ -9,12 +9,17 @@ target 'GDTCCTWatchOSIndependentTestAppWatchKitExtension' do
   # Pods for GDTCCTWatchOSIndependentTestAppWatchKitExtension
   pod 'SwiftProtobuf', '~> 1.0'
   pod 'GoogleDataTransport', :path => '../../'
+  pod 'FirebaseCore'
+  pod 'FirebaseMessaging'
+  pod 'FirebaseStorage'
+
 end
 
 target 'GDTCCTServiceExtension' do
   platform :watchos, '6.0'
 
   # Pods for GDTCCTServiceExtension
+  pod 'FirebaseMessaging'
   pod 'SwiftProtobuf', '~> 1.0'
   pod 'GoogleDataTransport', :path => '../../'
 end
