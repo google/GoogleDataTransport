@@ -21,6 +21,7 @@ DerivedData
 
 # Swift Package Manager
 */.build
+Package.resolved
 
 # Mint package manager
 Mint
@@ -49,4 +50,4 @@ gen/
 firebase-ios-sdk/
 
 #scripts link
-scripts/
+scripts

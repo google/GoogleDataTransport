@@ -13,29 +13,12 @@
 // limitations under the License.
 
 import Foundation
-import GoogleUtilities_AppDelegateSwizzler
-import GoogleUtilities_Environment
-import GoogleUtilities_Logger
-import GoogleUtilities_MethodSwizzler
-import GoogleUtilities_Network
-import GoogleUtilities_NSData
-import GoogleUtilities_Reachability
-import GoogleUtilities_UserDefaults
+import GoogleDataTransport
 
 import XCTest
 
 class importTest: XCTestCase {
   func testImports() throws {
-    XCTAssertFalse(GULAppEnvironmentUtil.isAppStoreReceiptSandbox())
-    XCTAssertFalse(GULAppEnvironmentUtil.isFromAppStore())
-    #if targetEnvironment(simulator)
-      XCTAssertTrue(GULAppEnvironmentUtil.isSimulator())
-    #else
-      XCTAssertFalse(GULAppEnvironmentUtil.isSimulator())
-    #endif
-    XCTAssertFalse(GULAppEnvironmentUtil.isAppExtension())
-    XCTAssertEqual(GULAppEnvironmentUtil.deviceModel(), "x86_64")
-
-    print("System version? Answer: \(GULAppEnvironmentUtil.systemVersion())")
+    XCTAssertTrue(GDTCORClock.snapshot().timeMillis > 0)
   }
 }

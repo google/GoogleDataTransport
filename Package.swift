@@ -73,59 +73,19 @@ let package = Package(
     .testTarget(
       name: "swift-test",
       dependencies: [
-        "GoogleUtilities_AppDelegateSwizzler",
-        "GoogleUtilities_Environment",
-        "GoogleUtilities_ISASwizzler",
-        "GoogleUtilities_Logger",
-        "GoogleUtilities_MethodSwizzler",
-        "GoogleUtilities_Network",
-        "GoogleUtilities_NSData",
-        "GoogleUtilities_Reachability",
-        "GoogleUtilities_UserDefaults",
+        "GoogleDataTransport",
       ],
       path: "SwiftPMTests/swift-test"
     ),
     .testTarget(
       name: "objc-import-test",
       dependencies: [
-        "GoogleUtilities_AppDelegateSwizzler",
-        "GoogleUtilities_Environment",
-        "GoogleUtilities_ISASwizzler",
-        "GoogleUtilities_Logger",
-        "GoogleUtilities_MethodSwizzler",
-        "GoogleUtilities_Network",
-        "GoogleUtilities_NSData",
-        "GoogleUtilities_Reachability",
-        "GoogleUtilities_UserDefaults",
+        "GoogleDataTransport",
       ],
       path: "SwiftPMTests/objc-import-test"
     ),
     // TODO: - need to port Network/third_party/GTMHTTPServer.m to ARC.
-    .testTarget(
-      name: "UtilitiesUnit",
-      dependencies: [
-        "OCMock",
-        "GoogleUtilities_AppDelegateSwizzler",
-        "GoogleUtilities_Environment",
-        "GoogleUtilities_ISASwizzler",
-        "GoogleUtilities_Logger",
-        "GoogleUtilities_MethodSwizzler",
-        "GoogleUtilities_Network",
-        "GoogleUtilities_NSData",
-        "GoogleUtilities_Reachability",
-        "GoogleUtilities_UserDefaults",
-        "GoogleUtilities_SwizzlerTestHelpers",
-      ],
-      path: "GoogleUtilities/Tests/Unit",
-      exclude: [
-        "Network/third_party/LICENSE",
-        "Network/GULNetworkTest.m", // Requires GTMHTTPServer.m
-        "Network/third_party/GTMHTTPServer.m", // Requires disabling ARC
-      ],
-      cSettings: [
-        .headerSearchPath("../../.."),
-      ]
-    ),
+    // TODO: - Setup unit tests in SPM.
   ],
   cLanguageStandard: .c99,
   cxxLanguageStandard: CXXLanguageStandard.gnucxx14
