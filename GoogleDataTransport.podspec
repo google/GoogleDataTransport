@@ -11,8 +11,8 @@ Shared library for iOS SDK data transport needs.
   s.license          = { :type => 'Apache', :file => 'LICENSE' }
   s.authors          = 'Google, Inc.'
   s.source           = {
-    :git => 'https://github.com/firebase/firebase-ios-sdk.git',
-    :tag => 'DataTransport-' + s.version.to_s
+    :git => 'https://github.com/google/GoogleDataTransport.git',
+    :tag => 'CocoaPods-' + s.version.to_s
   }
 
   ios_deployment_target = '9.0'
