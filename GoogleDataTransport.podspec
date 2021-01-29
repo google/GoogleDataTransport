@@ -39,7 +39,9 @@ Shared library for iOS SDK data transport needs.
 
   s.libraries = ['z']
 
+  s.dependency 'GoogleUtilities/Environment', '~> 7.1'
   s.dependency 'nanopb', '~> 2.30907.0'
+  s.dependency 'PromisesObjC', '~> 1.2'
 
   header_search_paths = {
     'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/"'
@@ -161,9 +163,13 @@ Shared library for iOS SDK data transport needs.
     test_spec.scheme = { :code_coverage => true }
     test_spec.platforms = {:ios => ios_deployment_target, :osx => osx_deployment_target, :tvos => tvos_deployment_target}
     test_spec.requires_app_host = false
-    test_spec.source_files = ['GoogleDataTransport/GDTCCTTests/Integration/**/*.{h,m}'] + common_cct_test_sources
+    test_spec.source_files = [
+      'GoogleDataTransport/GDTCCTTests/Integration/**/*.{h,m}',
+      'GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.{h,m}'
+      ] + common_cct_test_sources
     test_spec.resources = ['GoogleDataTransport/GDTCCTTests/Data/**/*']
     test_spec.pod_target_xcconfig = header_search_paths
+    test_spec.dependency 'GCDWebServer'
   end
 
   # Monkey test specs, only enabled for development.
