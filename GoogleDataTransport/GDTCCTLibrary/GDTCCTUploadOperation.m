@@ -33,10 +33,10 @@
 #import <nanopb/pb_decode.h>
 #import <nanopb/pb_encode.h>
 
+#import <GoogleUtilities/GULURLSessionDataResponse.h>
+#import <GoogleUtilities/NSURLSession+GULPromises.h>
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTCompressionHelper.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
-#import "GoogleUtilities/Environment/Public/GoogleUtilities/GULURLSessionDataResponse.h"
-#import "GoogleUtilities/Environment/Public/GoogleUtilities/NSURLSession+GULPromises.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
