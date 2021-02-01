@@ -20,6 +20,7 @@ DerivedData
 *.ipa
 
 # Swift Package Manager
+.build
 */.build
 Package.resolved
 
