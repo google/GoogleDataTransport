@@ -23,9 +23,9 @@
 
 #import <SystemConfiguration/SCNetworkReachability.h>
 
-#import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTUploader.h"
 #import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
+#import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
 
 #import <nanopb/pb.h>
 #import <nanopb/pb_decode.h>
@@ -240,7 +240,7 @@
                                                                   target:kGDTCORTargetTest];
       decodedEvent.dataObject = [NSData dataWithBytes:event.source_extension->bytes
                                                length:event.source_extension->size];
-//      decodedEvent.qosTier = event.
+      //      decodedEvent.qosTier = event.
 
       [events addObject:decodedEvent];
     }
@@ -261,12 +261,14 @@
                         [NSSet setWithArray:receivedEventsByPayload.allKeys]);
 
   // TODO: Validate other event properties.
-  [scheduledEventsByPayload enumerateKeysAndObjectsUsingBlock:^(NSData * _Nonnull key, GDTCOREvent * _Nonnull scheduledEvent, BOOL * _Nonnull stop) {
-    GDTCOREvent *receivedEvent = receivedEventsByPayload[key];
-    XCTAssertNotNil(receivedEvent);
+  [scheduledEventsByPayload
+      enumerateKeysAndObjectsUsingBlock:^(
+          NSData *_Nonnull key, GDTCOREvent *_Nonnull scheduledEvent, BOOL *_Nonnull stop) {
+        GDTCOREvent *receivedEvent = receivedEventsByPayload[key];
+        XCTAssertNotNil(receivedEvent);
 
-    XCTAssertEqualObjects(scheduledEvent.clockSnapshot, receivedEvent.clockSnapshot);
-  }];
+        XCTAssertEqualObjects(scheduledEvent.clockSnapshot, receivedEvent.clockSnapshot);
+      }];
 }
 
 - (NSDictionary<NSData *, GDTCOREvent *> *)eventsByPayloadWithEvents:
