@@ -26,26 +26,18 @@
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTUploader.h"
 #import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
 
-
-#import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 #import <nanopb/pb.h>
 #import <nanopb/pb_decode.h>
-#import <nanopb/pb_encode.h>b
+#import <nanopb/pb_encode.h>
+#import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
-@interface GDTCCTTestDataObject : NSObject <GDTCOREventDataObject>
+@interface NSData (GDTCOREventDataObject) <GDTCOREventDataObject>
 @end
 
-@implementation GDTCCTTestDataObject
+@implementation NSData (GDTCOREventDataObject)
 
 - (NSData *)transportBytes {
-  // Return some random event data corresponding to mapping ID 1018.
-  NSBundle *testBundle = [NSBundle bundleForClass:[self class]];
-  NSArray *dataFiles = @[
-    @"message-32347456.dat", @"message-35458880.dat", @"message-39882816.dat",
-    @"message-40043840.dat", @"message-40657984.dat"
-  ];
-  NSURL *fileURL = [testBundle URLForResource:dataFiles[arc4random_uniform(5)] withExtension:nil];
-  return [NSData dataWithContentsOfURL:fileURL];
+  return [self copy];
 }
 
 @end
@@ -56,6 +48,9 @@
 
 /** The total number of events generated for this test. */
 @property(nonatomic) NSInteger totalEventsGenerated;
+
+@property(nonatomic) NSMutableArray<GDTCOREvent *> *scheduledEvents;
+@property(nonatomic) NSMutableArray<GDTCOREvent *> *serverReceivedEvents;
 
 /** The transporter used by the test. */
 @property(nonatomic) GDTCORTransport *transport;
@@ -68,6 +63,9 @@
 @implementation GDTCCTIntegrationTest
 
 - (void)setUp {
+  self.scheduledEvents = [NSMutableArray array];
+  self.serverReceivedEvents = [NSMutableArray array];
+
   // Don't recursively generate events by default.
   self.generateEvents = NO;
   self.totalEventsGenerated = 0;
@@ -89,32 +87,6 @@
 - (void)tearDown {
   XCTAssert([[GDTCCTUploader sharedInstance] waitForUploadFinishedWithTimeout:2]);
   [super tearDown];
-}
-
-/** Generates an event and sends it through the transport infrastructure. */
-- (void)generateEventWithQoSTier:(GDTCOREventQoS)qosTier {
-  GDTCOREvent *event = [self.transport eventForTransport];
-  event.dataObject = [[GDTCCTTestDataObject alloc] init];
-  event.qosTier = qosTier;
-  [self.transport sendDataEvent:event
-                     onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
-                       NSLog(@"Storing a data event completed.");
-                     }];
-  dispatch_async(dispatch_get_main_queue(), ^{
-    self.totalEventsGenerated += 1;
-  });
-}
-
-/** Generates events recursively at random intervals between 0 and 5 seconds. */
-- (void)recursivelyGenerateEvent {
-  if (self.generateEvents) {
-    [self generateEventWithQoSTier:GDTCOREventQosDefault];
-    dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW, (int64_t)(arc4random_uniform(6) * NSEC_PER_SEC)),
-        dispatch_get_main_queue(), ^{
-          [self recursivelyGenerateEvent];
-        });
-  }
 }
 
 /** Tests sending data to CCT with a high priority event if network conditions are good. */
@@ -145,6 +117,8 @@
 
   // Validate that at least one event was uploaded.
   [self waitForExpectations:@[ eventsUploaded ] timeout:60.0];
+
+  [self assertAllScheduledEventsWereReceived];
 }
 
 - (void)testRunsWithoutCrashing {
@@ -153,7 +127,8 @@
   self.generateEvents = YES;
 
   XCTestExpectation *eventsUploaded = [self expectationForEventsToUpload];
-  [eventsUploaded setAssertForOverFulfill:NO];
+  eventsUploaded.expectedFulfillmentCount = 2;
+  //  [eventsUploaded setAssertForOverFulfill:NO];
 
   [self recursivelyGenerateEvent];
 
@@ -163,12 +138,39 @@
 
                    // Send a high priority event to flush other events.
                    [self generateEventWithQoSTier:GDTCOREventQoSFast];
-                   [self waitForExpectations:@[ eventsUploaded ] timeout:5];
                  });
 
-  NSDate *waitUntilDate = [NSDate dateWithTimeIntervalSinceNow:secondsToRun + 5];
-  while ([waitUntilDate compare:[NSDate date]] == NSOrderedDescending) {
-    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+  [self waitForExpectations:@[ eventsUploaded ] timeout:secondsToRun + 5];
+
+  [self assertAllScheduledEventsWereReceived];
+}
+
+#pragma mark - Helpers
+
+/** Generates an event and sends it through the transport infrastructure. */
+- (void)generateEventWithQoSTier:(GDTCOREventQoS)qosTier {
+  GDTCOREvent *event = [self.transport eventForTransport];
+  event.dataObject = [[[NSUUID UUID] UUIDString] dataUsingEncoding:NSUTF8StringEncoding];
+  event.qosTier = qosTier;
+  [self.transport sendDataEvent:event
+                     onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
+                       NSLog(@"Storing a data event completed.");
+                     }];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    self.totalEventsGenerated += 1;
+    [self.scheduledEvents addObject:event];
+  });
+}
+
+/** Generates events recursively at random intervals between 0 and 5 seconds. */
+- (void)recursivelyGenerateEvent {
+  if (self.generateEvents) {
+    [self generateEventWithQoSTier:GDTCOREventQosDefault];
+    dispatch_after(
+        dispatch_time(DISPATCH_TIME_NOW, (int64_t)(arc4random_uniform(6) * NSEC_PER_SEC)),
+        dispatch_get_main_queue(), ^{
+          [self recursivelyGenerateEvent];
+        });
   }
 }
 
@@ -179,13 +181,19 @@
   self.testServer.requestHandler =
       ^(GCDWebServerRequest *_Nonnull request, GCDWebServerResponse *_Nullable suggestedResponse,
         GCDWebServerCompletionBlock _Nonnull completionBlock) {
-        // TODO: Validate content of the requests in details.
-
+        __auto_type strongSelf = weakSelf;
+        if (strongSelf == nil) {
+          XCTFail();
+          return;
+        }
 
         GCDWebServerDataRequest *dataRequest = (GCDWebServerDataRequest *)request;
         NSError *decodeError;
-        gdt_cct_BatchedLogRequest decodedRequest = [weakSelf requestWithData:dataRequest.data error:&decodeError];
-        NSArray *events = [weakSelf eventsWithBatchRequest:decodedRequest error:&decodeError];
+        gdt_cct_BatchedLogRequest decodedRequest = [weakSelf requestWithData:dataRequest.data
+                                                                       error:&decodeError];
+        __auto_type events = [weakSelf eventsWithBatchRequest:decodedRequest error:&decodeError];
+        XCTAssertNil(decodeError);
+        [weakSelf.serverReceivedEvents addObjectsFromArray:events];
 
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)),
                        dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
@@ -197,20 +205,6 @@
 
   return responseSentExpectation;
 }
-
-//gdt_cct_LogResponse GDTCCTDecodeLogResponse(NSData *data, NSError **error) {
-//  gdt_cct_LogResponse response = gdt_cct_LogResponse_init_default;
-//  pb_istream_t istream = pb_istream_from_buffer([data bytes], [data length]);
-//  if (!pb_decode(&istream, gdt_cct_LogResponse_fields, &response)) {
-//    NSString *nanopb_error = [NSString stringWithFormat:@"%s", PB_GET_ERROR(&istream)];
-//    NSDictionary *userInfo = @{@"nanopb error:" : nanopb_error};
-//    if (error != NULL) {
-//      *error = [NSError errorWithDomain:NSURLErrorDomain code:-1 userInfo:userInfo];
-//    }
-//    response = (gdt_cct_LogResponse)gdt_cct_LogResponse_init_default;
-//  }
-//  return response;
-//}
 
 - (gdt_cct_BatchedLogRequest)requestWithData:(NSData *)data error:(NSError **)outError {
   gdt_cct_BatchedLogRequest request = gdt_cct_BatchedLogRequest_init_default;
@@ -226,7 +220,8 @@
   return request;
 }
 
-- (NSArray<GDTCOREvent *> *)eventsWithBatchRequest:(gdt_cct_BatchedLogRequest)batchRequest error:(NSError **)outError {
+- (NSArray<GDTCOREvent *> *)eventsWithBatchRequest:(gdt_cct_BatchedLogRequest)batchRequest
+                                             error:(NSError **)outError {
   NSMutableArray<GDTCOREvent *> *events = [NSMutableArray array];
 
   for (NSUInteger reqIdx = 0; reqIdx < batchRequest.log_request_count; reqIdx++) {
@@ -237,14 +232,43 @@
     for (NSUInteger eventIdx = 0; eventIdx < request.log_event_count; eventIdx++) {
       gdt_cct_LogEvent event = request.log_event[eventIdx];
 
-      GDTCOREvent *decodedEvent = [[GDTCOREvent alloc] initWithMappingID:mappingID target:kGDTCORTargetTest];
-//      decodedEvent.serializedDataObjectBytes = 
+      GDTCOREvent *decodedEvent = [[GDTCOREvent alloc] initWithMappingID:mappingID
+                                                                  target:kGDTCORTargetTest];
+      decodedEvent.dataObject = [NSData dataWithBytes:event.source_extension->bytes
+                                               length:event.source_extension->size];
 
       [events addObject:decodedEvent];
     }
   }
 
   return [events copy];
+}
+
+- (void)assertAllScheduledEventsWereReceived {
+  // Assume unique payload.
+  __auto_type scheduledEventsByPayload =
+      [self eventsByPayloadWithEvents:[self.scheduledEvents copy]];
+  __auto_type receivedEventsByPayload =
+      [self eventsByPayloadWithEvents:[self.serverReceivedEvents copy]];
+
+  XCTAssertEqual(self.scheduledEvents.count, self.serverReceivedEvents.count);
+  XCTAssertEqualObjects([NSSet setWithArray:scheduledEventsByPayload.allKeys],
+                        [NSSet setWithArray:receivedEventsByPayload.allKeys]);
+
+  // TODO: Validate other event properties.
+}
+
+- (NSDictionary<NSData *, GDTCOREvent *> *)eventsByPayloadWithEvents:
+    (NSArray<GDTCOREvent *> *)events {
+  NSMutableDictionary<NSData *, GDTCOREvent *> *eventsByPayload =
+      [NSMutableDictionary dictionaryWithCapacity:self.scheduledEvents.count];
+  for (GDTCOREvent *event in events) {
+    eventsByPayload[event.serializedDataObjectBytes] = event;
+  }
+
+  XCTAssertEqual(events.count, eventsByPayload.count, @"The event payloads must be unique");
+
+  return eventsByPayload;
 }
 
 @end
