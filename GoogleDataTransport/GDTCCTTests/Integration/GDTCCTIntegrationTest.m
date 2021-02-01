@@ -50,7 +50,10 @@
 /** The total number of events generated for this test. */
 @property(nonatomic) NSInteger totalEventsGenerated;
 
+/** Events passed to GDT to be sent. */
 @property(nonatomic) NSMutableArray<GDTCOREvent *> *scheduledEvents;
+
+/** Events decoded from the request received by the server. */
 @property(nonatomic) NSMutableArray<GDTCOREvent *> *serverReceivedEvents;
 
 /** The transporter used by the test. */
@@ -132,7 +135,6 @@
 
   XCTestExpectation *eventsUploaded = [self expectationForEventsToUpload];
   eventsUploaded.expectedFulfillmentCount = 2;
-  //  [eventsUploaded setAssertForOverFulfill:NO];
 
   [self recursivelyGenerateEvent];
 
@@ -240,7 +242,6 @@
                                                                   target:kGDTCORTargetTest];
       decodedEvent.dataObject = [NSData dataWithBytes:event.source_extension->bytes
                                                length:event.source_extension->size];
-      //      decodedEvent.qosTier = event.
 
       [events addObject:decodedEvent];
     }
@@ -260,13 +261,11 @@
   XCTAssertEqualObjects([NSSet setWithArray:scheduledEventsByPayload.allKeys],
                         [NSSet setWithArray:receivedEventsByPayload.allKeys]);
 
-  // TODO: Validate other event properties.
   [scheduledEventsByPayload
       enumerateKeysAndObjectsUsingBlock:^(
           NSData *_Nonnull key, GDTCOREvent *_Nonnull scheduledEvent, BOOL *_Nonnull stop) {
         GDTCOREvent *receivedEvent = receivedEventsByPayload[key];
         XCTAssertNotNil(receivedEvent);
-
         XCTAssertEqualObjects(scheduledEvent.clockSnapshot, receivedEvent.clockSnapshot);
       }];
 }
