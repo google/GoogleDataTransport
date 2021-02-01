@@ -272,6 +272,7 @@
           NSData *_Nonnull key, GDTCOREvent *_Nonnull scheduledEvent, BOOL *_Nonnull stop) {
         GDTCOREvent *receivedEvent = receivedEventsByPayload[key];
         XCTAssertNotNil(receivedEvent);
+        XCTAssertEqualObjects(scheduledEvent.mappingID, receivedEvent.mappingID);
         XCTAssertEqualObjects(scheduledEvent.clockSnapshot, receivedEvent.clockSnapshot);
       }];
 }
