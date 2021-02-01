@@ -23,6 +23,7 @@
 
 #import <SystemConfiguration/SCNetworkReachability.h>
 
+#import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTUploader.h"
 #import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
 
@@ -63,6 +64,9 @@
 @implementation GDTCCTIntegrationTest
 
 - (void)setUp {
+  // Make sure clean storage state before start.
+  [[GDTCORFlatFileStorage sharedInstance] reset];
+
   self.scheduledEvents = [NSMutableArray array];
   self.serverReceivedEvents = [NSMutableArray array];
 
@@ -236,6 +240,7 @@
                                                                   target:kGDTCORTargetTest];
       decodedEvent.dataObject = [NSData dataWithBytes:event.source_extension->bytes
                                                length:event.source_extension->size];
+//      decodedEvent.qosTier = event.
 
       [events addObject:decodedEvent];
     }
@@ -256,6 +261,12 @@
                         [NSSet setWithArray:receivedEventsByPayload.allKeys]);
 
   // TODO: Validate other event properties.
+  [scheduledEventsByPayload enumerateKeysAndObjectsUsingBlock:^(NSData * _Nonnull key, GDTCOREvent * _Nonnull scheduledEvent, BOOL * _Nonnull stop) {
+    GDTCOREvent *receivedEvent = receivedEventsByPayload[key];
+    XCTAssertNotNil(receivedEvent);
+
+    XCTAssertEqualObjects(scheduledEvent.clockSnapshot, receivedEvent.clockSnapshot);
+  }];
 }
 
 - (NSDictionary<NSData *, GDTCOREvent *> *)eventsByPayloadWithEvents:
