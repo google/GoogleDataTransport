@@ -70,6 +70,7 @@
   // Make sure clean storage state before start.
   [[GDTCORFlatFileStorage sharedInstance] reset];
 
+  // Reset events.
   self.scheduledEvents = [NSMutableArray array];
   self.serverReceivedEvents = [NSMutableArray array];
 
@@ -122,9 +123,10 @@
   // Send a high priority event to flush events.
   [self generateEventWithQoSTier:GDTCOREventQoSFast];
 
-  // Validate that at least one event was uploaded.
+  // Wait for events to be uploaded.
   [self waitForExpectations:@[ eventsUploaded ] timeout:60.0];
 
+  // Validate sent events content.
   [self assertAllScheduledEventsWereReceived];
 }
 
@@ -146,8 +148,10 @@
                    [self generateEventWithQoSTier:GDTCOREventQoSFast];
                  });
 
+  // Wait for events to be uploaded.
   [self waitForExpectations:@[ eventsUploaded ] timeout:secondsToRun + 5];
 
+  // Validate sent events content.
   [self assertAllScheduledEventsWereReceived];
 }
 
@@ -193,6 +197,7 @@
           return;
         }
 
+        // Decode events.
         GCDWebServerDataRequest *dataRequest = (GCDWebServerDataRequest *)request;
         NSError *decodeError;
         gdt_cct_BatchedLogRequest decodedRequest = [weakSelf requestWithData:dataRequest.data
@@ -201,6 +206,7 @@
         XCTAssertNil(decodeError);
         [weakSelf.serverReceivedEvents addObjectsFromArray:events];
 
+        // Send response.
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)),
                        dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
                          completionBlock(suggestedResponse);
