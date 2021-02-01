@@ -19,7 +19,11 @@
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORUploadBatch.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
+#if __has_include(<FBLPromises/FBLPromises.h>)
 #import <FBLPromises/FBLPromises.h>
+#else
+#import "FBLPromises.h"
+#endif
 
 @implementation GDTCCTTestStorage {
   /** Store the events in memory. */
