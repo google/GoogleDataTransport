@@ -32,6 +32,11 @@ let package = Package(
       url: "https://github.com/firebase/nanopb.git",
       "2.30907.0" ..< "2.30908.0"
     ),
+    .package(
+      name: "GoogleUtilities",
+      url: "https://github.com/google/GoogleUtilities.git",
+      "7.2.1" ..< "8.0.0"
+    ),
   ],
   // TODO: Restructure directory structure to simplify the excludes here.
   targets: [
@@ -39,7 +44,7 @@ let package = Package(
       name: "GoogleDataTransport",
       dependencies: [
         .product(name: "nanopb", package: "nanopb"),
-        "GoogleUtilities_Environment",
+        .product(name: "GULEnvironment", package: "GoogleUtilities"),
       ],
       path: "GoogleDataTransport",
       exclude: [
