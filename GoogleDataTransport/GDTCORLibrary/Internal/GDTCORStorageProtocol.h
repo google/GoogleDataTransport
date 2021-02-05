@@ -121,6 +121,11 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
  */
 - (void)storageSizeWithCallback:(void (^)(GDTCORStorageSizeBytes storageSize))onComplete;
 
+@optional
+
+/** A dispatch queue to sync storage operations. For internal use only, e.g. tests or extensions like GDTCORStoragePromiseAdapter. */
+- (dispatch_queue_t)storageQueue;
+
 @end
 
 // TODO: Consider a different place for this interface.

@@ -18,6 +18,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORRegistrar_Private.h"
 
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStoragePromiseAdapter.h"
 
 id<GDTCORStorageProtocol> _Nullable GDTCORStorageInstanceForTarget(GDTCORTarget target) {
   return [GDTCORRegistrar sharedInstance].targetToStorage[@(target)];
@@ -78,7 +79,8 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
     GDTCORRegistrar *strongSelf = weakSelf;
     if (strongSelf) {
       GDTCORLogDebug(@"Registered storage: %@ for target:%ld", storage, (long)target);
-      strongSelf->_targetToStorage[@(target)] = storage;
+      GDTCORStoragePromiseAdapter *storageAdapter = [[GDTCORStoragePromiseAdapter alloc] initWithStorage:storage];
+      strongSelf->_targetToStorage[@(target)] = storageAdapter;
     }
   });
 }
