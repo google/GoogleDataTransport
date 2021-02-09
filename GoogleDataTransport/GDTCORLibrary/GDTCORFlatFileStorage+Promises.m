@@ -90,7 +90,7 @@
         }];
 }
 
-// TODO: More comprehensive error.
+// TODO: Move to a separate class/extension when needed in more places.
 - (NSError *)genericRejectedPromiseErrorWithReason:(NSString *)reason {
   return [NSError errorWithDomain:@"GDTCORFlatFileStorage"
                              code:-1

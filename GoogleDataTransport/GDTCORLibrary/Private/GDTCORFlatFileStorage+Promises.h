@@ -20,12 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO: Docs.
-// TODO: Consider a generic wrapper around an `id<GDTCORStorageProtocol>` object to make it more
-// universal. But do we need it?
 @interface GDTCORFlatFileStorage (Promises) <GDTCORStoragePromiseProtocol>
-
-- (NSError *)genericRejectedPromiseErrorWithReason:(NSString *)reason;
 
 @end
 

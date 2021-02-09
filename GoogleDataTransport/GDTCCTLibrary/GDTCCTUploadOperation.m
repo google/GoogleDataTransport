@@ -292,13 +292,15 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   if ([self readyToUploadTarget:target conditions:conditions]) {
     [promise fulfill:[NSNull null]];
   } else {
-    // TODO: Do we need a more comprehensive message here?
-    [promise reject:[self genericRejectedPromiseErrorWithReason:@"Is not ready."]];
+    NSString *reason =
+        [NSString stringWithFormat:@"Target %ld is not ready to upload with condition: %ld",
+                                   (long)target, (long)conditions];
+    [promise reject:[self genericRejectedPromiseErrorWithReason:reason]];
   }
   return promise;
 }
 
-// TODO: Move to a separate class/extension/file.
+// TODO: Move to a separate class/extension/file when needed in other files.
 - (NSError *)genericRejectedPromiseErrorWithReason:(NSString *)reason {
   return [NSError errorWithDomain:@"GDTCCTUploader"
                              code:-1
