@@ -239,7 +239,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                     BOOL usingGzipData =
                         gzippedData != nil && gzippedData.length < requestProtoData.length;
                     NSData *dataToSend = usingGzipData ? gzippedData : requestProtoData;
-                    NSURLRequest *request = [self constructRequestForTarget:target data:dataToSend];
+                    NSURLRequest *request = [self constructRequestWithURL:self.uploadURL
+                                                                forTarget:target
+                                                                     data:dataToSend];
                     GDTCORLogDebug(@"CTT: request containing %lu events for batch: %@ for target: "
                                    @"%ld created: %@",
                                    (unsigned long)batch.events.count, batch.batchID, (long)target,
@@ -334,14 +336,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
   // Check next upload time for the target.
   BOOL isAfterNextUploadTime = YES;
-
-  // TODO: Should other targets respect the next upload time as well?
-  // Only kGDTCORTargetCCT and kGDTCORTargetFLL respect next upload time now.
-  if (target == kGDTCORTargetCCT || target == kGDTCORTargetFLL) {
-    GDTCORClock *nextUploadTime = [self.metadataProvider nextUploadTimeForTarget:target];
-    if (nextUploadTime) {
-      isAfterNextUploadTime = [[GDTCORClock snapshot] isAfter:nextUploadTime];
-    }
+  GDTCORClock *nextUploadTime = [self.metadataProvider nextUploadTimeForTarget:target];
+  if (nextUploadTime) {
+    isAfterNextUploadTime = [[GDTCORClock snapshot] isAfter:nextUploadTime];
   }
 
   if (isAfterNextUploadTime) {
@@ -385,12 +382,14 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
  * @param data The request body data.
  * @return A new NSURLRequest ready to be sent to FLL.
  */
-- (nullable NSURLRequest *)constructRequestForTarget:(GDTCORTarget)target data:(NSData *)data {
+- (nullable NSURLRequest *)constructRequestWithURL:(NSURL *)URL
+                                         forTarget:(GDTCORTarget)target
+                                              data:(NSData *)data {
   if (data == nil || data.length == 0) {
     GDTCORLogDebug(@"There was no data to construct a request for target %ld.", (long)target);
     return nil;
   }
-  NSURL *URL = self.uploadURL;
+
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
   NSString *targetString;
   switch (target) {
@@ -465,12 +464,10 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
     return;
   }
   if (response.statusCode == 302 || response.statusCode == 301) {
-    // TODO: Take a redirect URL from the response.
-    //    if ([request.URL isEqual:[self serverURLForTarget:kGDTCORTargetFLL]]) {
-    //      NSURLRequest *newRequest = [self constructRequestForTarget:kGDTCORTargetCCT
-    //                                                            data:task.originalRequest.HTTPBody];
-    //      completionHandler(newRequest);
-    //    }
+    NSURLRequest *newRequest = [self constructRequestWithURL:request.URL
+                                                   forTarget:kGDTCORTargetCCT
+                                                        data:task.originalRequest.HTTPBody];
+    completionHandler(newRequest);
   } else {
     completionHandler(request);
   }
