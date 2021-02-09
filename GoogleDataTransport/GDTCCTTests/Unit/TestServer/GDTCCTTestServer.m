@@ -111,8 +111,8 @@
   __auto_type __weak weakSelf = self;
   [self.server addHandlerForMethod:@"POST"
                               path:@"/logBatch"
-                      requestClass:[GCDWebServerRequest class]
-                 asyncProcessBlock:^(__kindof GCDWebServerRequest *_Nonnull request,
+                      requestClass:[GCDWebServerDataRequest class]
+                 asyncProcessBlock:^(__kindof GCDWebServerDataRequest *_Nonnull request,
                                      GCDWebServerCompletionBlock _Nonnull completionBlock) {
                    if (!weakSelf) {
                      return;

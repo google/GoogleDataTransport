@@ -165,7 +165,8 @@ Shared library for iOS SDK data transport needs.
     test_spec.requires_app_host = false
     test_spec.source_files = [
       'GoogleDataTransport/GDTCCTTests/Integration/**/*.{h,m}',
-      'GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.{h,m}'
+      'GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.{h,m}',
+      'GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.{h,m}'
       ] + common_cct_test_sources
     test_spec.resources = ['GoogleDataTransport/GDTCCTTests/Data/**/*']
     test_spec.pod_target_xcconfig = header_search_paths

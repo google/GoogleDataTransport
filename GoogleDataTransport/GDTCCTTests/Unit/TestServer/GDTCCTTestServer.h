@@ -17,6 +17,7 @@
 #import <Foundation/Foundation.h>
 
 #import <GCDWebServer/GCDWebServer.h>
+#import <GCDWebServer/GCDWebServerDataRequest.h>
 #import <GCDWebServer/GCDWebServerDataResponse.h>
 #import <GCDWebServer/GCDWebServerFileResponse.h>
 
@@ -25,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GCDWebServerRequest;
 @class GCDWebServerResponse;
 
-typedef void (^GDTCCTTestServerRequestHandler)(GCDWebServerRequest *request,
+typedef void (^GDTCCTTestServerRequestHandler)(GCDWebServerDataRequest *request,
                                                GCDWebServerResponse *_Nullable suggestedResponse,
                                                GCDWebServerCompletionBlock completionBlock);
 
@@ -40,7 +41,7 @@ typedef void (^GDTCCTTestServerRequestHandler)(GCDWebServerRequest *request,
 
 /** Just before responding, this block will be scheduled to run on a global queue. */
 @property(nonatomic, copy, nullable) void (^responseCompletedBlock)
-    (GCDWebServerRequest *request, GCDWebServerResponse *response);
+    (GCDWebServerDataRequest *request, GCDWebServerResponse *response);
 
 /** The provides an opportunity to overwrite or delay response to a request. */
 @property(nonatomic, copy, nullable) GDTCCTTestServerRequestHandler requestHandler;
