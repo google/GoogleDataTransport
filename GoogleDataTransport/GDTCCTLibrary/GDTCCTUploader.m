@@ -102,13 +102,19 @@ static NSURL *_testServerURL = nil;
   __weak __auto_type weakSelf = self;
   __weak GDTCCTUploadOperation *weakOperation = uploadOperation;
   uploadOperation.completionBlock = ^{
-    GDTCORLogDebug(@"Upload operation finished: %@, uploadAttempted: %@", weakOperation,
-                   @(weakOperation.uploadAttempted));
+    __auto_type strongSelf = weakSelf;
+    GDTCCTUploadOperation *strongOperation = weakOperation;
+    if (strongSelf == nil || strongOperation == nil) {
+      GDTCORLogDebug(@"Internal inconsistency: GDTCCTUploader was deallocated during upload.", nil);
+      return;
+    }
 
-    // TODO: Strongify references?
-    if (weakOperation.uploadAttempted) {
+    GDTCORLogDebug(@"Upload operation finished: %@, uploadAttempted: %@", strongOperation,
+                   @(strongOperation.uploadAttempted));
+
+    if (strongOperation.uploadAttempted) {
       // Ignore all upload requests received when the upload was in progress.
-      [weakSelf.uploadOperationQueue cancelAllOperations];
+      [strongSelf.uploadOperationQueue cancelAllOperations];
     }
   };
 

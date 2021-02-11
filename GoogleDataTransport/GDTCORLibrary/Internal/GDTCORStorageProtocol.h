@@ -123,9 +123,10 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 @end
 
-// TODO: Consider a different place for this interface.
 // TODO: Consider complete replacing block based API by promise API.
-// TODO: Add API docs.
+
+/** Promise based version of API defined in  GDTCORStorageProtocol. See API docs for corresponding
+ * methods in GDTCORStorageProtocol. */
 @protocol GDTCORStoragePromiseProtocol <GDTCORStorageProtocol>
 
 - (FBLPromise<NSSet<NSNumber *> *> *)batchIDsForTarget:(GDTCORTarget)target;
@@ -138,8 +139,15 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (FBLPromise<NSNull *> *)removeAllBatchesForTarget:(GDTCORTarget)target
                                        deleteEvents:(BOOL)deleteEvents;
 
+/** See `hasEventsForTarget:onComplete:`.
+ *  @return A promise object that is resolved with @YES if there are events for the specified target
+ * and @NO otherwise.
+ */
 - (FBLPromise<NSNumber *> *)hasEventsForTarget:(GDTCORTarget)target;
 
+/** See `batchWithEventSelector:batchExpiration:onComplete:`
+ *  The promise is rejected when there are no events for the specified selector.
+ */
 - (FBLPromise<GDTCORUploadBatch *> *)batchWithEventSelector:
                                          (GDTCORStorageEventSelector *)eventSelector
                                             batchExpiration:(NSDate *)expiration;

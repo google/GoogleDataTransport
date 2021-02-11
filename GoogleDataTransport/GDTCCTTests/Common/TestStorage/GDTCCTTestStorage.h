@@ -29,7 +29,6 @@ typedef void (^GDTCCTTestStorageHasEventsCompletion)(BOOL hasEvents);
 typedef void (^GDTCCTTestStorageHasEventsHandler)(GDTCORTarget target,
                                                   GDTCCTTestStorageHasEventsCompletion completion);
 
-// TODO: Add GDTCORStoragePromiseProtocol support to fix tests.
 @interface GDTCCTTestStorage : NSObject <GDTCORStoragePromiseProtocol>
 
 #pragma mark - Method call expectations.

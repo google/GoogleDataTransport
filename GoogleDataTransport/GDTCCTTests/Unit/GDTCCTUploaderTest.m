@@ -154,9 +154,12 @@
  * Once 1st finished, another one can be started. */
 - (void)testUploadTargetWhenThereIsOngoingUploadThenNoOp {
   // 0. Set up expectations to track 1st upload progress.
-  // 0.1. Generate and store and an event.
+  // 0.1. Configure no next request wait time.
+  self.testServer.responseNextRequestWaitTime = 0;
+
+  // 0.2. Generate and store and an event.
   [self.generator generateEvent:GDTCOREventQoSFast];
-  // 0.2. Configure server request expectation.
+  // 0.3. Configure server request expectation.
   // Block to call to finish the 1st request.
   __block dispatch_block_t requestCompletionBlock;
   __auto_type __weak weakSelf = self;
@@ -173,14 +176,14 @@
         [serverRequestExpectation1 fulfill];
       };
 
-  // 0.3. Configure storage.
+  // 0.4. Configure storage.
   XCTestExpectation *hasEventsExpectation1 = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
                                                                             result:YES];
 
-  // 0.4. Start upload 1st upload.
+  // 0.5. Start upload 1st upload.
   [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
 
-  // 0.4. Wait for server request to be sent.
+  // 0.6. Wait for server request to be sent.
   [self waitForExpectations:@[ hasEventsExpectation1, serverRequestExpectation1 ] timeout:1];
 
   // 1. Test 2nd request.
@@ -462,6 +465,13 @@
                                            conditions:GDTCORUploadConditionWifiData
                          shouldWaitForNextRequestTime:NO
                                         expectRequest:NO];
+
+  [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                            forTarget:kGDTCORTargetTest
+                                                  QoS:GDTCOREventQoSFast
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:NO
+                                        expectRequest:NO];
 }
 
 - (void)
@@ -482,13 +492,6 @@
 }
 
 - (void)testUploadTarget_WhenBeforeServerNextUploadTimeForOtherTargets_ThenUpload {
-  [self assertUploadTargetRespectsNextRequestWaitTime:60
-                                            forTarget:kGDTCORTargetTest
-                                                  QoS:GDTCOREventQoSFast
-                                           conditions:GDTCORUploadConditionWifiData
-                         shouldWaitForNextRequestTime:NO
-                                        expectRequest:YES];
-
   [self assertUploadTargetRespectsNextRequestWaitTime:60
                                             forTarget:kGDTCORTargetCSH
                                                   QoS:GDTCOREventQosDefault

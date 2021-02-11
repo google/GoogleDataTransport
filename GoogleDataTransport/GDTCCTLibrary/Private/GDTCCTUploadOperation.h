@@ -25,10 +25,13 @@ NS_ASSUME_NONNULL_BEGIN
 // TODO: Refine API and API docs
 
 @protocol GDTCCTUploadMetadataProvider <NSObject>
-
+/** Returns a GDTCORClock object representing time after which a next upload attempt is allowed for
+ * the specified target. Upload is allowed now if `nil`. */
 - (nullable GDTCORClock *)nextUploadTimeForTarget:(GDTCORTarget)target;
+/** Stores or resets time after which  a next upload attempt is allowed for the specified target. */
 - (void)setNextUploadTime:(nullable GDTCORClock *)time forTarget:(GDTCORTarget)target;
 
+/** Returns an API key for the specified target. */
 - (nullable NSString *)APIKeyForTarget:(GDTCORTarget)target;
 
 @end
