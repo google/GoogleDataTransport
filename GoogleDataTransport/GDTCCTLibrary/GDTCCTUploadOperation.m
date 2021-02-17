@@ -203,7 +203,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
             // 429 - Too many requests;
             // 503 - Service unavailable.
             NSInteger statusCode = response.HTTPResponse.statusCode;
-            if (statusCode == 429 || statusCode == 503) {
+            if (statusCode == 429 || statusCode >= 500) {
               // Move the events back to the main storage to be uploaded on the next attempt.
               return [storage removeBatchWithID:batchID deleteEvents:NO];
             } else {
@@ -271,6 +271,17 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       GDTCORLogDebug(@"There was a response decoding error: %@", decodingError);
     }
     pb_release(gdt_cct_LogResponse_fields, &logResponse);
+  }
+
+  // If no futureUploadTime was passed in the response body, then check [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header.
+  if (!futureUploadTime) {
+    NSString *retryAfterHeader = response.HTTPResponse.allHeaderFields[@"Retry-After"];
+    if (retryAfterHeader.length > 0) {
+      NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+      formatter.numberStyle = NSNumberFormatterDecimalStyle;
+      NSNumber *retryAfterSeconds = [formatter numberFromString:retryAfterHeader];
+      futureUploadTime = retryAfterSeconds == nil ? nil : [GDTCORClock clockSnapshotInTheFuture:retryAfterSeconds.unsignedIntegerValue * 1000u];
+    }
   }
 
   if (!futureUploadTime) {

@@ -67,6 +67,7 @@
 - (void)tearDown {
   [self.uploader waitForUploadFinishedWithTimeout:1];
   self.testServer.responseCompletedBlock = nil;
+  self.testServer.requestHandler = nil;
   [self.testServer stop];
   self.testStorage = nil;
   self.uploader = nil;
@@ -249,6 +250,18 @@
 
   // 3.4. Wait for upload operation to finish.
   [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)testUploadTargetFailure500 {
+  [self sendEventFailureWithStatusCode:500 headers:nil];
+}
+
+- (void)testUploadTargetFailure503 {
+  [self sendEventFailureWithStatusCode:503 headers:nil];
+}
+
+- (void)testUploadTargetFailure429 {
+  [self sendEventFailureWithStatusCode:429 headers:nil];
 }
 
 - (void)testUploadTarget_WhenThereAreBothStoredBatchAndEvents_ThenRemoveBatchAndBatchThenAllEvents {
@@ -523,6 +536,10 @@
                                         expectRequest:YES];
 }
 
+- (void)testUploadTarget_WhenUploadFailsWithRetryAfterHeader_ThenRespectRetryAfter {
+
+}
+
 //// TODO: Tests for uploading several empty targets and then non-empty target.
 
 #pragma mark - Helpers
@@ -557,6 +574,28 @@
         XCTAssertEqual(response.statusCode, 200);
         XCTAssertTrue(response.hasBody);
       };
+  return responseSentExpectation;
+}
+
+- (XCTestExpectation *)expectationTestServerResponseWithCode:(NSInteger)statusCode headers:(NSDictionary<NSString *, NSString *> *)headers {
+  __weak __auto_type weakSelf = self;
+  XCTestExpectation *responseSentExpectation = [self expectationWithDescription:@"response sent"];
+
+  self.testServer.requestHandler = ^(GCDWebServerDataRequest * _Nonnull request, GCDWebServerResponse * _Nullable suggestedResponse, GCDWebServerCompletionBlock  _Nonnull completionBlock) {
+    // Redefining the self var addresses strong self capturing in the XCTAssert macros.
+    __auto_type self = weakSelf;
+    XCTAssertNotNil(self);
+
+    GCDWebServerResponse *response = [GCDWebServerResponse responseWithStatusCode:statusCode];
+    [headers enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull header, id  _Nonnull value, BOOL * _Nonnull stop) {
+      [response setValue:value forAdditionalHeader:header];
+    }];
+
+    [responseSentExpectation fulfill];
+
+    completionBlock(response);
+  };
+
   return responseSentExpectation;
 }
 
@@ -615,6 +654,40 @@
   [self waitForExpectations:@[ hasEventsExpectation, storageBatchExpectation ] timeout:1];
 }
 
+- (void)sendEventFailureWithStatusCode:(NSInteger)statusCode headers:(NSDictionary<NSString *, NSString *> *)headers {
+  // 0. Generate test events.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+
+  // 1. Set up expectations.
+  // 1.1. Set up all relevant storage expectations.
+  [self setUpStorageExpectations];
+  // Don't expect events to be deleted.
+  self.testStorage.removeBatchAndDeleteEventsExpectation.inverted = YES;
+
+  // 1.2. Expect `hasEventsForTarget:onComplete:` to be called.
+  XCTestExpectation *hasEventsExpectation =
+      [self expectStorageHasEventsForTarget:self.generator.target result:YES];
+
+  // 1.4. Expect a batch to be uploaded.
+  XCTestExpectation *responseSentExpectation = [self expectationTestServerResponseWithCode:statusCode headers:headers];
+
+  // 2. Create uploader and start upload.
+  [self.uploader uploadTarget:self.generator.target withConditions:GDTCORUploadConditionWifiData];
+
+  // 3. Wait for operations to complete in the specified order.
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation
+  ]
+                    timeout:3
+               enforceOrder:YES];
+
+  // 4. Wait for upload operation to finish.
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
 - (void)sendEventSuccessfully {
   // 0. Generate test events.
   [self.generator generateEvent:GDTCOREventQoSFast];
@@ -627,7 +700,7 @@
   XCTestExpectation *hasEventsExpectation =
       [self expectStorageHasEventsForTarget:self.generator.target result:YES];
 
-  // 1.3. Don't expect previously batched events to be removed (no batch present).
+  // 1.3. Don't expect removing the batch keeping the events. Expect events to be removed with the batch instead.
   self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = YES;
 
   // 1.4. Expect a batch to be uploaded.
