@@ -114,7 +114,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 4. Wait for upload operation to finish.
@@ -149,7 +149,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:NO];
 
   // 4. Wait for upload operation to finish.
@@ -220,7 +220,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.removeBatchWithoutDeletingEventsExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3];
+                    timeout:1];
 
   // 1.4. Wait for 1st upload finish.
   requestCompletionBlock();
@@ -250,7 +250,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 3.4. Wait for upload operation to finish.
@@ -314,7 +314,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 1.4. Wait for upload operation to finish.
@@ -353,7 +353,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation1,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 1.4. Wait for upload operation to finish.
@@ -386,7 +386,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 2.4. Wait for upload operation to finish.
@@ -478,7 +478,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.removeBatchWithoutDeletingEventsExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3];
+                    timeout:1];
 
   // 4. Wait for 1st upload finish.
   [self waitForUploadOperationsToFinish:self.uploader];
@@ -771,7 +771,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 4. Wait for upload operation to finish.
@@ -844,7 +844,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     self.testStorage.removeBatchAndDeleteEventsExpectation,
     self.testStorage.removeBatchWithoutDeletingEventsExpectation
   ]
-                    timeout:3];
+                    timeout:1];
 
   // 4. Wait for 1st upload finish.
   [self waitForUploadOperationsToFinish:self.uploader];
