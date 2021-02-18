@@ -203,9 +203,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
             // Only retry if one of these codes is returned:
             // 429 - Too many requests;
-            // 503 - Service unavailable.
+            // 5xx - Server errors.
             NSInteger statusCode = response.HTTPResponse.statusCode;
-            if (statusCode == 429 || statusCode >= 500) {
+            if (statusCode == 429 || (statusCode >= 500 && statusCode < 600)) {
               // Move the events back to the main storage to be uploaded on the next attempt.
               return [storage removeBatchWithID:batchID deleteEvents:NO];
             } else {
