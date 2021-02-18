@@ -281,7 +281,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   // Set wait for next request time to 0.
   __auto_type retryAfterHeaders = @{ @"Retry-After" : @"0" };
   [self sendEventFailureWithStatusCode:503 headers:retryAfterHeaders expectEventsToBeRemoved:NO];
-  [self sendEventSuccessfullyExpectingOldBatchToBeRemoved:YES];
+  [self sendEventSuccessfully];
 }
 
 - (void)testUploadTarget_WhenThereAreBothStoredBatchAndEvents_ThenRemoveBatchAndBatchThenAllEvents {
@@ -739,7 +739,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [self waitForUploadOperationsToFinish:self.uploader];
 }
 
-- (void)sendEventSuccessfullyExpectingOldBatchToBeRemoved:(BOOL)expectOldBatchRemove {
+- (void)sendEventSuccessfully {
   // 0. Generate test events.
   [self.generator generateEvent:GDTCOREventQoSFast];
 
@@ -752,7 +752,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
       [self expectStorageHasEventsForTarget:self.generator.target result:YES];
 
   // 1.3. Don't expect removing the batch keeping the events. Expect events to be removed with the batch instead.
-  self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = !expectOldBatchRemove;
+  self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = YES;
 
   // 1.4. Expect a batch to be uploaded.
   XCTestExpectation *responseSentExpectation = [self expectationTestServerSuccessRequestResponse];
@@ -792,7 +792,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   self.testServer.responseNextRequestWaitTime = nextRequestWaitTime;
   switch (waitTimeSource) {
     case GDTNextRequestWaitTimeSourceResponseBody:
-      [self sendEventSuccessfullyExpectingOldBatchToBeRemoved:NO];
+      [self sendEventSuccessfully];
       break;
 
     case GDTNextRequestWaitTimeSourceRetryAfterHeader:
