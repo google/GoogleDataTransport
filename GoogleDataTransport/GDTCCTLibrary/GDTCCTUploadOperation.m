@@ -283,7 +283,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
       formatter.numberStyle = NSNumberFormatterDecimalStyle;
       NSNumber *retryAfterSeconds = [formatter numberFromString:retryAfterHeader];
-      if (retryAfterSeconds) {
+      if (retryAfterSeconds != nil) {
         uint64_t retryAfterMillis = retryAfterSeconds.unsignedIntegerValue * 1000u;
         futureUploadTime = [GDTCORClock clockSnapshotInTheFuture:retryAfterMillis];
       }
