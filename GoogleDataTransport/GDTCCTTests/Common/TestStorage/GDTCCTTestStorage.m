@@ -76,6 +76,7 @@
     for (GDTCOREvent *batchedEvent in _batches[batchID]) {
       _storedEvents[batchedEvent.eventID] = batchedEvent;
     }
+    [_batches removeObjectForKey:batchID];
     [self.removeBatchWithoutDeletingEventsExpectation fulfill];
   }
 
