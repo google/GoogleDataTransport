@@ -279,7 +279,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 
 - (void)testUploadTargetAfterFailure {
   // Set wait for next request time to 0.
-  __auto_type retryAfterHeaders = @{ @"Retry-After" : @"0" };
+  __auto_type retryAfterHeaders = @{@"Retry-After" : @"0"};
   [self sendEventFailureWithStatusCode:503 headers:retryAfterHeaders expectEventsToBeRemoved:NO];
   [self sendEventSuccessfully];
 }
@@ -622,11 +622,15 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   return responseSentExpectation;
 }
 
-- (XCTestExpectation *)expectationTestServerResponseWithCode:(NSInteger)statusCode headers:(NSDictionary<NSString *, NSString *> *)headers {
+- (XCTestExpectation *)
+    expectationTestServerResponseWithCode:(NSInteger)statusCode
+                                  headers:(NSDictionary<NSString *, NSString *> *)headers {
   __weak __auto_type weakSelf = self;
   XCTestExpectation *responseSentExpectation = [self expectationWithDescription:@"response sent"];
 
-  self.testServer.requestHandler = ^(GCDWebServerDataRequest * _Nonnull request, GCDWebServerResponse * _Nullable suggestedResponse, GCDWebServerCompletionBlock  _Nonnull completionBlock) {
+  self.testServer.requestHandler = ^(GCDWebServerDataRequest *_Nonnull request,
+                                     GCDWebServerResponse *_Nullable suggestedResponse,
+                                     GCDWebServerCompletionBlock _Nonnull completionBlock) {
     // Redefining the self var addresses strong self capturing in the XCTAssert macros.
     __auto_type self = weakSelf;
     XCTAssertNotNil(self);
@@ -634,7 +638,8 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
     weakSelf.testServer.requestHandler = nil;
 
     GCDWebServerResponse *response = [GCDWebServerResponse responseWithStatusCode:statusCode];
-    [headers enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull header, id  _Nonnull value, BOOL * _Nonnull stop) {
+    [headers enumerateKeysAndObjectsUsingBlock:^(NSString *_Nonnull header, id _Nonnull value,
+                                                 BOOL *_Nonnull stop) {
       [response setValue:value forAdditionalHeader:header];
     }];
 
@@ -719,15 +724,15 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
       [self expectStorageHasEventsForTarget:self.generator.target result:YES];
 
   // 1.4. Expect a batch to be uploaded.
-  XCTestExpectation *responseSentExpectation = [self expectationTestServerResponseWithCode:statusCode headers:headers];
+  XCTestExpectation *responseSentExpectation =
+      [self expectationTestServerResponseWithCode:statusCode headers:headers];
 
   // 2. Create uploader and start upload.
   [self.uploader uploadTarget:self.generator.target withConditions:GDTCORUploadConditionWifiData];
 
   // 3. Wait for operations to complete in the specified order.
   [self waitForExpectations:@[
-    self.testStorage.batchIDsForTargetExpectation,
-    hasEventsExpectation,
+    self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation,
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchWithoutDeletingEventsExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
@@ -751,7 +756,8 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   XCTestExpectation *hasEventsExpectation =
       [self expectStorageHasEventsForTarget:self.generator.target result:YES];
 
-  // 1.3. Don't expect removing the batch keeping the events. Expect events to be removed with the batch instead.
+  // 1.3. Don't expect removing the batch keeping the events. Expect events to be removed with the
+  // batch instead.
   self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = YES;
 
   // 1.4. Expect a batch to be uploaded.
@@ -781,7 +787,6 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
                                            conditions:(GDTCORUploadConditions)conditions
                          shouldWaitForNextRequestTime:(BOOL)shouldWaitForNextRequestTime
                                         expectRequest:(BOOL)expectRequest {
-
   // 0.1. Use a target that should respect next upload time.
   self.generator = [[GDTCCTEventGenerator alloc] initWithTarget:target];
   // 0.2. Register storage for the target.
@@ -797,7 +802,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 
     case GDTNextRequestWaitTimeSourceRetryAfterHeader:
       [self sendEventFailureWithStatusCode:503
-                                   headers:@{ @"Retry-After" : @(nextRequestWaitTime).stringValue }
+                                   headers:@{@"Retry-After" : @(nextRequestWaitTime).stringValue}
                    expectEventsToBeRemoved:NO];
       break;
   }
@@ -836,8 +841,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 
   // 3. Wait for expectations.
   [self waitForExpectations:@[
-    self.testStorage.batchIDsForTargetExpectation,
-    hasEventsExpectation2,
+    self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation2,
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation,
     self.testStorage.removeBatchWithoutDeletingEventsExpectation

@@ -275,14 +275,18 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
     pb_release(gdt_cct_LogResponse_fields, &logResponse);
   }
 
-  // If no futureUploadTime was passed in the response body, then check [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header.
+  // If no futureUploadTime was parsed from the response body, then check
+  // [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header.
   if (!futureUploadTime) {
     NSString *retryAfterHeader = response.HTTPResponse.allHeaderFields[@"Retry-After"];
     if (retryAfterHeader.length > 0) {
       NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
       formatter.numberStyle = NSNumberFormatterDecimalStyle;
       NSNumber *retryAfterSeconds = [formatter numberFromString:retryAfterHeader];
-      futureUploadTime = retryAfterSeconds == nil ? nil : [GDTCORClock clockSnapshotInTheFuture:retryAfterSeconds.unsignedIntegerValue * 1000u];
+      if (retryAfterSeconds) {
+        uint64_t retryAfterMillis = retryAfterSeconds.unsignedIntegerValue * 1000u;
+        futureUploadTime = [GDTCORClock clockSnapshotInTheFuture:retryAfterMillis];
+      }
     }
   }
 
