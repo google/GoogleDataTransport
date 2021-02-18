@@ -173,11 +173,13 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
               ^id(id result) {
                 // 7. Finish operation.
                 [self finishOperation];
+                backgroundTaskCompletion();
                 return nil;
               })
       .catchOn(self.uploaderQueue, ^(NSError *error) {
         // TODO: Maybe report the error to the client.
         [self finishOperation];
+        backgroundTaskCompletion();
       });
 }
 
