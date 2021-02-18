@@ -334,19 +334,6 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
     return NO;
   }
 
-  // Upload events when there are with no additional conditions for kGDTCORTargetCSH.
-  if (target == kGDTCORTargetCSH) {
-    GDTCORLogDebug(@"%@", @"CCT: kGDTCORTargetCSH events are allowed to be "
-                          @"uploaded straight away.");
-    return YES;
-  }
-
-  if (target == kGDTCORTargetINT) {
-    GDTCORLogDebug(@"%@", @"CCT: kGDTCORTargetINT events are allowed to be "
-                          @"uploaded straight away.");
-    return YES;
-  }
-
   // Upload events with no additional conditions if high priority.
   if ((conditions & GDTCORUploadConditionHighPriority) == GDTCORUploadConditionHighPriority) {
     GDTCORLogDebug(@"%@", @"CCT: a high priority event is allowing an upload");

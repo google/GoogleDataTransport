@@ -484,7 +484,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [self waitForUploadOperationsToFinish:self.uploader];
 }
 
-- (void)testUploadTarget_WhenBeforeServerNextUploadTimeForCCTAndFLLTargets_ThenDoNotUpload {
+- (void)testUploadTarget_WhenBeforeServerNextUploadTime_ThenDoNotUpload {
   [self assertUploadTargetRespectsNextRequestWaitTime:60
                                        waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
                                             forTarget:kGDTCORTargetCCT
@@ -508,6 +508,22 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
                                            conditions:GDTCORUploadConditionWifiData
                          shouldWaitForNextRequestTime:NO
                                         expectRequest:NO];
+
+  [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
+                                            forTarget:kGDTCORTargetCSH
+                                                  QoS:GDTCOREventQosDefault
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:NO
+                                        expectRequest:NO];
+
+  [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
+                                            forTarget:kGDTCORTargetINT
+                                                  QoS:GDTCOREventQosDefault
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:NO
+                                        expectRequest:NO];
 }
 
 - (void)
@@ -525,24 +541,6 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
                                             forTarget:kGDTCORTargetFLL
                                                   QoS:GDTCOREventQosDefault
                                            conditions:GDTCORUploadConditionHighPriority
-                         shouldWaitForNextRequestTime:NO
-                                        expectRequest:YES];
-}
-
-- (void)testUploadTarget_WhenBeforeServerNextUploadTimeForOtherTargets_ThenUpload {
-  [self assertUploadTargetRespectsNextRequestWaitTime:60
-                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
-                                            forTarget:kGDTCORTargetCSH
-                                                  QoS:GDTCOREventQosDefault
-                                           conditions:GDTCORUploadConditionWifiData
-                         shouldWaitForNextRequestTime:NO
-                                        expectRequest:YES];
-
-  [self assertUploadTargetRespectsNextRequestWaitTime:60
-                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
-                                            forTarget:kGDTCORTargetINT
-                                                  QoS:GDTCOREventQosDefault
-                                           conditions:GDTCORUploadConditionWifiData
                          shouldWaitForNextRequestTime:NO
                                         expectRequest:YES];
 }
