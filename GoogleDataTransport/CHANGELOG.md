@@ -1,3 +1,10 @@
+# v8.3.0
+- Upload logic was refactored to use [Promises library](https://github.com/google/promises) to improve readability and maintainability of the async code.
+- Fix some race conditions and edge cases when multiple targets have events ready for upload.
+- Added support of `Retry-After` header.
+- Retry uploading events on any 5xx HTTP status code.
+- Removed retry-after exceptions for some targets.
+
 # v8.2.0
 - Expose upload URLs as a public API for Firebase Performance to use for denying instrumentation those URLs.
 
