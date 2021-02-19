@@ -173,11 +173,13 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
               ^id(id result) {
                 // 7. Finish operation.
                 [self finishOperation];
+                backgroundTaskCompletion();
                 return nil;
               })
       .catchOn(self.uploaderQueue, ^(NSError *error) {
         // TODO: Maybe report the error to the client.
         [self finishOperation];
+        backgroundTaskCompletion();
       });
 }
 
@@ -201,9 +203,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
             // Only retry if one of these codes is returned:
             // 429 - Too many requests;
-            // 503 - Service unavailable.
+            // 5xx - Server errors.
             NSInteger statusCode = response.HTTPResponse.statusCode;
-            if (statusCode == 429 || statusCode == 503) {
+            if (statusCode == 429 || (statusCode >= 500 && statusCode < 600)) {
               // Move the events back to the main storage to be uploaded on the next attempt.
               return [storage removeBatchWithID:batchID deleteEvents:NO];
             } else {
@@ -273,6 +275,21 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
     pb_release(gdt_cct_LogResponse_fields, &logResponse);
   }
 
+  // If no futureUploadTime was parsed from the response body, then check
+  // [Retry-After](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header.
+  if (!futureUploadTime) {
+    NSString *retryAfterHeader = response.HTTPResponse.allHeaderFields[@"Retry-After"];
+    if (retryAfterHeader.length > 0) {
+      NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+      formatter.numberStyle = NSNumberFormatterDecimalStyle;
+      NSNumber *retryAfterSeconds = [formatter numberFromString:retryAfterHeader];
+      if (retryAfterSeconds != nil) {
+        uint64_t retryAfterMillis = retryAfterSeconds.unsignedIntegerValue * 1000u;
+        futureUploadTime = [GDTCORClock clockSnapshotInTheFuture:retryAfterMillis];
+      }
+    }
+  }
+
   if (!futureUploadTime) {
     GDTCORLogDebug(@"%@", @"CCT: The backend response failed to parse, so the next request "
                           @"won't occur until 15 minutes from now");
@@ -315,19 +332,6 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   if (conditions & GDTCORUploadConditionNoNetwork) {
     GDTCORLogDebug(@"%@", @"CCT: Not ready to upload without a network connection.");
     return NO;
-  }
-
-  // Upload events when there are with no additional conditions for kGDTCORTargetCSH.
-  if (target == kGDTCORTargetCSH) {
-    GDTCORLogDebug(@"%@", @"CCT: kGDTCORTargetCSH events are allowed to be "
-                          @"uploaded straight away.");
-    return YES;
-  }
-
-  if (target == kGDTCORTargetINT) {
-    GDTCORLogDebug(@"%@", @"CCT: kGDTCORTargetINT events are allowed to be "
-                          @"uploaded straight away.");
-    return YES;
   }
 
   // Upload events with no additional conditions if high priority.
