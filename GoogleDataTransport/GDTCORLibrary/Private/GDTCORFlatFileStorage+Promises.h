@@ -20,6 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// The category extends `GDTCORFlatFileStorage` API with `GDTCORStoragePromiseProtocol` methods.
 @interface GDTCORFlatFileStorage (Promises) <GDTCORStoragePromiseProtocol>
 
 @end

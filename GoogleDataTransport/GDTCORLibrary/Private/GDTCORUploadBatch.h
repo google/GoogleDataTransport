@@ -20,11 +20,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// A data object representing a batch of events scheduled for upload.
 @interface GDTCORUploadBatch : NSObject
 
+/// An ID used to identify the batch in the storage.
 @property(nonatomic, readonly) NSNumber *batchID;
+
+/// The collection of the events in the batch.
 @property(nonatomic, readonly) NSSet<GDTCOREvent *> *events;
 
+/// The default initializer. See also docs for the corresponding properties.
 - (instancetype)initWithBatchID:(NSNumber *)batchID events:(NSSet<GDTCOREvent *> *)events;
 
 @end

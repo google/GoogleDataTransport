@@ -61,12 +61,14 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
 @interface GDTCCTUploadOperation () <NSURLSessionDelegate>
 
+/// The properties to store parameters passed in the initializer. See the initialized docs for details.
 @property(nonatomic, readonly) GDTCORTarget target;
 @property(nonatomic, readonly) GDTCORUploadConditions conditions;
 @property(nonatomic, readonly) NSURL *uploadURL;
 @property(nonatomic, readonly) id<GDTCORStoragePromiseProtocol> storage;
 @property(nonatomic, readonly) id<GDTCCTUploadMetadataProvider> metadataProvider;
 
+/// NSOperation state properties implementation.
 @property(nonatomic, readwrite, getter=isExecuting) BOOL executing;
 @property(nonatomic, readwrite, getter=isFinished) BOOL finished;
 
@@ -318,13 +320,14 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 }
 
 // TODO: Move to a separate class/extension/file when needed in other files.
+/** Returns an error object with the specified failure reason. */
 - (NSError *)genericRejectedPromiseErrorWithReason:(NSString *)reason {
   return [NSError errorWithDomain:@"GDTCCTUploader"
                              code:-1
                          userInfo:@{NSLocalizedFailureReasonErrorKey : reason}];
 }
 
-/** */
+/** Returns if the specified target is ready to be uploaded based on the specified conditions. */
 - (BOOL)readyToUploadTarget:(GDTCORTarget)target conditions:(GDTCORUploadConditions)conditions {
   // Not ready to upload with no network connection.
   // TODO: Reconsider using reachability to prevent an upload attempt.
@@ -382,7 +385,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   return data ? data : [[NSData alloc] init];
 }
 
-/** Constructs a request to FLL given a URL and request body data.
+/** Constructs a request to the given URL and target with the specified request body data.
  *
  * @param target The target backend to send the request to.
  * @param data The request body data.
@@ -436,8 +439,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   return request;
 }
 
-/** */
-- (nullable GDTCORStorageEventSelector *)eventSelectorTarget:(GDTCORTarget)target
+/** Creates and returns a storage event selector for the specified target and conditions. */
+- (GDTCORStorageEventSelector *)eventSelectorTarget:(GDTCORTarget)target
                                               withConditions:(GDTCORUploadConditions)conditions {
   if ((conditions & GDTCORUploadConditionHighPriority) == GDTCORUploadConditionHighPriority) {
     return [GDTCORStorageEventSelector eventSelectorForTarget:target];

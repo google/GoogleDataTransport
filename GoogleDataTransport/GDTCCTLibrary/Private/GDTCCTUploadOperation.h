@@ -22,12 +22,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO: Refine API and API docs
-
+/// The protocol defines methods to retrieve/update data shared between different upload operations.
 @protocol GDTCCTUploadMetadataProvider <NSObject>
+
 /** Returns a GDTCORClock object representing time after which a next upload attempt is allowed for
  * the specified target. Upload is allowed now if `nil`. */
 - (nullable GDTCORClock *)nextUploadTimeForTarget:(GDTCORTarget)target;
+
 /** Stores or resets time after which  a next upload attempt is allowed for the specified target. */
 - (void)setNextUploadTime:(nullable GDTCORClock *)time forTarget:(GDTCORTarget)target;
 
@@ -41,12 +42,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
+/** The designated initializer.
+ *  @param target The events target to upload.
+ *  @param conditions A set of upload conditions. The conditions affect the set of events to be uploaded, e.g. events with some QoS are not uploaded on a cellular network, etc.
+ *  @param uploadURL The backend URL to upload the events.
+ *  @param queue A queue to dispatch async upload steps.
+ *  @param storage A storage object to fetch events for upload.
+ *  @param metadataProvider An object to retrieve/update data shared between different upload operations.
+ */
 - (instancetype)initWithTarget:(GDTCORTarget)target
                     conditions:(GDTCORUploadConditions)conditions
                      uploadURL:(NSURL *)uploadURL
                          queue:(dispatch_queue_t)queue
                        storage:(id<GDTCORStoragePromiseProtocol>)storage
-              metadataProvider:(id<GDTCCTUploadMetadataProvider>)metadataProvider;
+              metadataProvider:(id<GDTCCTUploadMetadataProvider>)metadataProvider NS_DESIGNATED_INITIALIZER;
 
 /** YES if a batch upload attempt was performed. NO otherwise. If NO for the finished operation,
  * then  there were no events suitable for upload. */
