@@ -61,7 +61,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
 @interface GDTCCTUploadOperation () <NSURLSessionDelegate>
 
-/// The properties to store parameters passed in the initializer. See the initialized docs for details.
+/// The properties to store parameters passed in the initializer. See the initialized docs for
+/// details.
 @property(nonatomic, readonly) GDTCORTarget target;
 @property(nonatomic, readonly) GDTCORUploadConditions conditions;
 @property(nonatomic, readonly) NSURL *uploadURL;
@@ -441,7 +442,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
 /** Creates and returns a storage event selector for the specified target and conditions. */
 - (GDTCORStorageEventSelector *)eventSelectorTarget:(GDTCORTarget)target
-                                              withConditions:(GDTCORUploadConditions)conditions {
+                                     withConditions:(GDTCORUploadConditions)conditions {
   if ((conditions & GDTCORUploadConditionHighPriority) == GDTCORUploadConditionHighPriority) {
     return [GDTCORStorageEventSelector eventSelectorForTarget:target];
   }
