@@ -29,7 +29,7 @@ typedef void (^GDTCCTTestStorageHasEventsCompletion)(BOOL hasEvents);
 typedef void (^GDTCCTTestStorageHasEventsHandler)(GDTCORTarget target,
                                                   GDTCCTTestStorageHasEventsCompletion completion);
 
-@interface GDTCCTTestStorage : NSObject <GDTCORStorageProtocol>
+@interface GDTCCTTestStorage : NSObject <GDTCORStoragePromiseProtocol>
 
 #pragma mark - Method call expectations.
 

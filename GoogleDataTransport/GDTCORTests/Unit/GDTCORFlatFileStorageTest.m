@@ -73,16 +73,17 @@
   [[GDTCORFlatFileStorage sharedInstance] reset];
   self.uploaderFake = [[GDTCORUploadCoordinatorFake alloc] init];
   [GDTCORFlatFileStorage sharedInstance].uploadCoordinator = self.uploaderFake;
-  [[GDTCORFlatFileStorage sharedInstance] reset];
   [[NSFileManager defaultManager] fileExistsAtPath:[GDTCORFlatFileStorage eventDataStoragePath]];
 }
 
 - (void)tearDown {
-  dispatch_sync([GDTCORFlatFileStorage sharedInstance].storageQueue, ^{
-                });
   // Destroy these objects before the next test begins.
   [GDTCORFlatFileStorage sharedInstance].uploadCoordinator =
-      [GDTCORUploadCoordinator sharedInstance];
+      [[GDTCORUploadCoordinatorFake alloc] init];
+
+  dispatch_sync([GDTCORFlatFileStorage sharedInstance].storageQueue, ^{
+                });
+  [[GDTCORFlatFileStorage sharedInstance] reset];
   self.uploaderFake = nil;
   [super tearDown];
 }

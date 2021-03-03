@@ -20,7 +20,7 @@ DerivedData
 *.ipa
 
 # Swift Package Manager
-*/.build
+.build
 Package.resolved
 
 # Mint package manager

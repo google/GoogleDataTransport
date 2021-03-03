@@ -16,7 +16,14 @@
 
 #import "GoogleDataTransport/GDTCCTTests/Common/TestStorage/GDTCCTTestStorage.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORUploadBatch.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
+
+#if __has_include(<FBLPromises/FBLPromises.h>)
+#import <FBLPromises/FBLPromises.h>
+#else
+#import "FBLPromises.h"
+#endif
 
 @implementation GDTCCTTestStorage {
   /** Store the events in memory. */
@@ -69,6 +76,7 @@
     for (GDTCOREvent *batchedEvent in _batches[batchID]) {
       _storedEvents[batchedEvent.eventID] = batchedEvent;
     }
+    [_batches removeObjectForKey:batchID];
     [self.removeBatchWithoutDeletingEventsExpectation fulfill];
   }
 
@@ -139,6 +147,70 @@
   if (onComplete) {
     onComplete(batchID, batchEvents);
   }
+}
+
+- (FBLPromise<NSSet<NSNumber *> *> *)batchIDsForTarget:(GDTCORTarget)target {
+  return [FBLPromise wrapObjectCompletion:^(FBLPromiseObjectCompletion _Nonnull handler) {
+    [self batchIDsForTarget:target onComplete:handler];
+  }];
+}
+
+- (FBLPromise<NSNull *> *)removeBatchWithID:(NSNumber *)batchID deleteEvents:(BOOL)deleteEvents {
+  return [FBLPromise wrapCompletion:^(FBLPromiseCompletion _Nonnull handler) {
+    [self removeBatchWithID:batchID deleteEvents:deleteEvents onComplete:handler];
+  }];
+}
+
+- (FBLPromise<NSNull *> *)removeBatchesWithIDs:(NSSet<NSNumber *> *)batchIDs
+                                  deleteEvents:(BOOL)deleteEvents {
+  NSMutableArray<FBLPromise *> *removeBatchPromises =
+      [NSMutableArray arrayWithCapacity:batchIDs.count];
+  for (NSNumber *batchID in batchIDs) {
+    [removeBatchPromises addObject:[self removeBatchWithID:batchID deleteEvents:deleteEvents]];
+  }
+
+  return [FBLPromise all:[removeBatchPromises copy]].then(^id(id result) {
+    return [FBLPromise resolvedWith:[NSNull null]];
+  });
+}
+
+- (FBLPromise<NSNull *> *)removeAllBatchesForTarget:(GDTCORTarget)target
+                                       deleteEvents:(BOOL)deleteEvents {
+  return [self batchIDsForTarget:target].then(^id(NSSet<NSNumber *> *batchIDs) {
+    return [self removeBatchesWithIDs:batchIDs deleteEvents:NO];
+  });
+}
+
+- (FBLPromise<NSNumber *> *)hasEventsForTarget:(GDTCORTarget)target {
+  return [FBLPromise wrapBoolCompletion:^(FBLPromiseBoolCompletion _Nonnull handler) {
+    [self hasEventsForTarget:target onComplete:handler];
+  }];
+}
+
+- (FBLPromise<GDTCORUploadBatch *> *)batchWithEventSelector:
+                                         (GDTCORStorageEventSelector *)eventSelector
+                                            batchExpiration:(NSDate *)expiration {
+  return [FBLPromise
+      async:^(FBLPromiseFulfillBlock _Nonnull fulfill, FBLPromiseRejectBlock _Nonnull reject) {
+        [self batchWithEventSelector:eventSelector
+                     batchExpiration:expiration
+                          onComplete:^(NSNumber *_Nullable newBatchID,
+                                       NSSet<GDTCOREvent *> *_Nullable batchEvents) {
+                            if (newBatchID == nil || batchEvents == nil) {
+                              reject([self genericRejectedPromiseErrorWithReason:
+                                               @"There are no events for the selector."]);
+                            } else {
+                              fulfill([[GDTCORUploadBatch alloc] initWithBatchID:newBatchID
+                                                                          events:batchEvents]);
+                            }
+                          }];
+      }];
+}
+
+- (NSError *)genericRejectedPromiseErrorWithReason:(NSString *)reason {
+  return [NSError errorWithDomain:@"GDTCORFlatFileStorage"
+                             code:-1
+                         userInfo:@{NSLocalizedFailureReasonErrorKey : reason}];
 }
 
 @end

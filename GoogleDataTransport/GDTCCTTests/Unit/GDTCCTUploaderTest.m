@@ -27,6 +27,11 @@
 #import "GoogleDataTransport/GDTCCTTests/Unit/Helpers/GDTCCTEventGenerator.h"
 #import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
 
+typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
+  GDTNextRequestWaitTimeSourceResponseBody,
+  GDTNextRequestWaitTimeSourceRetryAfterHeader
+};
+
 @interface GDTCCTUploaderTest : XCTestCase
 
 @property(nonatomic) GDTCCTUploader *uploader;
@@ -65,9 +70,12 @@
 }
 
 - (void)tearDown {
+  [self.uploader waitForUploadFinishedWithTimeout:1];
   self.testServer.responseCompletedBlock = nil;
+  self.testServer.requestHandler = nil;
   [self.testServer stop];
   self.testStorage = nil;
+  self.uploader = nil;
   [super tearDown];
 }
 
@@ -106,7 +114,7 @@
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 4. Wait for upload operation to finish.
@@ -141,7 +149,7 @@
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:NO];
 
   // 4. Wait for upload operation to finish.
@@ -152,9 +160,12 @@
  * Once 1st finished, another one can be started. */
 - (void)testUploadTargetWhenThereIsOngoingUploadThenNoOp {
   // 0. Set up expectations to track 1st upload progress.
-  // 0.1. Generate and store and an event.
+  // 0.1. Configure no next request wait time.
+  self.testServer.responseNextRequestWaitTime = 0;
+
+  // 0.2. Generate and store and an event.
   [self.generator generateEvent:GDTCOREventQoSFast];
-  // 0.2. Configure server request expectation.
+  // 0.3. Configure server request expectation.
   // Block to call to finish the 1st request.
   __block dispatch_block_t requestCompletionBlock;
   __auto_type __weak weakSelf = self;
@@ -171,14 +182,14 @@
         [serverRequestExpectation1 fulfill];
       };
 
-  // 0.3. Configure storage.
+  // 0.4. Configure storage.
   XCTestExpectation *hasEventsExpectation1 = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
                                                                             result:YES];
 
-  // 0.4. Start upload 1st upload.
+  // 0.5. Start upload 1st upload.
   [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
 
-  // 0.4. Wait for server request to be sent.
+  // 0.6. Wait for server request to be sent.
   [self waitForExpectations:@[ hasEventsExpectation1, serverRequestExpectation1 ] timeout:1];
 
   // 1. Test 2nd request.
@@ -209,7 +220,7 @@
     self.testStorage.removeBatchWithoutDeletingEventsExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3];
+                    timeout:1];
 
   // 1.4. Wait for 1st upload finish.
   requestCompletionBlock();
@@ -239,11 +250,38 @@
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 3.4. Wait for upload operation to finish.
   [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)testUploadTargetFailure503 {
+  [self sendEventFailureWithStatusCode:503 headers:nil expectEventsToBeRemoved:NO];
+}
+
+- (void)testUploadTargetFailure500 {
+  [self sendEventFailureWithStatusCode:500 headers:nil expectEventsToBeRemoved:NO];
+}
+
+- (void)testUploadTargetFailure429 {
+  [self sendEventFailureWithStatusCode:429 headers:nil expectEventsToBeRemoved:NO];
+}
+
+- (void)testUploadTargetFailure403 {
+  [self sendEventFailureWithStatusCode:403 headers:nil expectEventsToBeRemoved:YES];
+}
+
+- (void)testUploadTargetFailure400 {
+  [self sendEventFailureWithStatusCode:400 headers:nil expectEventsToBeRemoved:YES];
+}
+
+- (void)testUploadTargetAfterFailure {
+  // Set wait for next request time to 0.
+  __auto_type retryAfterHeaders = @{@"Retry-After" : @"0"};
+  [self sendEventFailureWithStatusCode:503 headers:retryAfterHeaders expectEventsToBeRemoved:NO];
+  [self sendEventSuccessfully];
 }
 
 - (void)testUploadTarget_WhenThereAreBothStoredBatchAndEvents_ThenRemoveBatchAndBatchThenAllEvents {
@@ -276,7 +314,7 @@
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 1.4. Wait for upload operation to finish.
@@ -315,7 +353,7 @@
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation1,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 1.4. Wait for upload operation to finish.
@@ -348,7 +386,7 @@
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 2.4. Wait for upload operation to finish.
@@ -440,14 +478,15 @@
     self.testStorage.removeBatchWithoutDeletingEventsExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3];
+                    timeout:1];
 
   // 4. Wait for 1st upload finish.
   [self waitForUploadOperationsToFinish:self.uploader];
 }
 
-- (void)testUploadTarget_WhenBeforeServerNextUploadTimeForCCTAndFLLTargets_ThenDoNotUpload {
+- (void)testUploadTarget_WhenBeforeServerNextUploadTime_ThenDoNotUpload {
   [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
                                             forTarget:kGDTCORTargetCCT
                                                   QoS:GDTCOREventQoSFast
                                            conditions:GDTCORUploadConditionWifiData
@@ -455,7 +494,32 @@
                                         expectRequest:NO];
 
   [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
                                             forTarget:kGDTCORTargetFLL
+                                                  QoS:GDTCOREventQosDefault
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:NO
+                                        expectRequest:NO];
+
+  [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
+                                            forTarget:kGDTCORTargetTest
+                                                  QoS:GDTCOREventQoSFast
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:NO
+                                        expectRequest:NO];
+
+  [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
+                                            forTarget:kGDTCORTargetCSH
+                                                  QoS:GDTCOREventQosDefault
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:NO
+                                        expectRequest:NO];
+
+  [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
+                                            forTarget:kGDTCORTargetINT
                                                   QoS:GDTCOREventQosDefault
                                            conditions:GDTCORUploadConditionWifiData
                          shouldWaitForNextRequestTime:NO
@@ -465,6 +529,7 @@
 - (void)
     testUploadTarget_WhenBeforeServerNextUploadTimeForCCTAndFLLTargetsAndHighPriority_ThenUpload {
   [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
                                             forTarget:kGDTCORTargetCCT
                                                   QoS:GDTCOREventQoSFast
                                            conditions:GDTCORUploadConditionHighPriority
@@ -472,38 +537,17 @@
                                         expectRequest:YES];
 
   [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
                                             forTarget:kGDTCORTargetFLL
                                                   QoS:GDTCOREventQosDefault
                                            conditions:GDTCORUploadConditionHighPriority
-                         shouldWaitForNextRequestTime:NO
-                                        expectRequest:YES];
-}
-
-- (void)testUploadTarget_WhenBeforeServerNextUploadTimeForOtherTargets_ThenUpload {
-  [self assertUploadTargetRespectsNextRequestWaitTime:60
-                                            forTarget:kGDTCORTargetTest
-                                                  QoS:GDTCOREventQoSFast
-                                           conditions:GDTCORUploadConditionWifiData
-                         shouldWaitForNextRequestTime:NO
-                                        expectRequest:YES];
-
-  [self assertUploadTargetRespectsNextRequestWaitTime:60
-                                            forTarget:kGDTCORTargetCSH
-                                                  QoS:GDTCOREventQosDefault
-                                           conditions:GDTCORUploadConditionWifiData
-                         shouldWaitForNextRequestTime:NO
-                                        expectRequest:YES];
-
-  [self assertUploadTargetRespectsNextRequestWaitTime:60
-                                            forTarget:kGDTCORTargetINT
-                                                  QoS:GDTCOREventQosDefault
-                                           conditions:GDTCORUploadConditionWifiData
                          shouldWaitForNextRequestTime:NO
                                         expectRequest:YES];
 }
 
 - (void)testUploadTarget_WhenAfterServerNextUploadTimeForCCTAndFLLTargets_ThenUpload {
   [self assertUploadTargetRespectsNextRequestWaitTime:1
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
                                             forTarget:kGDTCORTargetCCT
                                                   QoS:GDTCOREventQoSFast
                                            conditions:GDTCORUploadConditionWifiData
@@ -511,11 +555,32 @@
                                         expectRequest:YES];
 
   [self assertUploadTargetRespectsNextRequestWaitTime:1
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceResponseBody
                                             forTarget:kGDTCORTargetFLL
                                                   QoS:GDTCOREventQosDefault
                                            conditions:GDTCORUploadConditionWifiData
                          shouldWaitForNextRequestTime:YES
                                         expectRequest:YES];
+}
+
+- (void)testUploadTarget_WhenUploadFailsWithRetryAfterHeader_TheEventsUploadedAfterTheTimeout {
+  [self assertUploadTargetRespectsNextRequestWaitTime:1
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceRetryAfterHeader
+                                            forTarget:kGDTCORTargetCCT
+                                                  QoS:GDTCOREventQoSFast
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:YES
+                                        expectRequest:YES];
+}
+
+- (void)testUploadTarget_WhenUploadFailsWithRetryAfterHeader_ThenWaitForTimeout {
+  [self assertUploadTargetRespectsNextRequestWaitTime:60
+                                       waitTimeSource:GDTNextRequestWaitTimeSourceRetryAfterHeader
+                                            forTarget:kGDTCORTargetCCT
+                                                  QoS:GDTCOREventQoSFast
+                                           conditions:GDTCORUploadConditionWifiData
+                         shouldWaitForNextRequestTime:NO
+                                        expectRequest:NO];
 }
 
 //// TODO: Tests for uploading several empty targets and then non-empty target.
@@ -555,6 +620,35 @@
   return responseSentExpectation;
 }
 
+- (XCTestExpectation *)
+    expectationTestServerResponseWithCode:(NSInteger)statusCode
+                                  headers:(NSDictionary<NSString *, NSString *> *)headers {
+  __weak __auto_type weakSelf = self;
+  XCTestExpectation *responseSentExpectation = [self expectationWithDescription:@"response sent"];
+
+  self.testServer.requestHandler = ^(GCDWebServerDataRequest *_Nonnull request,
+                                     GCDWebServerResponse *_Nullable suggestedResponse,
+                                     GCDWebServerCompletionBlock _Nonnull completionBlock) {
+    // Redefining the self var addresses strong self capturing in the XCTAssert macros.
+    __auto_type self = weakSelf;
+    XCTAssertNotNil(self);
+
+    weakSelf.testServer.requestHandler = nil;
+
+    GCDWebServerResponse *response = [GCDWebServerResponse responseWithStatusCode:statusCode];
+    [headers enumerateKeysAndObjectsUsingBlock:^(NSString *_Nonnull header, id _Nonnull value,
+                                                 BOOL *_Nonnull stop) {
+      [response setValue:value forAdditionalHeader:header];
+    }];
+
+    [responseSentExpectation fulfill];
+
+    completionBlock(response);
+  };
+
+  return responseSentExpectation;
+}
+
 - (void)setUpStorageExpectations {
   self.testStorage.batchIDsForTargetExpectation =
       [self expectationWithDescription:@"batchIDsForTargetExpectation"];
@@ -567,14 +661,7 @@
 }
 
 - (void)waitForUploadOperationsToFinish:(GDTCCTUploader *)uploader {
-  XCTestExpectation *uploadFinishedExpectation =
-      [self expectationWithDescription:@"uploadFinishedExpectation"];
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
-                 uploader.uploaderQueue, ^{
-                   [uploadFinishedExpectation fulfill];
-                   XCTAssertNil(uploader.currentTask);
-                 });
-  [self waitForExpectations:@[ uploadFinishedExpectation ] timeout:1];
+  XCTAssert([self.uploader waitForUploadFinishedWithTimeout:1]);
 }
 
 - (XCTestExpectation *)expectStorageHasEventsForTarget:(GDTCORTarget)expectedTarget
@@ -617,6 +704,44 @@
   [self waitForExpectations:@[ hasEventsExpectation, storageBatchExpectation ] timeout:1];
 }
 
+- (void)sendEventFailureWithStatusCode:(NSInteger)statusCode
+                               headers:(NSDictionary<NSString *, NSString *> *)headers
+               expectEventsToBeRemoved:(BOOL)expectEventsToBeRemoved {
+  // 0. Generate test events.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+
+  // 1. Set up expectations.
+  // 1.1. Set up all relevant storage expectations.
+  [self setUpStorageExpectations];
+  // Don't expect events to be deleted.
+  self.testStorage.removeBatchAndDeleteEventsExpectation.inverted = !expectEventsToBeRemoved;
+  self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = expectEventsToBeRemoved;
+
+  // 1.2. Expect `hasEventsForTarget:onComplete:` to be called.
+  XCTestExpectation *hasEventsExpectation =
+      [self expectStorageHasEventsForTarget:self.generator.target result:YES];
+
+  // 1.4. Expect a batch to be uploaded.
+  XCTestExpectation *responseSentExpectation =
+      [self expectationTestServerResponseWithCode:statusCode headers:headers];
+
+  // 2. Create uploader and start upload.
+  [self.uploader uploadTarget:self.generator.target withConditions:GDTCORUploadConditionWifiData];
+
+  // 3. Wait for operations to complete in the specified order.
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
+  ]
+                    timeout:3
+               enforceOrder:YES];
+
+  // 4. Wait for upload operation to finish.
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
 - (void)sendEventSuccessfully {
   // 0. Generate test events.
   [self.generator generateEvent:GDTCOREventQoSFast];
@@ -629,7 +754,8 @@
   XCTestExpectation *hasEventsExpectation =
       [self expectStorageHasEventsForTarget:self.generator.target result:YES];
 
-  // 1.3. Don't expect previously batched events to be removed (no batch present).
+  // 1.3. Don't expect removing the batch keeping the events. Expect events to be removed with the
+  // batch instead.
   self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = YES;
 
   // 1.4. Expect a batch to be uploaded.
@@ -645,7 +771,7 @@
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
-                    timeout:3
+                    timeout:1
                enforceOrder:YES];
 
   // 4. Wait for upload operation to finish.
@@ -653,20 +779,32 @@
 }
 
 - (void)assertUploadTargetRespectsNextRequestWaitTime:(NSTimeInterval)nextRequestWaitTime
+                                       waitTimeSource:(GDTNextRequestWaitTimeSource)waitTimeSource
                                             forTarget:(GDTCORTarget)target
                                                   QoS:(GDTCOREventQoS)eventQoS
                                            conditions:(GDTCORUploadConditions)conditions
                          shouldWaitForNextRequestTime:(BOOL)shouldWaitForNextRequestTime
                                         expectRequest:(BOOL)expectRequest {
-  // 0.1. Set response next request wait time.
-  self.testServer.responseNextRequestWaitTime = nextRequestWaitTime;
-  // 0.2. Use a target that should respect next upload time.
+  // 0.1. Use a target that should respect next upload time.
   self.generator = [[GDTCCTEventGenerator alloc] initWithTarget:target];
-  // 0.3. Register storage for the target.
+  // 0.2. Register storage for the target.
   [[GDTCORRegistrar sharedInstance] reset];
   [[GDTCORRegistrar sharedInstance] registerStorage:self.testStorage target:self.generator.target];
-  // 0.4. Send an event and receive response.
-  [self sendEventSuccessfully];
+
+  // 0.3. Send an event and receive response.
+  self.testServer.responseNextRequestWaitTime = nextRequestWaitTime;
+  switch (waitTimeSource) {
+    case GDTNextRequestWaitTimeSourceResponseBody:
+      [self sendEventSuccessfully];
+      break;
+
+    case GDTNextRequestWaitTimeSourceRetryAfterHeader:
+      [self sendEventFailureWithStatusCode:503
+                                   headers:@{@"Retry-After" : @(nextRequestWaitTime).stringValue}
+                   expectEventsToBeRemoved:NO];
+      break;
+  }
+
   // 0.5. Generate another event to be sent.
   [self.generator generateEvent:eventQoS];
 
@@ -703,10 +841,10 @@
   [self waitForExpectations:@[
     self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation2,
     self.testStorage.batchWithEventSelectorExpectation, responseSentExpectation,
-    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
-    self.testStorage.removeBatchAndDeleteEventsExpectation
+    self.testStorage.removeBatchAndDeleteEventsExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation
   ]
-                    timeout:3];
+                    timeout:1];
 
   // 4. Wait for 1st upload finish.
   [self waitForUploadOperationsToFinish:self.uploader];

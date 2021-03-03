@@ -26,9 +26,8 @@
 - (void)reset {
   dispatch_sync(self.storageQueue, ^{
     [[NSFileManager defaultManager] removeItemAtPath:GDTCORRootDirectory().path error:nil];
+    [[GDTCORFlatFileStorage sharedInstance].sizeTracker resetCachedSize];
   });
-
-  [[GDTCORFlatFileStorage sharedInstance].sizeTracker resetCachedSize];
 
   dispatch_semaphore_t sema = dispatch_semaphore_create(0);
   [[GDTCORFlatFileStorage sharedInstance] storageSizeWithCallback:^(uint64_t storageSize) {

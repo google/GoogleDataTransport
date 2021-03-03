@@ -81,7 +81,10 @@
   [[GDTCORFlatFileStorage sharedInstance] reset];
 }
 
-- (void)testEndToEndEvent {
+// TODO: Revisit the tests and refactor or remove. Currently the test don't check any cases in
+// addition to GDTCCTIntegrationTest, so the tests are disabled to reduce flakiness of the GDT tests
+// in general.
+- (void)disabled_testEndToEndEvent {
   XCTestExpectation *expectation = [self expectationWithDescription:@"server got the request"];
   expectation.assertForOverFulfill = NO;
 
@@ -169,6 +172,7 @@
   [[NSRunLoop currentRunLoop]
       runUntilDate:[NSDate dateWithTimeIntervalSinceNow:lengthOfTestToRunInSeconds + 5]];
 
+  XCTAssert([self.uploader waitForUploadFinishedWithTimeout:lengthOfTestToRunInSeconds]);
   [testServer stop];
 }
 
