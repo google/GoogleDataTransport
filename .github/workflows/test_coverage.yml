@@ -12,6 +12,7 @@ env:
 
 jobs:
   pod_lib_lint:
+    id:
     runs-on: macos-latest
     strategy:
       matrix:
@@ -30,7 +31,7 @@ jobs:
         name: codecoverage
         path: /Users/runner/*.xcresult
   create_report:
-    needs: [pod-lib-lint]
+    needs: pod-lib-lint
     if: always()
     runs-on: macOS-latest
     steps:
