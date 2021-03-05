@@ -12,7 +12,6 @@ env:
 
 jobs:
   pod_lib_lint:
-    id:
     runs-on: macos-latest
     strategy:
       matrix:
