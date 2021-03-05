@@ -7,10 +7,25 @@ on:
     # closed will be triggered when a pull request is closed.
     types: [opened, synchronize, closed]
 
+env:
+  METRICS_SERVICE_SECRET: ${{ secrets.GHASecretsGPGPassphrase1 }}
+
 jobs:
-  pod-lib-lint-googledatatransport:
-    runs-on: macOS-latest
+  pod_lib_lint:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target: [ios]
     steps:
     - uses: actions/checkout@v2
+    - name: Setup Scripts Directory
+      run: ./setup-scripts.sh
+    - name: Setup Bundler
+      run: ./scripts/setup_bundler.sh
+    - name: PodLibLint DataTransport
+      run: |
+        scripts/code_coverage_report/pod_test_code_coverage_report.sh GoogleDataTransport "${{ matrix.target }}"
+    - uses: actions/upload-artifact@v2
       with:
-        repository: 'firebase/firebase-ios-sdk'
+        name: codecoverage
+        path: /Users/runner/*.xcresult
