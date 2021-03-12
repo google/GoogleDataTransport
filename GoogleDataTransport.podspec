@@ -149,7 +149,7 @@ Shared library for iOS SDK data transport needs.
   common_cct_test_sources = ['GoogleDataTransport/GDTCCTTests/Common/**/*.{h,m}']
 
   # Test specs
-  s.test_spec 'unit' do |test_spec|
+  s.test_spec 'CCT-Tests-Unit' do |test_spec|
     test_spec.scheme = { :code_coverage => true }
     test_spec.platforms = {:ios => ios_deployment_target, :osx => osx_deployment_target, :tvos => tvos_deployment_target}
     test_spec.requires_app_host = false
