@@ -34,6 +34,8 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: actions/download-artifact@v2
       id: download
       with:
@@ -63,7 +65,7 @@ jobs:
       run: |
         # git diff --name-only $common_commit remotes/origin/${pr_branch} > updated_files.txt
         # cat updated_files.txt
-        common_commit=$(git merge-base remotes/origin/${pr_branch} remotes/origin/master)
+        common_commit=$(git merge-base remotes/origin/${pr_branch} remotes/origin/main)
         GITHUB_SHA=$(cat $GITHUB_EVENT_PATH | jq -r .pull_request.head.sha)
         if [ -d "${{steps.download.outputs.download-path}}" ]; then
         firebase-ios-sdk/scripts/code_coverage_report/generate_code_coverage_report/.build/debug/CoverageReportGenerator --presubmit "Google/GoogleDataTransport" --commit "${GITHUB_SHA}" --token $(gcloud auth print-identity-token) --xcresult-dir "${{steps.download.outputs.download-path}}/codecoverage" --log-link "https://github.com/firebase/firebase-ios-sdk/actions/runs/${GITHUB_RUN_ID}" --pull-request-num ${{github.event.pull_request.number}} --base-commit "$common_commit"
