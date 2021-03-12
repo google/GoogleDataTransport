@@ -58,10 +58,13 @@ jobs:
         cd firebase-ios-sdk/scripts/code_coverage_report/generate_code_coverage_report/
         swift build
     - name: Generate report
+      env:
+        pr_branch: ${{ github.event.pull_request.head.ref }}
       run: |
         # git diff --name-only $common_commit remotes/origin/${pr_branch} > updated_files.txt
         # cat updated_files.txt
+        common_commit=$(git merge-base remotes/origin/${pr_branch} remotes/origin/master)
         GITHUB_SHA=$(cat $GITHUB_EVENT_PATH | jq -r .pull_request.head.sha)
         if [ -d "${{steps.download.outputs.download-path}}" ]; then
-        firebase-ios-sdk/scripts/code_coverage_report/generate_code_coverage_report/.build/debug/CoverageReportGenerator --presubmit "Google/GoogleDataTransport" --commit "${GITHUB_SHA}" --token $(gcloud auth print-identity-token) --xcresult-dir "/Users/runner/test/codecoverage" --log-link "https://github.com/firebase/firebase-ios-sdk/actions/runs/${GITHUB_RUN_ID}" --pull-request-num ${{github.event.pull_request.number}} --base-commit "$base_commit"
+        firebase-ios-sdk/scripts/code_coverage_report/generate_code_coverage_report/.build/debug/CoverageReportGenerator --presubmit "Google/GoogleDataTransport" --commit "${GITHUB_SHA}" --token $(gcloud auth print-identity-token) --xcresult-dir "${{steps.download.outputs.download-path}}/codecoverage" --log-link "https://github.com/firebase/firebase-ios-sdk/actions/runs/${GITHUB_RUN_ID}" --pull-request-num ${{github.event.pull_request.number}} --base-commit "$common_commit"
         fi
