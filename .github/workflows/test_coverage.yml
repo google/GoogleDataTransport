@@ -25,7 +25,7 @@ jobs:
       run: ./scripts/setup_bundler.sh
     - name: PodLibLint DataTransport
       run: |
-        scripts/code_coverage_report/pod_test_code_coverage_report.sh GoogleDataTransport "${{ matrix.target }}"
+        scripts/code_coverage_report/pod_test_code_coverage_report.sh --sdk=GoogleDataTransport --platform=${{ matrix.target }} --test_spec="Tests-Unit"
     - uses: actions/upload-artifact@v2
       with:
         name: codecoverage
