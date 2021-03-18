@@ -12,7 +12,7 @@ env:
 
 jobs:
   pod_lib_lint:
-    if: always() && github.repository == 'google/GoogleDataTransport' && (github.event.action == 'synchronize' || github.event.action == 'opened' || github.event.pull_request.merged)
+    if: github.repository == 'google/GoogleDataTransport' && (github.event.action == 'synchronize' || github.event.action == 'opened' || github.event.pull_request.merged)
     runs-on: macos-latest
     strategy:
       matrix:
@@ -31,6 +31,7 @@ jobs:
         name: codecoverage
         path: /Users/runner/*.xcresult
   manage_test_results:
+    if: github.repository == 'google/GoogleDataTransport' && (github.event.action == 'synchronize' || github.event.action == 'opened' || github.event.pull_request.merged)
     needs: pod_lib_lint
     runs-on: macOS-latest
     steps:
