@@ -12,7 +12,7 @@ env:
 
 jobs:
   pod_lib_lint:
-    if: always() && (github.event.action == 'synchronize' || github.event.action == 'opened' || github.event.pull_request.merged)
+    if: always() && github.repository == 'google/GoogleDataTransport' && (github.event.action == 'synchronize' || github.event.action == 'opened' || github.event.pull_request.merged)
     runs-on: macos-latest
     strategy:
       matrix:
