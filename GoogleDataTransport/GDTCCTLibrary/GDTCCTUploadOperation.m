@@ -70,8 +70,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 @property(nonatomic, readonly) id<GDTCCTUploadMetadataProvider> metadataProvider;
 
 /// NSOperation state properties implementation.
-@property(nonatomic, readwrite, getter=isExecuting) BOOL executing;
-@property(nonatomic, readwrite, getter=isFinished) BOOL finished;
+@property(nonatomic, readwrite, getter=executing) BOOL executing;
+@property(nonatomic, readwrite, getter=finished) BOOL finished;
 
 @property(nonatomic, readwrite) BOOL uploadAttempted;
 
@@ -488,26 +488,42 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 @synthesize executing = _executing;
 @synthesize finished = _finished;
 
+- (BOOL)isFinished {
+  @synchronized(self) {
+    return _finished;
+  }
+}
+
+- (BOOL)isExecuting {
+  @synchronized(self) {
+    return _executing;
+  }
+}
+
 - (BOOL)isAsynchronous {
   return YES;
 }
 
 - (void)startOperation {
-  [self willChangeValueForKey:@"isExecuting"];
-  [self willChangeValueForKey:@"isFinished"];
-  _executing = YES;
-  _finished = NO;
-  [self didChangeValueForKey:@"isExecuting"];
-  [self didChangeValueForKey:@"isFinished"];
+  @synchronized(self) {
+    [self willChangeValueForKey:@"isExecuting"];
+    [self willChangeValueForKey:@"isFinished"];
+    self->_executing = YES;
+    self->_finished = NO;
+    [self didChangeValueForKey:@"isExecuting"];
+    [self didChangeValueForKey:@"isFinished"];
+  }
 }
 
 - (void)finishOperation {
-  [self willChangeValueForKey:@"isExecuting"];
-  [self willChangeValueForKey:@"isFinished"];
-  _executing = NO;
-  _finished = YES;
-  [self didChangeValueForKey:@"isExecuting"];
-  [self didChangeValueForKey:@"isFinished"];
+  @synchronized(self) {
+    [self willChangeValueForKey:@"isExecuting"];
+    [self willChangeValueForKey:@"isFinished"];
+    self->_executing = NO;
+    self->_finished = YES;
+    [self didChangeValueForKey:@"isExecuting"];
+    [self didChangeValueForKey:@"isFinished"];
+  }
 }
 
 - (void)main {
@@ -518,13 +534,14 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 }
 
 - (void)cancel {
-  GDTCORLogDebug(@"Upload operation cancelled: %@", self);
   [super cancel];
 
-  // If the operation hasn't been started we can set `isFinished = YES` straight away.
-  if (!_executing) {
-    _executing = NO;
-    _finished = YES;
+  @synchronized(self) {
+    // If the operation hasn't been started we can set `isFinished = YES` straight away.
+    if (!_executing) {
+      _executing = NO;
+      _finished = YES;
+    }
   }
 }
 
