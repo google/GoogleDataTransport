@@ -58,6 +58,7 @@ Shared library for iOS SDK data transport needs.
   }.merge(header_search_paths)
 
   common_test_sources = ['GoogleDataTransport/GDTCORTests/Common/**/*.{h,m}']
+  common_cct_test_sources = ['GoogleDataTransport/GDTCCTTests/Common/**/*.{h,m}']
 
   # Test app specs
   if ENV['GDT_DEV'] && ENV['GDT_DEV'] == '1' then
@@ -92,7 +93,7 @@ Shared library for iOS SDK data transport needs.
     test_spec.scheme = { :code_coverage => true }
     test_spec.platforms = {:ios => ios_deployment_target, :osx => osx_deployment_target, :tvos => tvos_deployment_target}
     test_spec.requires_app_host = false
-    test_spec.source_files = ['GoogleDataTransport/GDTCORTests/Unit/**/*.{h,m}'] + common_test_sources
+    test_spec.source_files = ['GoogleDataTransport/GDTCORTests/Unit/**/*.{h,m}'] + common_test_sources + common_cct_test_sources
     test_spec.pod_target_xcconfig = header_search_paths
   end
 
@@ -145,8 +146,6 @@ Shared library for iOS SDK data transport needs.
       }
     end
   end
-
-  common_cct_test_sources = ['GoogleDataTransport/GDTCCTTests/Common/**/*.{h,m}']
 
   # Test specs
   s.test_spec 'CCT-Tests-Unit' do |test_spec|
