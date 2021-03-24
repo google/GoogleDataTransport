@@ -70,8 +70,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 @property(nonatomic, readonly) id<GDTCCTUploadMetadataProvider> metadataProvider;
 
 /// NSOperation state properties implementation.
-@property(nonatomic, readwrite, getter=executing) BOOL executing;
-@property(nonatomic, readwrite, getter=finished) BOOL finished;
+@property(nonatomic, readwrite, getter=isExecuting) BOOL executing;
+@property(nonatomic, readwrite, getter=isFinished) BOOL finished;
 
 @property(nonatomic, readwrite) BOOL uploadAttempted;
 
