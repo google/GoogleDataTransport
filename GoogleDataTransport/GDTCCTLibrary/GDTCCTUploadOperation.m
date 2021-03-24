@@ -534,9 +534,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 }
 
 - (void)cancel {
-  [super cancel];
-
   @synchronized(self) {
+    [super cancel];
+
     // If the operation hasn't been started we can set `isFinished = YES` straight away.
     if (!_executing) {
       _executing = NO;
