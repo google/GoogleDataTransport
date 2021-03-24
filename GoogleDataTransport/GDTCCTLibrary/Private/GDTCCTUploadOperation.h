@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @param storage A storage object to fetch events for upload.
  *  @param metadataProvider An object to retrieve/update data shared between different upload
  * operations.
+ *  @return An instance of GDTCCTUploadOperation ready to be added to an NSOperationQueue.
  */
 - (instancetype)initWithTarget:(GDTCORTarget)target
                     conditions:(GDTCORUploadConditions)conditions
@@ -66,9 +67,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** The queue on which all CCT uploading will occur. */
 @property(nonatomic, readonly) dispatch_queue_t uploaderQueue;
-
-/** The URL session that will attempt upload. */
-@property(nonatomic, readonly) NSURLSession *uploaderSession;
 
 /** The current upload task. */
 @property(nullable, nonatomic, readonly) NSURLSessionUploadTask *currentTask;

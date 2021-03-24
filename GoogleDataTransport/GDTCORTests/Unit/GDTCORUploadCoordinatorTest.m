@@ -24,7 +24,7 @@
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORRegistrar+Testing.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORUploadCoordinator+Testing.h"
 
-#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORStorageFake.h"
+#import "GoogleDataTransport/GDTCCTTests/Common/TestStorage/GDTCCTTestStorage.h"
 
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCOREventGenerator.h"
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORTestUploader.h"
@@ -32,7 +32,7 @@
 @interface GDTCORUploadCoordinatorTest : GDTCORTestCase
 
 /** A storage fake to inject into GDTCORUploadCoordinator. */
-@property(nonatomic) GDTCORStorageFake *storageFake;
+@property(nonatomic) GDTCCTTestStorage *storageFake;
 
 /** A test uploader. */
 @property(nonatomic) GDTCORTestUploader *uploader;
@@ -43,7 +43,7 @@
 
 - (void)setUp {
   [super setUp];
-  self.storageFake = [[GDTCORStorageFake alloc] init];
+  self.storageFake = [[GDTCCTTestStorage alloc] init];
   self.uploader = [[GDTCORTestUploader alloc] init];
 
   [[GDTCORRegistrar sharedInstance] registerUploader:_uploader target:kGDTCORTargetTest];
@@ -112,6 +112,8 @@
       enumerateObjectsUsingBlock:^(GDTCOREvent *_Nonnull obj, BOOL *_Nonnull stop) {
         [self.storageFake storeEvent:obj onComplete:nil];
       }];
+
+  XCTestExpectation *eventsBatched = [self expectationWithDescription:@"Events batched"];
   __block NSNumber *batchID;
   [storage
       batchWithEventSelector:[GDTCORStorageEventSelector eventSelectorForTarget:kGDTCORTargetTest]
@@ -119,7 +121,10 @@
                   onComplete:^(NSNumber *_Nullable newBatchID,
                                NSSet<GDTCOREvent *> *_Nullable events) {
                     batchID = newBatchID;
+                    [eventsBatched fulfill];
                   }];
+
+  [self waitForExpectations:@[ eventsBatched ] timeout:0.5];
   self.uploader.uploadWithConditionsBlock =
       ^(GDTCORTarget target, GDTCORUploadConditions conditions) {
         [storage removeBatchWithID:batchID deleteEvents:NO onComplete:nil];

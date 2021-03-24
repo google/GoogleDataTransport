@@ -58,7 +58,11 @@
                                        deleteEvents:(BOOL)deleteEvents {
   return
       [self batchIDsForTarget:target].thenOn(self.storageQueue, ^id(NSSet<NSNumber *> *batchIDs) {
-        return [self removeBatchesWithIDs:batchIDs deleteEvents:NO];
+        if (batchIDs.count == 0) {
+          return [FBLPromise resolvedWith:[NSNull null]];
+        } else {
+          return [self removeBatchesWithIDs:batchIDs deleteEvents:NO];
+        }
       });
 }
 
