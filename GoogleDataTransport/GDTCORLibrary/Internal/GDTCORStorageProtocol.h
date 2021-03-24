@@ -125,7 +125,7 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 // TODO: Consider complete replacing block based API by promise API.
 
-/** Promise based version of API defined in  GDTCORStorageProtocol. See API docs for corresponding
+/** Promise based version of API defined in GDTCORStorageProtocol. See API docs for corresponding
  * methods in GDTCORStorageProtocol. */
 @protocol GDTCORStoragePromiseProtocol <GDTCORStorageProtocol>
 
