@@ -1,3 +1,6 @@
+# v8.3.1
+- Fix thread sanitizer and undefined behavior diagnostics warnings. ( https://github.com/firebase/firebase-ios-sdk/issues/7771)
+- URLSession delegate retain cycle. (https://github.com/firebase/firebase-ios-sdk/issues/7780)
 # v8.3.0
 - Upload logic was refactored to use [Promises library](https://github.com/google/promises) to improve readability and maintainability of the async code.
 - Fix some race conditions and edge cases when multiple targets have events ready for upload.
