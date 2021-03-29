@@ -63,7 +63,7 @@ jobs:
         swift build
         cat $GITHUB_EVENT_PATH
     - name: Generate report
-      if: github.event.pull_request.merged != true && env.METRICS_SERVICE_SECRET
+      if: github.event.pull_request.merged != true && env.METRICS_SERVICE_SECRE
       env:
         pr_branch: ${{ github.event.pull_request.head.ref }}
       run: |
@@ -76,13 +76,7 @@ jobs:
     - name: Update New Coverage Data
       if: github.event.pull_request.merged == true && env.METRICS_SERVICE_SECRET
       run: |
-        echo $GITHUB_EVENT_PATH
-        cat $GITHUB_EVENT_PATH
-        echo "====="
-        echo "${GITHUB_SHA}"
         GITHUB_SHA=$(cat $GITHUB_EVENT_PATH | jq -r .pull_request.head.sha)
-        echo "${GITHUB_SHA}"
-        echo "----- ${{ github.event.pull_request.merged }}"
         if [ -d "${{steps.download.outputs.download-path}}" ]; then
         firebase-ios-sdk/scripts/code_coverage_report/generate_code_coverage_report/.build/debug/CoverageReportGenerator --merge "google/GoogleDataTransport" --commit "${GITHUB_SHA}" --token $(gcloud auth print-identity-token) --xcresult-dir "${{steps.download.outputs.download-path}}/codecoverage" --log-link "https://github.com/google/GoogleDataTransport/actions/runs/${GITHUB_RUN_ID}" --branch "${GITHUB_REF##*/}"
         fi
