@@ -63,7 +63,7 @@ jobs:
         swift build
         cat $GITHUB_EVENT_PATH
     - name: Generate report
-      if: github.event.pull_request.merged != true && env.METRICS_SERVICE_SECRE
+      if: github.event.pull_request.merged != true && env.METRICS_SERVICE_SECRET
       env:
         pr_branch: ${{ github.event.pull_request.head.ref }}
       run: |
