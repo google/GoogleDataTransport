@@ -61,7 +61,7 @@ After the CI is green:
 
 ## To develop
 
-- Run `generate_project.sh` after installing the prereqs
+- Run `./GoogleDataTransport/generate_project.sh` after installing the prereqs
 
 ## When adding new logging endpoint
 
