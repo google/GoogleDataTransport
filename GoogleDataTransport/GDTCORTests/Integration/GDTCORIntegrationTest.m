@@ -52,8 +52,8 @@
 
 @implementation GDTCORIntegrationTestTransformer
 
-- (nullable GDTCOREvent *)transform:(GDTCOREvent *)event {
-  // drop half the events during transforming.
+- (nullable GDTCOREvent *)transformGDTEvent:(GDTCOREvent *)event {
+  // Drop half the events during transforming.
   if (arc4random_uniform(2) == 0) {
     event = nil;
   }

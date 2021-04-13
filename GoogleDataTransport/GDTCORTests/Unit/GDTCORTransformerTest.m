@@ -37,7 +37,7 @@
 
 @implementation GDTCORTransformerTestNilingTransformer
 
-- (GDTCOREvent *)transform:(GDTCOREvent *)eventEvent {
+- (GDTCOREvent *)transformGDTEvent:(GDTCOREvent *)eventEvent {
   return nil;
 }
 
@@ -48,7 +48,7 @@
 
 @implementation GDTCORTransformerTestNewEventTransformer
 
-- (GDTCOREvent *)transform:(GDTCOREvent *)eventEvent {
+- (GDTCOREvent *)transformGDTEvent:(GDTCOREvent *)eventEvent {
   return [[GDTCOREvent alloc] initWithMappingID:@"new" target:kGDTCORTargetTest];
 }
 
