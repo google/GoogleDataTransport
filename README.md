@@ -44,7 +44,7 @@ After the CI is green:
     <summary>Push to <b>SpecsDev</b></summary>
 
     ```console
-    pod repo push dev GoogleDataTransport.podspec
+    pod repo push --skip-tests dev GoogleDataTransport.podspec
     ```
     
     If the command fails with `Unable to find the 'dev' repo.`, add the dev repo with:
