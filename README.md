@@ -57,7 +57,7 @@ After the CI is green:
   ```console
   /google/data/ro/teams/copybara/copybara third_party/firebase/ios/Releases/GoogleDataTransport/copy.bara.sky \ 
   --piper-description-behavior=OVERWRITE \
-  --destination-cl=367099297 gdt101
+  --destination-cl=367099297 gdt
   ```
 
 ## Publishing
