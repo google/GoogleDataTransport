@@ -34,9 +34,11 @@ After the CI is green:
   pod repo add staging git@github.com:firebase/SpecsStaging.git
   ```
 * Run Firebase CI by waiting until next nightly or adding a PR that touches `Gemfile`.
-* On google3, copybara and run a global TAP
+* On google3, copybara and run a global TAP.
   ```console
-  third_party/firebase/ios/Releases/run_copy_bara.py --directory GoogleDataTransport --branch main
+  /google/data/ro/teams/copybara/copybara third_party/firebase/ios/Releases/GoogleDataTransport/copy.bara.sky \ 
+  --piper-description-behavior=OVERWRITE \
+  --destination-cl=367099297 gdt101
   ```
 
 ## Publishing
