@@ -25,14 +25,33 @@ After the CI is green:
   git tag CocoaPods-{version}
   git push origin CocoaPods-{version}
   ```
-* Push the podspec to SpecsStaging
-  ```console
-  pod repo push --skip-tests staging GoogleDataTransport.podspec
-  ```
-  If the command fails with `Unable to find the 'staging' repo.`, add the staging repo with:
-  ```console
-  pod repo add staging git@github.com:firebase/SpecsStaging.git
-  ```
+* Push the podspec to the designated repo
+  * If this version of GDT is intended to launch **before or with** the next Firebase release:
+    <details>
+    <summary>Push to <b>SpecsStaging</b></summary>
+
+    ```console
+    pod repo push --skip-tests staging GoogleDataTransport.podspec
+    ```
+    
+    If the command fails with `Unable to find the 'staging' repo.`, add the staging repo with:
+    ```console
+    pod repo add staging git@github.com:firebase/SpecsStaging.git
+    ```
+    </details>
+  * Otherwise:
+    <details>
+    <summary>Push to <b>SpecsDev</b></summary>
+
+    ```console
+    pod repo push --skip-tests dev GoogleDataTransport.podspec
+    ```
+    
+    If the command fails with `Unable to find the 'dev' repo.`, add the dev repo with:
+    ```console
+    pod repo add dev git@github.com:firebase/SpecsDev.git
+    ```
+    </details>
 * Run Firebase CI by waiting until next nightly or adding a PR that touches `Gemfile`.
 * On google3, copybara and run a global TAP.
   ```console
