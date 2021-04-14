@@ -14,14 +14,30 @@ These instructions apply to minor and patch version updates. Major versions need
 a customized adaptation.
 
 After the CI is green:
-  * Update the version in the podspec
-  * Add the CocoaPods tag
-    * `git tag CocoaPods-{version}`
-    * `git push origin CocoaPods-{version}`
-  * Push the podspec to SpecsStaging
-    * `pod repo push staging GoogleDataTransport.podspec`
-  * Run Firebase CI by waiting until next nightly or adding a PR that touches `Gemfile`
-  * On google3, copybara and run a global TAP which should kick off automatically after each PR.
+* Update the version in the podspec to match the latest entry in the [CHANGELOG.md](CHANGELOG.md)
+* Checkout the `main` branch and ensure it is up to date.
+  ```console
+  git checkout main
+  git pull
+  ```
+* Add the CocoaPods tag (`{version}` will be the latest version in the [podspec](GoogleDataTransport.podspec#L3))
+  ```console
+  git tag CocoaPods-{version}
+  git push origin CocoaPods-{version}
+  ```
+* Push the podspec to SpecsStaging
+  ```console
+  pod repo push --skip-tests staging GoogleDataTransport.podspec
+  ```
+  If the command fails with `Unable to find the 'staging' repo.`, add the staging repo with:
+  ```console
+  pod repo add staging git@github.com:firebase/SpecsStaging.git
+  ```
+* Run Firebase CI by waiting until next nightly or adding a PR that touches `Gemfile`.
+* On google3, copybara and run a global TAP
+  ```console
+  third_party/firebase/ios/Releases/run_copy_bara.py --directory GoogleDataTransport --branch main
+  ```
 
 ## Publishing
   * Add a version tag for Swift PM
@@ -35,21 +51,21 @@ After the CI is green:
 ### Swift
 
 - Import `GoogleDataTransport` module:
-    ```
+    ```swift
     import GoogleDataTransport
     ```
 - Set logging level global variable to the desired value before calling `FirebaseApp.config()`:
-    ```
+    ```swift
     GDTCORConsoleLoggerLoggingLevel = GDTCORLoggingLevel.debug.rawValue
     ```
 ### Objective-C
 
 - Import `GoogleDataTransport`:
-    ```
+    ```objective-c
     #import <GoogleDataTransport/GoogleDataTransport.h>
     ```
 - Set logging level global variable to the desired value before calling `-[FIRApp config]`:
-    ```
+    ```objective-c
     GDTCORConsoleLoggerLoggingLevel = GDTCORLoggingLevelDebug;
     ```
 
@@ -116,7 +132,7 @@ before creating a PR.
 GitHub Actions will verify that any code changes are done in a style compliant
 way. Install `clang-format` and `mint`:
 
-```
+```console
 brew install clang-format@11
 brew install mint
 ```
