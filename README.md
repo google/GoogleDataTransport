@@ -53,12 +53,12 @@ After the CI is green:
     ```
     </details>
 * Run Firebase CI by waiting until next nightly or adding a PR that touches `Gemfile`.
-* On google3, copybara and run a global TAP.
-  ```console
-  /google/data/ro/teams/copybara/copybara third_party/firebase/ios/Releases/GoogleDataTransport/copy.bara.sky \ 
+* On google3, create a workspace and new CL. Then copybara and run a global TAP.
+  <pre>
+  /google/data/ro/teams/copybara/copybara third_party/firebase/ios/Releases/GoogleDataTransport/copy.bara.sky \
   --piper-description-behavior=OVERWRITE \
-  --destination-cl=367099297 gdt
-  ```
+  --destination-cl=<b>YOUR_CL</b> gdt
+  </pre>
 
 ## Publishing
   * Add a version tag for Swift PM
