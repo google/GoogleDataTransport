@@ -48,8 +48,6 @@ let package = Package(
       ],
       path: "GoogleDataTransport",
       exclude: [
-        "CHANGELOG.md",
-        "README.md",
         "generate_project.sh",
         "GDTCCTWatchOSTestApp/",
         "GDTWatchOSTestApp/",
