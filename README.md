@@ -33,7 +33,7 @@ After the CI is green:
     ```console
     pod repo push --skip-tests staging GoogleDataTransport.podspec
     ```
-    
+ 
     If the command fails with `Unable to find the 'staging' repo.`, add the staging repo with:
     ```console
     pod repo add staging git@github.com:firebase/SpecsStaging.git
@@ -46,7 +46,7 @@ After the CI is green:
     ```console
     pod repo push --skip-tests dev GoogleDataTransport.podspec
     ```
-    
+
     If the command fails with `Unable to find the 'dev' repo.`, add the dev repo with:
     ```console
     pod repo add dev git@github.com:firebase/SpecsDev.git
