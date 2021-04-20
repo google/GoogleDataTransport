@@ -1,5 +1,5 @@
 # v9.0.0
-- Rename transform: API to `transformGDTEvent:`. (#19)
+- Rename `transform:` API to `transformGDTEvent:`. (#19)
 
 # v8.4.0
 - Update to nanopb 0.3.9.8. (https://github.com/firebase/firebase-ios-sdk/issues/7787)
