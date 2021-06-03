@@ -1,3 +1,6 @@
+# v9.0.1
+- Fix Xcode 12.5 analyze warnings. (#26)
+
 # v9.0.0
 - Rename `transform:` API to `transformGDTEvent:`. (#19)
 
