@@ -64,8 +64,20 @@ After the CI is green:
   * Add a version tag for Swift PM
     * `git tag {version}`
     * `git push origin {version}`
-  * `pod trunk push GoogleDataTransport.podspec`
-  * Clean up SpecsStaging
+  * `pod trunk push GoogleDataTransport.podspec --skip-tests`
+  * <summary>Clean up SpecsStaging</summary>
+    <details>
+
+    ```console
+        git clone git@github.com:firebase/SpecsStaging.git
+        cd SpecsStaging/
+        git rm -rf GoogleDataTransport/
+        git commit -m "Post publish cleanup"
+        git push origin master
+      ```
+    </details>
+  * [Create GitHub Release](https://github.com/google/GoogleDataTransport/releases/new)
+    * [Template content](https://github.com/google/GoogleDataTransport/releases/edit/9.0.1)
 
 ## Set logging level
 
