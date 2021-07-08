@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'GoogleDataTransport'
-  s.version          = '9.0.2'
+  s.version          = '9.1.0'
   s.summary          = 'Google iOS SDK data transport.'
 
   s.description      = <<-DESC
