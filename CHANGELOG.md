@@ -1,3 +1,6 @@
+# v9.1.0
+- Bump Promises dependency. (#8334)
+
 # v9.0.1
 - Fix Xcode 12.5 analyze warnings. (#26)
 
