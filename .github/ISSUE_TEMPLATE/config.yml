@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Google Data Transport
+    url: https://github.com/firebase/firebase-ios-sdk/issues/new/choose
+    about: Google Data Transport is not supported for direct usage. Please file with the product library that depends on Google Data Transport.
