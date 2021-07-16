@@ -487,22 +487,21 @@ static NSMutableDictionary<NSNumber *, dispatch_semaphore_t> *gBackgroundIdentif
     GDTCORLogDebug(@"Creating activity with name:%@ bgID:%ld on watchOS.", name, (long)bgID);
   }
   [[self sharedNSProcessInfoForBackgroundTask]
-      performExpiringActivityWithReason:name
-                             usingBlock:^(BOOL expired) {
-                               if (expired) {
-                                 if (handler) {
-                                   handler();
-                                 }
-                                 dispatch_semaphore_signal(semaphore);
-                                 GDTCORLogDebug(
-                                     @"Activity with name:%@ bgID:%ld on watchOS is expiring.",
-                                     name, (long)bgID);
-                               } else {
-                                 dispatch_semaphore_wait(
-                                     semaphore,
-                                     dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
+    performExpiringActivityWithReason:name
+                           usingBlock:^(BOOL expired) {
+                             if (expired) {
+                               if (handler) {
+                                 handler();
                                }
-                             }];
+                               dispatch_semaphore_signal(semaphore);
+                               GDTCORLogDebug(
+                                   @"Activity with name:%@ bgID:%ld on watchOS is expiring.", name,
+                                   (long)bgID);
+                             } else {
+                               dispatch_semaphore_wait(
+                                   semaphore, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
+                             }
+                           }];
 #endif
   return bgID;
 }

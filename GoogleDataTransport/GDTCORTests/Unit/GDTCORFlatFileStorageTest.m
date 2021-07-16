@@ -286,8 +286,8 @@
                            }];
     }
     [NSNotificationCenter.defaultCenter
-        postNotificationName:kGDTCORApplicationWillTerminateNotification
-                      object:nil];
+      postNotificationName:kGDTCORApplicationWillTerminateNotification
+                    object:nil];
   }
   self.continueAfterFailure = originalValueOfContinueAfterFailure;
 }

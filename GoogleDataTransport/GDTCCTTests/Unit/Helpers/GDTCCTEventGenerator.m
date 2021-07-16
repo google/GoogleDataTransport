@@ -223,9 +223,7 @@
     [event.clockSnapshot setValue:@(1239567890) forKeyPath:@"uptimeNanoseconds"];
     event.qosTier = GDTCOREventQoSTelemetry;
     NSError *error;
-    event.customBytes = [NSJSONSerialization dataWithJSONObject:@{
-      @"customParam2" : @(34)
-    }
+    event.customBytes = [NSJSONSerialization dataWithJSONObject:@{@"customParam2" : @(34)}
                                                         options:0
                                                           error:&error];
     GDTCORAssert(error == nil, @"There shouldn't be an issue turning into JSON");
