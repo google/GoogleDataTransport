@@ -89,7 +89,7 @@ The release process is as follows:
 
   It's recommended to point to the `GoogleDataTransport.podspec` in `staging` to make sure the correct spec is being published.
   ```console
-  pod trunk push ~/.cocoapods/repos/staging/GoogleDataTransport.podspec --skip-tests
+  pod trunk push ~/.cocoapods/repos/staging/GoogleDataTransport/{version}/GoogleDataTransport.podspec --skip-tests
   ```
 
   The pod push was successful if the above command logs: `🚀  GoogleDataTransport ({version}) successfully published`.
