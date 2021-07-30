@@ -104,9 +104,9 @@ let package = Package(
 extension Platform {
   static var catalyst: Self {
     #if swift(>=5.5)
-    Self.macCatalyst
+    return Self.macCatalyst
     #else
-    Self.macOS
+    return Self.macOS
     #endif // swift(>=5.5)
   }
 }
