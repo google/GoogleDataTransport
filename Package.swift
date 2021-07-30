@@ -76,8 +76,8 @@ let package = Package(
         .define("PB_ENABLE_MALLOC", to: "1"),
       ],
       linkerSettings: [
-        .linkedFramework("SystemConfiguration", .when(platforms: [.iOS, .macOS, .tvOS])),
-        .linkedFramework("CoreTelephony", .when(platforms: [.macOS, .iOS])),
+        .linkedFramework("SystemConfiguration", .when(platforms: [.iOS, .macOS, .tvOS, .catalyst])),
+        .linkedFramework("CoreTelephony", .when(platforms: [.macOS, .iOS, .catalyst])),
       ]
     ),
     .testTarget(
@@ -100,3 +100,13 @@ let package = Package(
   cLanguageStandard: .c99,
   cxxLanguageStandard: CXXLanguageStandard.gnucxx14
 )
+
+extension Platform {
+  static var catalyst: Self {
+    #if swift(>=5.5)
+    Self.macCatalyst
+    #else
+    Self.macOS
+    #endif // swift(>=5.5)
+  }
+}
