@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORClientMetricsControllerProtocol.h"
+#import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORClientMetricsControllerProtocol.h"
 
 @protocol GDTCORStoragePromiseProtocol;
 
