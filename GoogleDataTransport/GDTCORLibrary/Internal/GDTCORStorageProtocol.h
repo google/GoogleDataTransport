@@ -86,6 +86,14 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 /** Checks the storage for expired events and batches, deletes them if they're expired. */
 - (void)checkForExpirations;
 
+/** Calculates and returns the total disk size that this storage consumes.
+ *
+ * @param onComplete The callback that will be invoked once storage size calculation is complete.
+ */
+- (void)storageSizeWithCallback:(void (^)(GDTCORStorageSizeBytes storageSize))onComplete;
+
+// TODO: Remove the current library data API.
+
 /** Persists the given data with the given key.
  *
  * @param data The data to store.
@@ -115,15 +123,17 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (void)removeLibraryDataForKey:(NSString *)key
                      onComplete:(void (^)(NSError *_Nullable error))onComplete;
 
-/** Calculates and returns the total disk size that this storage consumes.
- *
- * @param onComplete The callback that will be invoked once storage size calculation is complete.
- */
-- (void)storageSizeWithCallback:(void (^)(GDTCORStorageSizeBytes storageSize))onComplete;
-
 @end
 
 // TODO: Consider complete replacing block based API by promise API.
+
+@protocol GDTCORLibraryData <NSSecureCoding, NSObject>
+@end
+
+/// @param fetchedValue Current library data value if exists. Is `nil` in the case of error or when does not exist.
+/// @param fetchError An error happened when fetching  the data.
+/// @return Return a new value to be stored as a replacement of the existing value. Return the existing value if the value should not be changed. Return `nil` to remove existing value.
+typedef id<GDTCORLibraryData> _Nullable(^GDTCORStorageLibraryDataReadWriteBlock)(id<GDTCORLibraryData> _Nullable fetchedValue, NSError *_Nullable  fetchError);
 
 /** Promise based version of API defined in GDTCORStorageProtocol. See API docs for corresponding
  * methods in GDTCORStorageProtocol. */
@@ -151,6 +161,15 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (FBLPromise<GDTCORUploadBatch *> *)batchWithEventSelector:
                                          (GDTCORStorageEventSelector *)eventSelector
                                             batchExpiration:(NSDate *)expiration;
+
+// Library data.
+
+/// Atomically retrieves and stores the library data for a given key. The library data is not counted toward the events size limit.
+/// @param key The key to get and update data for.
+/// @param readWriteBlock The block where the fetched data for the given key will be passed and to return the updated value to store. See also `GDTCORStorageLibraryDataReadWriteBlock`.
+/// @return A promise that is resolved with the updated value in the case of success and is rejected with an error otherwise.
+- (FBLPromise<id<NSSecureCoding>> *)getAndUpdateLibraryDataForKey:(NSString *)key
+                                                    readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock;
 
 @end
 
