@@ -20,6 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class FBLPromise<ResultType>;
 @class GDTCORClientMetrics;
 
 @protocol GDTCORClientMetricsLogger <NSObject>
@@ -28,14 +29,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-
-typedef void(^GDTCORClientMetricsBlock)(GDTCORClientMetrics * _Nullable metrics);
-
 @protocol GDTCORClientMetricsControllerProtocol <GDTCORClientMetricsLogger>
 
 - (void)logEventDroppedWithReason:(GDTCOREventDropReason)reason;
 
-- (void)metricWithCompletion:(GDTCORClientMetricsBlock)completion;
+- (FBLPromise<GDTCORClientMetrics *> *)getMetric;
 
 /// Reset only specific metrics to avoid resetting metrics that has not been sent yet.
 - (void)resetClientMetrics:(GDTCORClientMetrics *)metricsToReset;
