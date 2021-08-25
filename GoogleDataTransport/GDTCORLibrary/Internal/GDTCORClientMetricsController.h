@@ -18,9 +18,15 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORClientMetricsControllerProtocol.h"
 
+@protocol GDTCORStoragePromiseProtocol;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface GDTCORClientMetricsController : NSObject <GDTCORClientMetricsControllerProtocol>
+
+- (instancetype)init NS_UNAVAILABLE;
+
+- (instancetype)initWithStorage:(id<GDTCORStoragePromiseProtocol>)storage;
 
 @end
 
