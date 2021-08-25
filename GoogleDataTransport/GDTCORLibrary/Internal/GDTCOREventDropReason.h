@@ -20,7 +20,7 @@ typedef NS_ENUM(NSInteger, GDTCOREventDropReason) {
   GDTCOREventDropReasonUnknown = 0,
   GDTCOREventDropReasonMessageTooOld,
   GDTCOREventDropReasonStorageFull,
-//  GDTCOREventDropReasonPayloadTooBig, ??
+  //  GDTCOREventDropReasonPayloadTooBig, ??
   GDTCOREventDropReasonMaxRetriesReached,
   GDTCOREventDropReasonServerError
 };

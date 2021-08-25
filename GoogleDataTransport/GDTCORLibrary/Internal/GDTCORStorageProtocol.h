@@ -130,10 +130,13 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 @protocol GDTCORLibraryData <NSSecureCoding, NSObject>
 @end
 
-/// @param fetchedValue Current library data value if exists. Is `nil` in the case of error or when does not exist.
+/// @param fetchedValue Current library data value if exists. Is `nil` in the case of error or when
+/// does not exist.
 /// @param fetchError An error happened when fetching  the data.
-/// @return Return a new value to be stored as a replacement of the existing value. Return the existing value if the value should not be changed. Return `nil` to remove existing value.
-typedef id<GDTCORLibraryData> _Nullable(^GDTCORStorageLibraryDataReadWriteBlock)(id<GDTCORLibraryData> _Nullable fetchedValue, NSError *_Nullable  fetchError);
+/// @return Return a new value to be stored as a replacement of the existing value. Return the
+/// existing value if the value should not be changed. Return `nil` to remove existing value.
+typedef id<GDTCORLibraryData> _Nullable (^GDTCORStorageLibraryDataReadWriteBlock)(
+    id<GDTCORLibraryData> _Nullable fetchedValue, NSError *_Nullable fetchError);
 
 /** Promise based version of API defined in GDTCORStorageProtocol. See API docs for corresponding
  * methods in GDTCORStorageProtocol. */
@@ -164,12 +167,16 @@ typedef id<GDTCORLibraryData> _Nullable(^GDTCORStorageLibraryDataReadWriteBlock)
 
 // Library data.
 
-/// Atomically retrieves and stores the library data for a given key. The library data is not counted toward the events size limit.
+/// Atomically retrieves and stores the library data for a given key. The library data is not
+/// counted toward the events size limit.
 /// @param key The key to get and update data for.
-/// @param readWriteBlock The block where the fetched data for the given key will be passed and to return the updated value to store. See also `GDTCORStorageLibraryDataReadWriteBlock`.
-/// @return A promise that is resolved with the updated value in the case of success and is rejected with an error otherwise.
-- (FBLPromise<id<NSSecureCoding>> *)getAndUpdateLibraryDataForKey:(NSString *)key
-                                                    readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock;
+/// @param readWriteBlock The block where the fetched data for the given key will be passed and to
+/// return the updated value to store. See also `GDTCORStorageLibraryDataReadWriteBlock`.
+/// @return A promise that is resolved with the updated value in the case of success and is rejected
+/// with an error otherwise.
+- (FBLPromise<id<NSSecureCoding>> *)
+    getAndUpdateLibraryDataForKey:(NSString *)key
+                   readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock;
 
 @end
 
