@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package gdt_client_metrics;
+
 // Top level metrics for all client analytics metrics.
 // These metrics should be sent as a part of every request that is uploaded to
 // FireLog server. In more detail, an additional LogRequest should be added to
@@ -8,7 +10,7 @@ syntax = "proto3";
 // payload is a GoogleDataTransportClientMetrics message.
 //
 // See go/firelog-client-analytics for more details.
-message GoogleDataTransportClientMetrics {
+message ClientMetrics {
   // The window of time over which the metrics are evaluated.
   TimeWindow window = 1;
 
