@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
+#import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCOREventDropReason.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
