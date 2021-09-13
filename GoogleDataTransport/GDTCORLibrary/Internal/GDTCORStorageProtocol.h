@@ -18,6 +18,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORLifecycle.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageEventSelector.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
 
 @class GDTCOREvent;
@@ -29,9 +30,6 @@
 @protocol GDTCORStorageDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
-
-/** The data type to represent storage size. */
-typedef uint64_t GDTCORStorageSizeBytes;
 
 typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
                                         NSSet<GDTCOREvent *> *_Nullable batchEvents);
