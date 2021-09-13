@@ -24,9 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class GDTCORClientMetrics;
 
 /// A client metrics logger API.
-/// TODO: Is it actually needed?
 @protocol GDTCORClientMetricsLogger <NSObject>
 
+/// Logs a number of events dropped for a specified reason and mapping ID.
+/// @param reason The reason why events were dropped
+/// @param mappingID The mappingID (log source).
+/// @param count The number of dropped events with specified reason and count.
 - (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason
                          mappingID:(NSString *)mappingID
                              count:(NSUInteger)count;
