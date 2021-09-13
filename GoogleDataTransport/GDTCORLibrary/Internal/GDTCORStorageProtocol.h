@@ -26,6 +26,8 @@
 
 @class FBLPromise<ValueType>;
 
+@protocol GDTCORStorageDelegate;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /** The data type to represent storage size. */
@@ -38,6 +40,9 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 @protocol GDTCORStorageProtocol <NSObject, GDTCORLifecycleProtocol>
 
 @required
+
+/// A storage events listener.
+@property(nonatomic, nullable, weak) id<GDTCORStorageDelegate> delegate;
 
 /** Stores an event and calls onComplete with a non-nil error if anything went wrong.
  *
@@ -193,5 +198,22 @@ id<GDTCORStorageProtocol> _Nullable GDTCORStorageInstanceForTarget(GDTCORTarget 
 FOUNDATION_EXPORT
 id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget(
     GDTCORTarget target);
+
+/// Storage life cycle events.
+@protocol GDTCORStorageDelegate <NSObject>
+
+/// The method is called when storage removes expired events.
+/// @param storage An instance of the storage.
+/// @param eventCount A number of events removed.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
+    didRemoveExpiredEvents:(NSUInteger)eventCount;
+
+/// The method is called when an event passed to `storeEvent:` method was not stored due to reaching
+/// the maximum storage capacity.
+/// @param storage An instance of the storage.
+/// @param event The event that has beed dropped.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event;
+
+@end
 
 NS_ASSUME_NONNULL_END
