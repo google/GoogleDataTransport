@@ -25,7 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol GDTCORClientMetricsLogger <NSObject>
 
-- (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason mappingID:(NSString *)mappingID count:(NSUInteger)count;
+- (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason
+                         mappingID:(NSString *)mappingID
+                             count:(NSUInteger)count;
 
 @end
 
