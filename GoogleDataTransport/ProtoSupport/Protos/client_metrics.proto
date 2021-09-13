@@ -9,6 +9,7 @@ package gdt_client_metrics;
 // GDT_CLIENT_METRICS and the LogRequest should have a single LogEvent whose
 // payload is a GoogleDataTransportClientMetrics message.
 //
+// Original proto: google3/firebase/firelog/proto/gdt_client_analytics.proto
 // See go/firelog-client-analytics for more details.
 message ClientMetrics {
   // The window of time over which the metrics are evaluated.
