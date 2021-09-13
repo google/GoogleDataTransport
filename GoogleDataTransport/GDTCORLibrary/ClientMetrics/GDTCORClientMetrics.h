@@ -24,6 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GDTCORClientMetrics : NSObject
 
+/// The date when the metrics collection started.
+@property(nonatomic, readonly) NSDate *collectedSinceDate;
+
 /// Number of bytes currently used by the storage for events and batches.
 @property(nonatomic, readonly) GDTCORStorageSizeBytes currentStorageSize;
 

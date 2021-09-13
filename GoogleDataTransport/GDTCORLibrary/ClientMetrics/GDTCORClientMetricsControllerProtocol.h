@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FBLPromise<ResultType>;
 @class GDTCORClientMetrics;
 
+/// A client metrics logger API.
 @protocol GDTCORClientMetricsLogger <NSObject>
 
 - (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason
@@ -31,14 +32,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// Client metrics controller API
 @protocol GDTCORClientMetricsControllerProtocol <GDTCORClientMetricsLogger>
 
-- (void)logEventDroppedWithReason:(GDTCOREventDropReason)reason;
+/// Retrieves metrics collected since the last metrics upload.
+/// NOTE: the metrics are not reset until `confirmSendingClientMetrics:` method is called. We assume
+/// that upload doesn't happen concurrently, so no data race is expected.
+/// @return A promise that is fulfilled with the collected client metrics.
+- (FBLPromise<GDTCORClientMetrics *> *)getMetrics;
 
-- (FBLPromise<GDTCORClientMetrics *> *)getMetric;
-
-/// Reset only specific metrics to avoid resetting metrics that has not been sent yet.
-- (void)resetClientMetrics:(GDTCORClientMetrics *)metricsToReset;
+/// Resets the sent metrics and updates last sent date.
+/// @return A promise that is fulfilled when the metrics has been successfully updated.
+- (FBLPromise<NSNull *> *)confirmSendingClientMetrics:(GDTCORClientMetrics *)sentMetrics;
 
 @end
 
