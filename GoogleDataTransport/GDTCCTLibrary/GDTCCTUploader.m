@@ -16,6 +16,7 @@
 
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTUploader.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORClientMetricsController.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
@@ -89,13 +90,16 @@ static NSURL *_testServerURL = nil;
     return;
   }
 
+  GDTCORClientMetricsController *metricsController = [GDTCORClientMetricsController shared];
+
   GDTCCTUploadOperation *uploadOperation =
       [[GDTCCTUploadOperation alloc] initWithTarget:target
                                          conditions:conditions
                                           uploadURL:[[self class] serverURLForTarget:target]
                                               queue:self.uploadQueue
                                             storage:storage
-                                   metadataProvider:self];
+                                   metadataProvider:self
+                                  metricsController:metricsController];
 
   GDTCORLogDebug(@"Upload operation created: %@, target: %@", uploadOperation, @(target));
 

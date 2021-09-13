@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GDTCORClientMetrics;
 
 /// A client metrics logger API.
+/// TODO: Is it actually needed?
 @protocol GDTCORClientMetricsLogger <NSObject>
 
 - (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason

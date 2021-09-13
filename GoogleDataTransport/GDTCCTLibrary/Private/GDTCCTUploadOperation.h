@@ -19,6 +19,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORUploader.h"
 
 @protocol GDTCORStoragePromiseProtocol;
+@protocol GDTCORClientMetricsControllerProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -51,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
  *  @param storage A storage object to fetch events for upload.
  *  @param metadataProvider An object to retrieve/update data shared between different upload
  * operations.
+ *  @param metricsController An instance of a client metrics controller to retrieve and update the
+ * client metrics to upload.
  *  @return An instance of GDTCCTUploadOperation ready to be added to an NSOperationQueue.
  */
 - (instancetype)initWithTarget:(GDTCORTarget)target
@@ -59,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
                          queue:(dispatch_queue_t)queue
                        storage:(id<GDTCORStoragePromiseProtocol>)storage
               metadataProvider:(id<GDTCCTUploadMetadataProvider>)metadataProvider
+             metricsController:(id<GDTCORClientMetricsControllerProtocol>)metricsController
     NS_DESIGNATED_INITIALIZER;
 
 /** YES if a batch upload attempt was performed. NO otherwise. If NO for the finished operation,

@@ -68,6 +68,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 @property(nonatomic, readonly) NSURL *uploadURL;
 @property(nonatomic, readonly) id<GDTCORStoragePromiseProtocol> storage;
 @property(nonatomic, readonly) id<GDTCCTUploadMetadataProvider> metadataProvider;
+@property(nonatomic, readonly) id<GDTCORClientMetricsControllerProtocol> metricsController;
 
 /** The URL session that will attempt upload. */
 @property(nonatomic) NSURLSession *uploaderSession;
@@ -87,7 +88,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                      uploadURL:(NSURL *)uploadURL
                          queue:(dispatch_queue_t)queue
                        storage:(id<GDTCORStoragePromiseProtocol>)storage
-              metadataProvider:(id<GDTCCTUploadMetadataProvider>)metadataProvider {
+              metadataProvider:(id<GDTCCTUploadMetadataProvider>)metadataProvider
+             metricsController:(id<GDTCORClientMetricsControllerProtocol>)metricsController {
   self = [super init];
   if (self) {
     _uploaderQueue = queue;
@@ -96,6 +98,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
     _uploadURL = uploadURL;
     _storage = storage;
     _metadataProvider = metadataProvider;
+    _metricsController = metricsController;
   }
   return self;
 }
@@ -201,6 +204,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 - (FBLPromise<NSNull *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
                                            target:(GDTCORTarget)target
                                           storage:(id<GDTCORStoragePromiseProtocol>)storage {
+  // TODO: Get client metrics and add an event to the batch.
+  // NOTE: The event must not be added to the batch stored on the disk.
+
   NSNumber *batchID = batch.batchID;
 
   // 1. Send URL request.
