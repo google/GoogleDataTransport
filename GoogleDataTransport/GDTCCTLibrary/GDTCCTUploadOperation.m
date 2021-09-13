@@ -204,7 +204,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 - (FBLPromise<NSNull *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
                                            target:(GDTCORTarget)target
                                           storage:(id<GDTCORStoragePromiseProtocol>)storage {
-  // TODO: Get client metrics and add an event to the batch.
+  // TODO: Get client metrics and add an event to the batch if the target supports metrics.
   // NOTE: The event must not be added to the batch stored on the disk.
 
   NSNumber *batchID = batch.batchID;
