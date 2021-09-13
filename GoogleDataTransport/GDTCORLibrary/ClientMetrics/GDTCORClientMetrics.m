@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORDroppedEventsCounter.h"
+#import "GDTCORClientMetrics.h"
 
-@implementation GDTCORDroppedEventsCounter
+@implementation GDTCORClientMetrics
 
 @end
