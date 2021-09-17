@@ -16,18 +16,44 @@
 
 #import "GDTCORClientMetricsControllerFake.h"
 
+#if __has_include(<FBLPromises/FBLPromises.h>)
+#import <FBLPromises/FBLPromises.h>
+#else
+#import "FBLPromises.h"
+#endif
+
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation GDTCORClientMetricsControllerFake
 
 - (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason
-                         mappingID:(nonnull NSString *)mappingID
+                         mappingID:(NSString *)mappingID
                              count:(NSUInteger)count {
+  if (self.logEventsDroppedHandler) {
+    self.logEventsDroppedHandler(reason, mappingID, count);
+  } else {
+    [self doesNotRecognizeSelector:_cmd];
+  }
 }
 
-- (nonnull FBLPromise<NSNull *> *)confirmSendingClientMetrics:
-    (nonnull GDTCORClientMetrics *)sentMetrics {
+- (FBLPromise<GDTCORClientMetrics *> *)getMetrics {
+  if (self.getMetricsHandler) {
+    return self.getMetricsHandler();
+  } else {
+    [self doesNotRecognizeSelector:_cmd];
+    return [FBLPromise resolvedWith:nil];
+  }
 }
 
-- (nonnull FBLPromise<GDTCORClientMetrics *> *)getMetrics {
+- (FBLPromise<NSNull *> *)confirmSendingClientMetrics:(GDTCORClientMetrics *)sentMetrics {
+  if (self.confirmSendingClientMetricsHandler) {
+    return self.confirmSendingClientMetricsHandler(sentMetrics);
+  } else {
+    [self doesNotRecognizeSelector:_cmd];
+    return [FBLPromise resolvedWith:nil];
+  }
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

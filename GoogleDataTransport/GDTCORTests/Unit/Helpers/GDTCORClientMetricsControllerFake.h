@@ -22,6 +22,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GDTCORClientMetricsControllerFake : NSObject <GDTCORClientMetricsControllerProtocol>
 
+/// Is called when  `logEventsDroppedWithReason:mappingID:count:` method is called with
+/// corresponding arguments.
+@property(nonatomic, nullable, copy) void (^logEventsDroppedHandler)
+    (GDTCOREventDropReason reason, NSString *mappingID, NSUInteger count);
+
+/// Is called when  `getMetrics` method is called. The returned promise will be returned form the
+/// method.
+@property(nonatomic, nullable, copy) FBLPromise<GDTCORClientMetrics *> * (^getMetricsHandler)(void);
+
+/// Is called when  `confirmSendingClientMetrics:` method is called. The returned promise will be
+/// returned form the method.
+@property(nonatomic, nullable, copy) FBLPromise<NSNull *> * (^confirmSendingClientMetricsHandler)
+    (GDTCORClientMetrics *sentMetrics);
+
 @end
 
 NS_ASSUME_NONNULL_END
