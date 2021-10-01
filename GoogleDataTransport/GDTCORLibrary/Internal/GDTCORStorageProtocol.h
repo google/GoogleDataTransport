@@ -18,6 +18,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORLifecycle.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageEventSelector.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
 
 @class GDTCOREvent;
@@ -26,10 +27,9 @@
 
 @class FBLPromise<ValueType>;
 
-NS_ASSUME_NONNULL_BEGIN
+@protocol GDTCORStorageDelegate;
 
-/** The data type to represent storage size. */
-typedef uint64_t GDTCORStorageSizeBytes;
+NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
                                         NSSet<GDTCOREvent *> *_Nullable batchEvents);
@@ -38,6 +38,9 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 @protocol GDTCORStorageProtocol <NSObject, GDTCORLifecycleProtocol>
 
 @required
+
+/// A storage events listener.
+@property(nonatomic, nullable, weak) id<GDTCORStorageDelegate> delegate;
 
 /** Stores an event and calls onComplete with a non-nil error if anything went wrong.
  *
@@ -86,6 +89,14 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 /** Checks the storage for expired events and batches, deletes them if they're expired. */
 - (void)checkForExpirations;
 
+/** Calculates and returns the total disk size that this storage consumes.
+ *
+ * @param onComplete The callback that will be invoked once storage size calculation is complete.
+ */
+- (void)storageSizeWithCallback:(void (^)(GDTCORStorageSizeBytes storageSize))onComplete;
+
+// TODO: Remove the current library data API.
+
 /** Persists the given data with the given key.
  *
  * @param data The data to store.
@@ -115,13 +126,20 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (void)removeLibraryDataForKey:(NSString *)key
                      onComplete:(void (^)(NSError *_Nullable error))onComplete;
 
-/** Calculates and returns the total disk size that this storage consumes.
- *
- * @param onComplete The callback that will be invoked once storage size calculation is complete.
- */
-- (void)storageSizeWithCallback:(void (^)(GDTCORStorageSizeBytes storageSize))onComplete;
-
 @end
+
+// TODO: Consider using specific API for metrics and use the generic API internally until it is
+// actually needed to be public.
+@protocol GDTCORLibraryData <NSSecureCoding, NSObject>
+@end
+
+/// @param fetchedValue Current library data value if exists. Is `nil` in the case of error or when
+/// does not exist.
+/// @param fetchError An error happened when fetching  the data.
+/// @return Return a new value to be stored as a replacement of the existing value. Return the
+/// existing value if the value should not be changed. Return `nil` to remove existing value.
+typedef id<GDTCORLibraryData> _Nullable (^GDTCORStorageLibraryDataReadWriteBlock)(
+    id<GDTCORLibraryData> _Nullable fetchedValue, NSError *_Nullable fetchError);
 
 // TODO: Consider complete replacing block based API by promise API.
 
@@ -152,6 +170,19 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
                                          (GDTCORStorageEventSelector *)eventSelector
                                             batchExpiration:(NSDate *)expiration;
 
+// Library data.
+
+/// Atomically retrieves and stores the library data for a given key. The library data is not
+/// counted toward the events size limit.
+/// @param key The key to get and update data for.
+/// @param readWriteBlock The block where the fetched data for the given key will be passed and to
+/// return the updated value to store. See also `GDTCORStorageLibraryDataReadWriteBlock`.
+/// @return A promise that is resolved with the updated value in the case of success and is rejected
+/// with an error otherwise.
+- (FBLPromise<id<GDTCORLibraryData>> *)
+    getAndUpdateLibraryDataForKey:(NSString *)key
+                   readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock;
+
 @end
 
 /** Retrieves the storage instance for the given target.
@@ -167,5 +198,22 @@ id<GDTCORStorageProtocol> _Nullable GDTCORStorageInstanceForTarget(GDTCORTarget 
 FOUNDATION_EXPORT
 id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget(
     GDTCORTarget target);
+
+/// Storage life cycle events.
+@protocol GDTCORStorageDelegate <NSObject>
+
+/// The method is called when storage removes expired events.
+/// @param storage An instance of the storage.
+/// @param eventCount A number of events removed.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
+    didRemoveExpiredEvents:(NSUInteger)eventCount;
+
+/// The method is called when an event passed to `storeEvent:` method was not stored due to reaching
+/// the maximum storage capacity.
+/// @param storage An instance of the storage.
+/// @param event The event that has beed dropped.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event;
+
+@end
 
 NS_ASSUME_NONNULL_END
