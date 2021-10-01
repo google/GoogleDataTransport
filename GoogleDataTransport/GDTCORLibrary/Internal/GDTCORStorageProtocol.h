@@ -211,7 +211,7 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
 /// The method is called when an event passed to `storeEvent:` method was not stored due to reaching
 /// the maximum storage capacity.
 /// @param storage An instance of the storage.
-/// @param event The event that has beed dropped.
+/// @param event The event that has been dropped.
 - (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event;
 
 @end

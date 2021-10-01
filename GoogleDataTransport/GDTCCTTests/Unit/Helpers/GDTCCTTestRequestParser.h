@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Tries to recover `GDTCOREvent`s from the batch request proto.
 /// @param batchRequest A batch request to parse.
 /// @param outError An error pointer to assign parsing error if there is.
-/// @return An array of `GDTCOREvent` objects form the request if parsed successfully.
+/// @return An array of `GDTCOREvent` objects from the request if parsed successfully.
 + (NSArray<GDTCOREvent *> *)eventsWithBatchRequest:(gdt_cct_BatchedLogRequest)batchRequest
                                              error:(NSError **)outError;
 

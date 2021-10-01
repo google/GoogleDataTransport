@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, nullable, copy) FBLPromise<GDTCORClientMetrics *> * (^getMetricsHandler)(void);
 
 /// Is called when `confirmSendingClientMetrics:` method is called. The returned promise will be
-/// returned form the method.
+/// returned from the method.
 @property(nonatomic, nullable, copy) FBLPromise<NSNull *> * (^confirmSendingClientMetricsHandler)
     (GDTCORClientMetrics *sentMetrics);
 
