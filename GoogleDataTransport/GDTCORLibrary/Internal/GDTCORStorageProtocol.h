@@ -128,8 +128,7 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 @end
 
-// TODO: Consider complete replacing block based API by promise API.
-
+// TODO: Consider using specific API for metrics and use the generic API internally until it is actually needed to be public.
 @protocol GDTCORLibraryData <NSSecureCoding, NSObject>
 @end
 
@@ -140,6 +139,8 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 /// existing value if the value should not be changed. Return `nil` to remove existing value.
 typedef id<GDTCORLibraryData> _Nullable (^GDTCORStorageLibraryDataReadWriteBlock)(
     id<GDTCORLibraryData> _Nullable fetchedValue, NSError *_Nullable fetchError);
+
+// TODO: Consider complete replacing block based API by promise API.
 
 /** Promise based version of API defined in GDTCORStorageProtocol. See API docs for corresponding
  * methods in GDTCORStorageProtocol. */
@@ -177,7 +178,7 @@ typedef id<GDTCORLibraryData> _Nullable (^GDTCORStorageLibraryDataReadWriteBlock
 /// return the updated value to store. See also `GDTCORStorageLibraryDataReadWriteBlock`.
 /// @return A promise that is resolved with the updated value in the case of success and is rejected
 /// with an error otherwise.
-- (FBLPromise<id<NSSecureCoding>> *)
+- (FBLPromise<id<GDTCORLibraryData>> *)
     getAndUpdateLibraryDataForKey:(NSString *)key
                    readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock;
 
