@@ -23,8 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class FBLPromise<ResultType>;
 @class GDTCORClientMetrics;
 
-/// A client metrics logger API.
-@protocol GDTCORClientMetricsLogger <NSObject>
+/// Client metrics controller API
+@protocol GDTCORClientMetricsControllerProtocol
 
 /// Logs a number of events dropped for a specified reason and mapping ID.
 /// @param reason The reason why events were dropped
@@ -33,11 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason
                          mappingID:(NSString *)mappingID
                              count:(NSUInteger)count;
-
-@end
-
-/// Client metrics controller API
-@protocol GDTCORClientMetricsControllerProtocol <GDTCORClientMetricsLogger>
 
 /// Retrieves metrics collected since the last metrics upload.
 /// NOTE: the metrics are not reset until `confirmSendingClientMetrics:` method is called. We assume
