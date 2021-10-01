@@ -27,21 +27,10 @@
 #import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
 
-#import <nanopb/pb.h>
-#import <nanopb/pb_decode.h>
-#import <nanopb/pb_encode.h>
+#import "GoogleDataTransport/GDTCCTTests/Unit/Helpers/GDTCCTTestRequestParser.h"
+#import "GoogleDataTransport/GDTCCTTests/Unit/Helpers/NSData+GDTCOREventDataObject.h"
+
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
-
-@interface NSData (GDTCOREventDataObject) <GDTCOREventDataObject>
-@end
-
-@implementation NSData (GDTCOREventDataObject)
-
-- (NSData *)transportBytes {
-  return [self copy];
-}
-
-@end
 
 @interface GDTCCTIntegrationTest : XCTestCase
 /** If YES, allow the recursive generating of events. */
@@ -200,9 +189,9 @@
         // Decode events.
         GCDWebServerDataRequest *dataRequest = (GCDWebServerDataRequest *)request;
         NSError *decodeError;
-        gdt_cct_BatchedLogRequest decodedRequest = [weakSelf requestWithData:dataRequest.data
+        gdt_cct_BatchedLogRequest decodedRequest = [GDTCCTTestRequestParser requestWithData:dataRequest.data
                                                                        error:&decodeError];
-        __auto_type events = [weakSelf eventsWithBatchRequest:decodedRequest error:&decodeError];
+        __auto_type events = [GDTCCTTestRequestParser eventsWithBatchRequest:decodedRequest error:&decodeError];
         XCTAssertNil(decodeError);
         [weakSelf.serverReceivedEvents addObjectsFromArray:events];
 
@@ -216,44 +205,6 @@
       };
 
   return responseSentExpectation;
-}
-
-- (gdt_cct_BatchedLogRequest)requestWithData:(NSData *)data error:(NSError **)outError {
-  gdt_cct_BatchedLogRequest request = gdt_cct_BatchedLogRequest_init_default;
-  pb_istream_t istream = pb_istream_from_buffer([data bytes], [data length]);
-  if (!pb_decode(&istream, gdt_cct_BatchedLogRequest_fields, &request)) {
-    NSString *nanopb_error = [NSString stringWithFormat:@"%s", PB_GET_ERROR(&istream)];
-    NSDictionary *userInfo = @{@"nanopb error:" : nanopb_error};
-    if (outError != NULL) {
-      *outError = [NSError errorWithDomain:NSURLErrorDomain code:-1 userInfo:userInfo];
-    }
-    request = (gdt_cct_BatchedLogRequest)gdt_cct_BatchedLogRequest_init_default;
-  }
-  return request;
-}
-
-- (NSArray<GDTCOREvent *> *)eventsWithBatchRequest:(gdt_cct_BatchedLogRequest)batchRequest
-                                             error:(NSError **)outError {
-  NSMutableArray<GDTCOREvent *> *events = [NSMutableArray array];
-
-  for (NSUInteger reqIdx = 0; reqIdx < batchRequest.log_request_count; reqIdx++) {
-    gdt_cct_LogRequest request = batchRequest.log_request[reqIdx];
-
-    NSString *mappingID = @(request.log_source).stringValue;
-
-    for (NSUInteger eventIdx = 0; eventIdx < request.log_event_count; eventIdx++) {
-      gdt_cct_LogEvent event = request.log_event[eventIdx];
-
-      GDTCOREvent *decodedEvent = [[GDTCOREvent alloc] initWithMappingID:mappingID
-                                                                  target:kGDTCORTargetTest];
-      decodedEvent.dataObject = [NSData dataWithBytes:event.source_extension->bytes
-                                               length:event.source_extension->size];
-
-      [events addObject:decodedEvent];
-    }
-  }
-
-  return [events copy];
 }
 
 - (void)assertAllScheduledEventsWereReceived {

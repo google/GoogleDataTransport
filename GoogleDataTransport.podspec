@@ -58,7 +58,10 @@ Shared library for iOS SDK data transport needs.
   }.merge(header_search_paths)
 
   common_test_sources = ['GoogleDataTransport/GDTCORTests/Common/**/*.{h,m}']
-  common_cct_test_sources = ['GoogleDataTransport/GDTCCTTests/Common/**/*.{h,m}']
+  common_cct_test_sources = [
+    'GoogleDataTransport/GDTCCTTests/Common/**/*.{h,m}',
+    'GoogleDataTransport/GDTCCTTests/Unit/Helpers/**/*.{h,m}'
+  ]
 
   # Test app specs
   if ENV['GDT_DEV'] && ENV['GDT_DEV'] == '1' then
@@ -166,7 +169,7 @@ Shared library for iOS SDK data transport needs.
       'GoogleDataTransport/GDTCCTTests/Integration/**/*.{h,m}',
       'GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.{h,m}',
       'GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.{h,m}'
-      ] + common_cct_test_sources
+      ] + common_cct_test_sources + common_test_sources
     test_spec.resources = ['GoogleDataTransport/GDTCCTTests/Data/**/*']
     test_spec.pod_target_xcconfig = header_search_paths
     test_spec.dependency 'GCDWebServer'
