@@ -128,7 +128,8 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 @end
 
-// TODO: Consider using specific API for metrics and use the generic API internally until it is actually needed to be public.
+// TODO: Consider using specific API for metrics and use the generic API internally until it is
+// actually needed to be public.
 @protocol GDTCORLibraryData <NSSecureCoding, NSObject>
 @end
 

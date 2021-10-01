@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#import "GDTCORClientMetricsControllerFake.h"
+#import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORClientMetricsControllerFake.h"
 
 #if __has_include(<FBLPromises/FBLPromises.h>)
 #import <FBLPromises/FBLPromises.h>

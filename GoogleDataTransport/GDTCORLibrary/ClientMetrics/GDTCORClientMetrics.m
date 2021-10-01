@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#import "GDTCORClientMetrics.h"
+#import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORClientMetrics.h"
 
 @implementation GDTCORClientMetrics
 
