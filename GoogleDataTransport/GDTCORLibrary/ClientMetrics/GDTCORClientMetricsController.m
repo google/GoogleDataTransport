@@ -16,6 +16,27 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORClientMetricsController.h"
 
+#if __has_include(<FBLPromises/FBLPromises.h>)
+#import <FBLPromises/FBLPromises.h>
+#else
+#import "FBLPromises.h"
+#endif
+
 @implementation GDTCORClientMetricsController
+
++ (instancetype)shared {
+  return nil;
+}
+
+- (nonnull FBLPromise<NSNull *> *)confirmSendingClientMetrics:(nonnull GDTCORClientMetrics *)sentMetrics {
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (nonnull FBLPromise<GDTCORClientMetrics *> *)getMetrics {
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason mappingID:(nonnull NSString *)mappingID count:(NSUInteger)count {
+}
 
 @end
