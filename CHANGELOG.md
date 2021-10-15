@@ -1,5 +1,5 @@
 # v9.1.2
-- Fix crash in `GDTCCTUploadOperation`. (#41)
+- Fix crash in `GDTCCTUploadOperation` on older iOS versions. (#41)
 # v9.1.1 (Swift PM)
 - Fix Xcode13b4 Catalyst build (#36)
 
