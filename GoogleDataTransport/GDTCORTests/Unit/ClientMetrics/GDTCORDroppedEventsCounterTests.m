@@ -56,6 +56,7 @@
   XCTAssertTrue([decodedCounter isKindOfClass:[GDTCORDroppedEventsCounter class]]);
   XCTAssertEqual(decodedCounter.eventCount, counter.eventCount);
   XCTAssertEqual(decodedCounter.dropReason, counter.dropReason);
+  // Expect the `nil` mapping ID to be converted to an empty string.
   XCTAssertEqualObjects(decodedCounter.mappingID, @"");
 }
 
