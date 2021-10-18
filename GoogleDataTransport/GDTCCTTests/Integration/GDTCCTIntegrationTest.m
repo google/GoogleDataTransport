@@ -189,9 +189,10 @@
         // Decode events.
         GCDWebServerDataRequest *dataRequest = (GCDWebServerDataRequest *)request;
         NSError *decodeError;
-        gdt_cct_BatchedLogRequest decodedRequest = [GDTCCTTestRequestParser requestWithData:dataRequest.data
+        gdt_cct_BatchedLogRequest decodedRequest =
+            [GDTCCTTestRequestParser requestWithData:dataRequest.data error:&decodeError];
+        __auto_type events = [GDTCCTTestRequestParser eventsWithBatchRequest:decodedRequest
                                                                        error:&decodeError];
-        __auto_type events = [GDTCCTTestRequestParser eventsWithBatchRequest:decodedRequest error:&decodeError];
         XCTAssertNil(decodeError);
         [weakSelf.serverReceivedEvents addObjectsFromArray:events];
 

@@ -135,14 +135,13 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 typedef id<NSSecureCoding, NSObject> GDTCORLibraryData;
 
-
 /// @param fetchedValue Current library data value if exists. Is `nil` in the case of error or when
 /// does not exist.
 /// @param fetchError An error happened when fetching  the data.
 /// @return Return a new value to be stored as a replacement of the existing value. Return the
 /// existing value if the value should not be changed. Return `nil` to remove existing value.
 typedef GDTCORLibraryData _Nullable (^GDTCORStorageLibraryDataReadWriteBlock)(
-                                                                              GDTCORLibraryData _Nullable fetchedValue, NSError *_Nullable fetchError);
+    GDTCORLibraryData _Nullable fetchedValue, NSError *_Nullable fetchError);
 
 // TODO: Consider complete replacing block based API by promise API.
 

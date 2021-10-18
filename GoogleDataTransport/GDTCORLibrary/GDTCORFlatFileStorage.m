@@ -476,52 +476,56 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
 
 - (FBLPromise<GDTCORLibraryData> *)
     getAndUpdateLibraryDataForKey:(NSString *)key
-class:(Class)dataClass
-readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock {
-
+                            class:(Class)dataClass
+                   readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock {
   // TODO: Exclude library data from size tracking.
 
-  return [FBLPromise onQueue:self.storageQueue do:^id _Nullable {
+  return [FBLPromise
+      onQueue:self.storageQueue
+           do:^id _Nullable {
+             // Read value from the file.
+             NSString *dataPath =
+                 [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
+             NSError *fetchError;
+             GDTCORLibraryData fetchedValue =
+                 GDTCORDecodeArchive(dataClass, dataPath, nil, &fetchError);
 
-    // Read value from the file.
-    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
-    NSError *fetchError;
-    GDTCORLibraryData fetchedValue = GDTCORDecodeArchive(dataClass, dataPath, nil, &fetchError);
+             // Maybe modify the value.
+             GDTCORLibraryData updatedValue = readWriteBlock(fetchedValue, fetchError);
 
-    // Maybe modify the value.
-    GDTCORLibraryData updatedValue = readWriteBlock(fetchedValue, fetchError);
+             if (updatedValue == fetchedValue /* in case both and `nil` */ ||
+                 [updatedValue isEqual:fetchedValue]) {
+               // The value was not modified. No need to save.
+               return updatedValue;
+             }
 
-    if (updatedValue == fetchedValue /* in case both and `nil` */ || [updatedValue isEqual:fetchedValue]) {
-      // The value was not modified. No need to save.
-      return updatedValue;
-    }
+             // Save updated value.
+             if (updatedValue == nil) {
+               if ([[NSFileManager defaultManager] fileExistsAtPath:dataPath]) {
+                 NSError *removeError;
+                 if (![[NSFileManager defaultManager] removeItemAtPath:dataPath
+                                                                 error:&removeError]) {
+                   return removeError;
+                 }
+               }
+             } else {
+               NSError *writeError;
 
-    // Save updated value.
-    if (updatedValue == nil) {
-      if ([[NSFileManager defaultManager] fileExistsAtPath:dataPath]) {
-        NSError *removeError;
-        if (![[NSFileManager defaultManager] removeItemAtPath:dataPath error:&removeError]) {
-          return removeError;
-        }
-      }
-    } else {
-      NSError *writeError;
+               // Encode value.
+               NSData *data = GDTCOREncodeArchive(updatedValue, dataPath, &writeError);
+               if (data == nil) {
+                 return writeError;
+               }
 
-      // Encode value.
-      NSData *data = GDTCOREncodeArchive(updatedValue, dataPath, &writeError);
-      if(data == nil) {
-        return writeError;
-      }
+               // Write data to the file.
+               if (![data writeToFile:dataPath options:NSDataWritingAtomic error:&writeError]) {
+                 return writeError;
+               }
+             }
 
-      // Write data to the file.
-      if (![data writeToFile:dataPath options:NSDataWritingAtomic error:&writeError]) {
-        return writeError;
-      }
-    }
-
-    // Return the updated value if saved successfully.
-    return updatedValue;
-  }];
+             // Return the updated value if saved successfully.
+             return updatedValue;
+           }];
 }
 
 #pragma mark - Private not thread safe methods

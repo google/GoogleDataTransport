@@ -28,7 +28,8 @@
   return nil;
 }
 
-- (nonnull FBLPromise<NSNull *> *)confirmSendingClientMetrics:(nonnull GDTCORClientMetrics *)sentMetrics {
+- (nonnull FBLPromise<NSNull *> *)confirmSendingClientMetrics:
+    (nonnull GDTCORClientMetrics *)sentMetrics {
   return [FBLPromise resolvedWith:nil];
 }
 
@@ -36,7 +37,9 @@
   return [FBLPromise resolvedWith:nil];
 }
 
-- (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason mappingID:(nonnull NSString *)mappingID count:(NSUInteger)count {
+- (void)logEventsDroppedWithReason:(GDTCOREventDropReason)reason
+                         mappingID:(nonnull NSString *)mappingID
+                             count:(NSUInteger)count {
 }
 
 @end

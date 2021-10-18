@@ -152,9 +152,9 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding, NSObject> obj,
  * @param error The error to populate if something goes wrong.
  */
 id<NSSecureCoding, NSObject> _Nullable GDTCORDecodeArchive(Class archiveClass,
-                                                 NSString *_Nullable archivePath,
-                                                 NSData *_Nullable archiveData,
-                                                 NSError *_Nullable *error);
+                                                           NSString *_Nullable archivePath,
+                                                           NSData *_Nullable archiveData,
+                                                           NSError *_Nullable *error);
 
 /** Writes the provided data to a file at the provided  path. Intermediate directories will be
  * created as needed.

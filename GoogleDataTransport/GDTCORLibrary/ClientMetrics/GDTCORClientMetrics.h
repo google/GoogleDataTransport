@@ -22,7 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A data model to keep and pass client metrics. 
+/// A data model to keep and pass client metrics.
 @interface GDTCORClientMetrics : NSObject
 
 /// The date when the metrics collection started.

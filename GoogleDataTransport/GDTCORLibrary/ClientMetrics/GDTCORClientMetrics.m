@@ -22,7 +22,7 @@
                         maximumStorageSize:(GDTCORStorageSizeBytes)maximumStorageSize
                   droppedEventsByMappingID:
                       (NSDictionary<NSString *, GDTCORDroppedEventsCounter *> *)
-droppedEventsByMappingID {
+                          droppedEventsByMappingID {
   self = [super init];
   if (self) {
     _currentStorageSize = currentStorageSize;

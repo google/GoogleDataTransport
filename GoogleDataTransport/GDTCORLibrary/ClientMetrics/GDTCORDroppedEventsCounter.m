@@ -60,16 +60,18 @@ static NSString *const kStorageVersionKey = @"storageVersion";
   NSInteger decodedStorageVersion = [coder decodeIntegerForKey:kStorageVersionKey];
   if (decodedStorageVersion > self.storageVersion) {
     GDTCORLogWarning(GDTCORMCDDebugLog,
-                     @"GDTCORDroppedEventsCounter was encoded by a newer coder version %ld. Current coder version is %ld. Some installation data may be lost.", decodedStorageVersion, kCurrentStorageVersion);
-    }
+                     @"GDTCORDroppedEventsCounter was encoded by a newer coder version %ld. "
+                     @"Current coder version is %ld. Some installation data may be lost.",
+                     decodedStorageVersion, kCurrentStorageVersion);
+  }
 
-  // Even if the mapping ID is corrupted, we still would like to capture the dropped event with an empty mapping ID.
+  // Even if the mapping ID is corrupted, we still would like to capture the dropped event with an
+  // empty mapping ID.
   NSString *mappingID = [coder decodeObjectOfClass:[NSString class] forKey:kMappingIDKey] ?: @"";
   NSInteger evenCount = [coder decodeIntegerForKey:kEventCountKey];
   GDTCOREventDropReason dropReason = [coder decodeIntegerForKey:kDropReasonKey];
 
   return [self initWithEventCount:evenCount dropReason:dropReason mappingID:mappingID];
-
 }
 
 @end

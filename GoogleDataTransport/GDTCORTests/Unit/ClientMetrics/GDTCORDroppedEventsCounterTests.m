@@ -27,13 +27,17 @@
 @implementation GDTCORDroppedEventsCounterTests
 
 - (void)testCounterCanBeEncodedAndDecoded {
-  GDTCORDroppedEventsCounter *counter = [[GDTCORDroppedEventsCounter alloc] initWithEventCount:10 dropReason:GDTCOREventDropReasonStorageFull mappingID:@"some_id"];
+  GDTCORDroppedEventsCounter *counter =
+      [[GDTCORDroppedEventsCounter alloc] initWithEventCount:10
+                                                  dropReason:GDTCOREventDropReasonStorageFull
+                                                   mappingID:@"some_id"];
 
   NSData *encodedCounter = GDTCOREncodeArchive(counter, nil, nil);
   XCTAssertNotNil(encodedCounter);
 
   NSError *error;
-  GDTCORDroppedEventsCounter *decodedCounter = (GDTCORDroppedEventsCounter *)GDTCORDecodeArchive([GDTCORDroppedEventsCounter class], nil, encodedCounter, &error);
+  GDTCORDroppedEventsCounter *decodedCounter = (GDTCORDroppedEventsCounter *)GDTCORDecodeArchive(
+      [GDTCORDroppedEventsCounter class], nil, encodedCounter, &error);
 
   XCTAssertNotNil(decodedCounter);
   XCTAssertTrue([decodedCounter isKindOfClass:[GDTCORDroppedEventsCounter class]]);
@@ -44,13 +48,17 @@
 
 - (void)testCounterWithCorruptedMappingIDCanBeDecoded {
   NSString *corruptedMappingID;
-  GDTCORDroppedEventsCounter *counter = [[GDTCORDroppedEventsCounter alloc] initWithEventCount:10 dropReason:GDTCOREventDropReasonStorageFull mappingID:corruptedMappingID];
+  GDTCORDroppedEventsCounter *counter =
+      [[GDTCORDroppedEventsCounter alloc] initWithEventCount:10
+                                                  dropReason:GDTCOREventDropReasonStorageFull
+                                                   mappingID:corruptedMappingID];
 
   NSData *encodedCounter = GDTCOREncodeArchive(counter, nil, nil);
   XCTAssertNotNil(encodedCounter);
 
   NSError *error;
-  GDTCORDroppedEventsCounter *decodedCounter = (GDTCORDroppedEventsCounter *)GDTCORDecodeArchive([GDTCORDroppedEventsCounter class], nil, encodedCounter, &error);
+  GDTCORDroppedEventsCounter *decodedCounter = (GDTCORDroppedEventsCounter *)GDTCORDecodeArchive(
+      [GDTCORDroppedEventsCounter class], nil, encodedCounter, &error);
 
   XCTAssertNotNil(decodedCounter);
   XCTAssertTrue([decodedCounter isKindOfClass:[GDTCORDroppedEventsCounter class]]);

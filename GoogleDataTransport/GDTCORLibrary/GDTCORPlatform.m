@@ -239,9 +239,9 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding, NSObject> obj,
 }
 
 id<NSSecureCoding, NSObject> _Nullable GDTCORDecodeArchive(Class archiveClass,
-                                                 NSString *_Nullable archivePath,
-                                                 NSData *_Nullable archiveData,
-                                                 NSError *_Nullable *error) {
+                                                           NSString *_Nullable archivePath,
+                                                           NSData *_Nullable archiveData,
+                                                           NSError *_Nullable *error) {
   id<NSSecureCoding, NSObject> unarchivedObject = nil;
   if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4, *)) {
     NSData *data = archiveData ? archiveData : [NSData dataWithContentsOfFile:archivePath];

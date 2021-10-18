@@ -27,7 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Tries to parse batched request proto from the provided request data.
 /// @param data The request data.
 /// @param outError An error pointer to assign parsing error if there is.
-/// @return An instance of `gdt_cct_BatchedLogRequest`. This instance will contain events if parsed successfully. The instance will contain no events if an error happened (check `outError`).
+/// @return An instance of `gdt_cct_BatchedLogRequest`. This instance will contain events if parsed
+/// successfully. The instance will contain no events if an error happened (check `outError`).
 + (gdt_cct_BatchedLogRequest)requestWithData:(NSData *)data error:(NSError **)outError;
 
 /// Tries to recover `GDTCOREvent`s from the batch request proto.
