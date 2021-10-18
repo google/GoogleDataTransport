@@ -177,7 +177,7 @@ NSString *_Nonnull GDTCORDeviceModel() {
   return deviceModel;
 }
 
-NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
+NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding, NSObject> obj,
                                       NSString *filePath,
                                       NSError *_Nullable *error) {
   BOOL result = NO;
@@ -238,11 +238,11 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
   return resultData;
 }
 
-id<NSSecureCoding> _Nullable GDTCORDecodeArchive(Class archiveClass,
+id<NSSecureCoding, NSObject> _Nullable GDTCORDecodeArchive(Class archiveClass,
                                                  NSString *_Nullable archivePath,
                                                  NSData *_Nullable archiveData,
                                                  NSError *_Nullable *error) {
-  id<NSSecureCoding> unarchivedObject = nil;
+  id<NSSecureCoding, NSObject> unarchivedObject = nil;
   if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4, *)) {
     NSData *data = archiveData ? archiveData : [NSData dataWithContentsOfFile:archivePath];
     if (data) {

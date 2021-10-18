@@ -16,6 +16,12 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage.h"
 
+#if __has_include(<FBLPromises/FBLPromises.h>)
+#import <FBLPromises/FBLPromises.h>
+#else
+#import "FBLPromises.h"
+#endif
+
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORAssert.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORLifecycle.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
@@ -65,6 +71,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
 @implementation GDTCORFlatFileStorage
 
 @synthesize sizeTracker = _sizeTracker;
+@synthesize delegate = _delegate;
 
 + (void)load {
 #if !NDEBUG
@@ -306,74 +313,6 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
   });
 }
 
-- (void)libraryDataForKey:(nonnull NSString *)key
-          onFetchComplete:(nonnull void (^)(NSData *_Nullable, NSError *_Nullable))onFetchComplete
-              setNewValue:(NSData *_Nullable (^_Nullable)(void))setValueBlock {
-  dispatch_async(_storageQueue, ^{
-    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
-    NSError *error;
-    NSData *data = [NSData dataWithContentsOfFile:dataPath options:0 error:&error];
-    if (onFetchComplete) {
-      onFetchComplete(data, error);
-    }
-    if (setValueBlock) {
-      NSData *newValue = setValueBlock();
-      // The -isKindOfClass check is necessary because without an explicit 'return nil' in the block
-      // the implicit return value will be the block itself. The compiler doesn't detect this.
-      if (newValue != nil && [newValue isKindOfClass:[NSData class]] && newValue.length) {
-        NSError *newValueError;
-        if ([newValue writeToFile:dataPath options:NSDataWritingAtomic error:&newValueError]) {
-          // Update storage size.
-          [self.sizeTracker fileWasRemovedAtPath:dataPath withSize:data.length];
-          [self.sizeTracker fileWasAddedAtPath:dataPath withSize:newValue.length];
-        } else {
-          GDTCORLogDebug(@"Error writing new value in libraryDataForKey: %@", newValueError);
-        }
-      }
-    }
-  });
-}
-
-- (void)storeLibraryData:(NSData *)data
-                  forKey:(nonnull NSString *)key
-              onComplete:(nullable void (^)(NSError *_Nullable error))onComplete {
-  if (!data || data.length <= 0) {
-    if (onComplete) {
-      onComplete([NSError errorWithDomain:NSInternalInconsistencyException code:-1 userInfo:nil]);
-    }
-    return;
-  }
-  dispatch_async(_storageQueue, ^{
-    NSError *error;
-    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
-    if ([data writeToFile:dataPath options:NSDataWritingAtomic error:&error]) {
-      [self.sizeTracker fileWasAddedAtPath:dataPath withSize:data.length];
-    }
-    if (onComplete) {
-      onComplete(error);
-    }
-  });
-}
-
-- (void)removeLibraryDataForKey:(nonnull NSString *)key
-                     onComplete:(nonnull void (^)(NSError *_Nullable error))onComplete {
-  dispatch_async(_storageQueue, ^{
-    NSError *error;
-    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
-    GDTCORStorageSizeBytes fileSize =
-        [self.sizeTracker fileSizeAtURL:[NSURL fileURLWithPath:dataPath]];
-
-    if ([[NSFileManager defaultManager] fileExistsAtPath:dataPath]) {
-      if ([[NSFileManager defaultManager] removeItemAtPath:dataPath error:&error]) {
-        [self.sizeTracker fileWasRemovedAtPath:dataPath withSize:fileSize];
-      }
-      if (onComplete) {
-        onComplete(error);
-      }
-    }
-  });
-}
-
 - (void)hasEventsForTarget:(GDTCORTarget)target onComplete:(void (^)(BOOL hasEvents))onComplete {
   dispatch_async(_storageQueue, ^{
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -463,6 +402,126 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
   dispatch_async(_storageQueue, ^{
     onComplete([self.sizeTracker directoryContentSize]);
   });
+}
+
+#pragma mark - Library data
+
+- (void)libraryDataForKey:(nonnull NSString *)key
+          onFetchComplete:(nonnull void (^)(NSData *_Nullable, NSError *_Nullable))onFetchComplete
+              setNewValue:(NSData *_Nullable (^_Nullable)(void))setValueBlock {
+  dispatch_async(_storageQueue, ^{
+    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
+    NSError *error;
+    NSData *data = [NSData dataWithContentsOfFile:dataPath options:0 error:&error];
+    if (onFetchComplete) {
+      onFetchComplete(data, error);
+    }
+    if (setValueBlock) {
+      NSData *newValue = setValueBlock();
+      // The -isKindOfClass check is necessary because without an explicit 'return nil' in the block
+      // the implicit return value will be the block itself. The compiler doesn't detect this.
+      if (newValue != nil && [newValue isKindOfClass:[NSData class]] && newValue.length) {
+        NSError *newValueError;
+        if ([newValue writeToFile:dataPath options:NSDataWritingAtomic error:&newValueError]) {
+          // Update storage size.
+          [self.sizeTracker fileWasRemovedAtPath:dataPath withSize:data.length];
+          [self.sizeTracker fileWasAddedAtPath:dataPath withSize:newValue.length];
+        } else {
+          GDTCORLogDebug(@"Error writing new value in libraryDataForKey: %@", newValueError);
+        }
+      }
+    }
+  });
+}
+
+- (void)storeLibraryData:(NSData *)data
+                  forKey:(nonnull NSString *)key
+              onComplete:(nullable void (^)(NSError *_Nullable error))onComplete {
+  if (!data || data.length <= 0) {
+    if (onComplete) {
+      onComplete([NSError errorWithDomain:NSInternalInconsistencyException code:-1 userInfo:nil]);
+    }
+    return;
+  }
+  dispatch_async(_storageQueue, ^{
+    NSError *error;
+    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
+    if ([data writeToFile:dataPath options:NSDataWritingAtomic error:&error]) {
+      [self.sizeTracker fileWasAddedAtPath:dataPath withSize:data.length];
+    }
+    if (onComplete) {
+      onComplete(error);
+    }
+  });
+}
+
+- (void)removeLibraryDataForKey:(nonnull NSString *)key
+                     onComplete:(nonnull void (^)(NSError *_Nullable error))onComplete {
+  dispatch_async(_storageQueue, ^{
+    NSError *error;
+    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
+    GDTCORStorageSizeBytes fileSize =
+        [self.sizeTracker fileSizeAtURL:[NSURL fileURLWithPath:dataPath]];
+
+    if ([[NSFileManager defaultManager] fileExistsAtPath:dataPath]) {
+      if ([[NSFileManager defaultManager] removeItemAtPath:dataPath error:&error]) {
+        [self.sizeTracker fileWasRemovedAtPath:dataPath withSize:fileSize];
+      }
+      if (onComplete) {
+        onComplete(error);
+      }
+    }
+  });
+}
+
+- (FBLPromise<GDTCORLibraryData> *)
+    getAndUpdateLibraryDataForKey:(NSString *)key
+class:(Class)dataClass
+readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock {
+
+  // TODO: Exclude library data from size tracking.
+
+  return [FBLPromise onQueue:self.storageQueue do:^id _Nullable {
+
+    // Read value from the file.
+    NSString *dataPath = [[[self class] libraryDataStoragePath] stringByAppendingPathComponent:key];
+    NSError *fetchError;
+    GDTCORLibraryData fetchedValue = GDTCORDecodeArchive(dataClass, dataPath, nil, &fetchError);
+
+    // Maybe modify the value.
+    GDTCORLibraryData updatedValue = readWriteBlock(fetchedValue, fetchError);
+
+    if (updatedValue == fetchedValue /* in case both and `nil` */ || [updatedValue isEqual:fetchedValue]) {
+      // The value was not modified. No need to save.
+      return updatedValue;
+    }
+
+    // Save updated value.
+    if (updatedValue == nil) {
+      if ([[NSFileManager defaultManager] fileExistsAtPath:dataPath]) {
+        NSError *removeError;
+        if (![[NSFileManager defaultManager] removeItemAtPath:dataPath error:&removeError]) {
+          return removeError;
+        }
+      }
+    } else {
+      NSError *writeError;
+
+      // Encode value.
+      NSData *data = GDTCOREncodeArchive(updatedValue, dataPath, &writeError);
+      if(data == nil) {
+        return writeError;
+      }
+
+      // Write data to the file.
+      if (![data writeToFile:dataPath options:NSDataWritingAtomic error:&writeError]) {
+        return writeError;
+      }
+    }
+
+    // Return the updated value if saved successfully.
+    return updatedValue;
+  }];
 }
 
 #pragma mark - Private not thread safe methods
@@ -820,6 +879,12 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
   dispatch_sync(_storageQueue, ^{
                 });
 }
+
+//#pragma mark - Errors
+//
+//- (NSError *)notFoundError {
+//
+//}
 
 @end
 

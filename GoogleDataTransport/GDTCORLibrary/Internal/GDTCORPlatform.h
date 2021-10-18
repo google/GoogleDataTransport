@@ -139,7 +139,7 @@ NSString *_Nonnull GDTCORDeviceModel(void);
  * @param error The error to populate if something goes wrong.
  * @return The data of the archive. If error is nil, it's been written to disk.
  */
-NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
+NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding, NSObject> obj,
                                       NSString *_Nullable filePath,
                                       NSError *_Nullable *error);
 
@@ -151,7 +151,7 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
  * @param archiveData The data to decode. Don't use with the archivePath param.
  * @param error The error to populate if something goes wrong.
  */
-id<NSSecureCoding> _Nullable GDTCORDecodeArchive(Class archiveClass,
+id<NSSecureCoding, NSObject> _Nullable GDTCORDecodeArchive(Class archiveClass,
                                                  NSString *_Nullable archivePath,
                                                  NSData *_Nullable archiveData,
                                                  NSError *_Nullable *error);
