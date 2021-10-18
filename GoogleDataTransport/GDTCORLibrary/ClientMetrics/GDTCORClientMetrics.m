@@ -18,4 +18,18 @@
 
 @implementation GDTCORClientMetrics
 
+- (instancetype)initWithCurrentStorageSize:(GDTCORStorageSizeBytes)currentStorageSize
+                        maximumStorageSize:(GDTCORStorageSizeBytes)maximumStorageSize
+                  droppedEventsByMappingID:
+                      (NSDictionary<NSString *, GDTCORDroppedEventsCounter *> *)
+droppedEventsByMappingID {
+  self = [super init];
+  if (self) {
+    _currentStorageSize = currentStorageSize;
+    _maximumStorageSize = maximumStorageSize;
+    _droppedEventsByMappingID = [droppedEventsByMappingID copy];
+  }
+  return self;
+}
+
 @end
