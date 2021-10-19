@@ -32,10 +32,4 @@
   return self;
 }
 
-- (gdt_client_metrics_ClientMetrics)clientMetricsProto {
-  // TODO: Implement.
-  gdt_client_metrics_ClientMetrics proto = gdt_client_metrics_ClientMetrics_init_default;
-  return proto;
-}
-
 @end

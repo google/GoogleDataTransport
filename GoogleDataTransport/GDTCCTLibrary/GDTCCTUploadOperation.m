@@ -29,6 +29,9 @@
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORClientMetrics.h"
+#import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORClientMetricsControllerProtocol.h"
+
 #import <nanopb/pb.h>
 #import <nanopb/pb_decode.h>
 #import <nanopb/pb_encode.h>
@@ -41,6 +44,9 @@
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+// TODO: Replace with actual value.
+static NSString *const kClientMetricsMappingID = @"0";
 
 #ifdef GDTCOR_VERSION
 #define STR(x) STR_EXPAND(x)
@@ -204,9 +210,6 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 - (FBLPromise<NSNull *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
                                            target:(GDTCORTarget)target
                                           storage:(id<GDTCORStoragePromiseProtocol>)storage {
-  // TODO: Get client metrics and add an event to the batch if the target supports metrics.
-  // NOTE: The event must not be added to the batch stored on the disk.
-
   NSNumber *batchID = batch.batchID;
 
   // 1. Send URL request.
@@ -250,24 +253,24 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 /** Composes and sends URL request. */
 - (FBLPromise<GULURLSessionDataResponse *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
                                                               target:(GDTCORTarget)target {
-  return [FBLPromise
-             onQueue:self.uploaderQueue
-                  do:^NSURLRequest * {
-                    // 1. Prepare URL request.
-                    NSData *requestProtoData = [self constructRequestProtoWithEvents:batch.events];
-                    NSData *gzippedData = [GDTCCTCompressionHelper gzippedData:requestProtoData];
-                    BOOL usingGzipData =
-                        gzippedData != nil && gzippedData.length < requestProtoData.length;
-                    NSData *dataToSend = usingGzipData ? gzippedData : requestProtoData;
-                    NSURLRequest *request = [self constructRequestWithURL:self.uploadURL
-                                                                forTarget:target
-                                                                     data:dataToSend];
-                    GDTCORLogDebug(@"CTT: request containing %lu events for batch: %@ for target: "
-                                   @"%ld created: %@",
-                                   (unsigned long)batch.events.count, batch.batchID, (long)target,
-                                   request);
-                    return request;
-                  }]
+  return [self clientMetricsEvent]
+  .thenOn(self.uploaderQueue, ^NSURLRequest *(GDTCOREvent *clientMetricsEvent) {
+    // 1. Prepare URL request.
+    NSSet<GDTCOREvent *> *eventsToSend = [batch.events setByAddingObject:clientMetricsEvent];
+    NSData *requestProtoData = [self constructRequestProtoWithEvents:eventsToSend];
+    NSData *gzippedData = [GDTCCTCompressionHelper gzippedData:requestProtoData];
+    BOOL usingGzipData =
+        gzippedData != nil && gzippedData.length < requestProtoData.length;
+    NSData *dataToSend = usingGzipData ? gzippedData : requestProtoData;
+    NSURLRequest *request = [self constructRequestWithURL:self.uploadURL
+                                                forTarget:target
+                                                     data:dataToSend];
+    GDTCORLogDebug(@"CTT: request containing %lu events for batch: %@ for target: "
+                   @"%ld created: %@",
+                   (unsigned long)batch.events.count, batch.batchID, (long)target,
+                   request);
+    return request;
+  })
       .thenOn(self.uploaderQueue,
               ^FBLPromise<GULURLSessionDataResponse *> *(NSURLRequest *request) {
                 // 2. Send URL request.
@@ -490,6 +493,17 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                                                    eventIDs:nil
                                                  mappingIDs:nil
                                                    qosTiers:qosTiers];
+}
+
+#pragma mark - Client metrics
+
+- (FBLPromise<GDTCOREvent *> *)clientMetricsEvent {
+  return [self.metricsController getMetrics]
+    .thenOn(self.uploaderQueue, ^GDTCOREvent *(GDTCORClientMetrics *metrics) {
+      GDTCOREvent *event = [[GDTCOREvent alloc] initWithMappingID:kClientMetricsMappingID target:self.target];
+      event.dataObject = metrics;
+      return event;
+    });
 }
 
 #pragma mark - NSURLSessionDelegate
