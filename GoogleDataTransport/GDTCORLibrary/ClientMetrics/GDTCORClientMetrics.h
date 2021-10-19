@@ -18,6 +18,8 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 
+#import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/client_metrics.nanopb.h"
+
 @class GDTCORDroppedEventsCounter;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -46,6 +48,9 @@ NS_ASSUME_NONNULL_BEGIN
                   droppedEventsByMappingID:
                       (NSDictionary<NSString *, GDTCORDroppedEventsCounter *> *)
                           droppedEventsByMappingID NS_DESIGNATED_INITIALIZER;
+
+/// Client metrics proto ready to be sent to backend populated with the data from the object.
+- (gdt_client_metrics_ClientMetrics)clientMetricsProto;
 
 @end
 
