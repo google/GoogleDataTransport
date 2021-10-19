@@ -79,7 +79,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 /** The URL session that will attempt upload. */
 @property(nonatomic, nullable) NSURLSession *uploaderSession;
 
-/// Client metrics that will be attempted to upload along with other events in the batch. The client metrics are fetched as a part of the upload process. We need to keep them in a property to confirm upload on success.
+/// Client metrics that will be attempted to upload along with other events in the batch. The client
+/// metrics are fetched as a part of the upload process. We need to keep them in a property to
+/// confirm upload on success.
 @property(nonatomic, nullable) GDTCORClientMetrics *clientMetricsToUpload;
 
 /// NSOperation state properties implementation.
@@ -234,7 +236,6 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
             BOOL shouldDeleteEvents = isSuccess || isTransientError;
 
             if (isSuccess) {
-
               // Reset sent client metrics on success.
               if (self.clientMetricsToUpload) {
                 [self.metricsController confirmSendingClientMetrics:self.clientMetricsToUpload];
@@ -243,8 +244,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
               GDTCORLogDebug(@"CCT: batch %@ delivered", batchID);
             } else {
               GDTCORLogDebug(
-                             @"CCT: batch %@ was rejected by the server and will be deleted with all events",
-                             batchID);
+                  @"CCT: batch %@ was rejected by the server and will be deleted with all events",
+                  batchID);
             }
 
             return [storage removeBatchWithID:batch.batchID deleteEvents:shouldDeleteEvents];
