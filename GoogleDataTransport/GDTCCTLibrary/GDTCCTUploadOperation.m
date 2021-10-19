@@ -77,7 +77,10 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 @property(nonatomic, readonly) id<GDTCORClientMetricsControllerProtocol> metricsController;
 
 /** The URL session that will attempt upload. */
-@property(nonatomic) NSURLSession *uploaderSession;
+@property(nonatomic, nullable) NSURLSession *uploaderSession;
+
+/// Client metrics that will be attempted to upload along with other events in the batch. The client metrics are fetched as a part of the upload process. We need to keep them in a property to confirm upload on success.
+@property(nonatomic, nullable) GDTCORClientMetrics *clientMetricsToUpload;
 
 /// NSOperation state properties implementation.
 @property(nonatomic, readwrite, getter=isExecuting) BOOL executing;
@@ -221,27 +224,30 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
             [self updateNextUploadTimeWithResponse:response forTarget:target];
 
             // 3. Cleanup batch.
+            NSInteger statusCode = response.HTTPResponse.statusCode;
+            BOOL isSuccess = statusCode >= 200 && statusCode <= 300;
 
             // Only retry if one of these codes is returned:
             // 429 - Too many requests;
             // 5xx - Server errors.
-            NSInteger statusCode = response.HTTPResponse.statusCode;
-            if (statusCode == 429 || (statusCode >= 500 && statusCode < 600)) {
-              // Move the events back to the main storage to be uploaded on the next attempt.
-              return [storage removeBatchWithID:batchID deleteEvents:NO];
-            } else {
-              if (statusCode >= 200 && statusCode <= 300) {
-                GDTCORLogDebug(@"CCT: batch %@ delivered", batchID);
-              } else {
-                GDTCORLogDebug(
-                    @"CCT: batch %@ was rejected by the server and will be deleted with all events",
-                    batchID);
+            BOOL isTransientError = statusCode == 429 || (statusCode >= 500 && statusCode < 600);
+            BOOL shouldDeleteEvents = isSuccess || isTransientError;
+
+            if (isSuccess) {
+
+              // Reset sent client metrics on success.
+              if (self.clientMetricsToUpload) {
+                [self.metricsController confirmSendingClientMetrics:self.clientMetricsToUpload];
               }
 
-              // The events are either delivered or unrecoverable broken, so remove the batch with
-              // events.
-              return [storage removeBatchWithID:batch.batchID deleteEvents:YES];
+              GDTCORLogDebug(@"CCT: batch %@ delivered", batchID);
+            } else {
+              GDTCORLogDebug(
+                             @"CCT: batch %@ was rejected by the server and will be deleted with all events",
+                             batchID);
             }
+
+            return [storage removeBatchWithID:batch.batchID deleteEvents:shouldDeleteEvents];
           })
       .recoverOn(self.uploaderQueue, ^id(NSError *error) {
         // In the case of a network error move the events back to the main storage to be uploaded on
@@ -254,23 +260,24 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 - (FBLPromise<GULURLSessionDataResponse *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
                                                               target:(GDTCORTarget)target {
   return [self clientMetricsEvent]
-  .thenOn(self.uploaderQueue, ^NSURLRequest *(GDTCOREvent *clientMetricsEvent) {
-    // 1. Prepare URL request.
-    NSSet<GDTCOREvent *> *eventsToSend = [batch.events setByAddingObject:clientMetricsEvent];
-    NSData *requestProtoData = [self constructRequestProtoWithEvents:eventsToSend];
-    NSData *gzippedData = [GDTCCTCompressionHelper gzippedData:requestProtoData];
-    BOOL usingGzipData =
-        gzippedData != nil && gzippedData.length < requestProtoData.length;
-    NSData *dataToSend = usingGzipData ? gzippedData : requestProtoData;
-    NSURLRequest *request = [self constructRequestWithURL:self.uploadURL
-                                                forTarget:target
-                                                     data:dataToSend];
-    GDTCORLogDebug(@"CTT: request containing %lu events for batch: %@ for target: "
-                   @"%ld created: %@",
-                   (unsigned long)batch.events.count, batch.batchID, (long)target,
-                   request);
-    return request;
-  })
+      .thenOn(
+          self.uploaderQueue,
+          ^NSURLRequest *(GDTCOREvent *clientMetricsEvent) {
+            // 1. Prepare URL request.
+            NSSet<GDTCOREvent *> *eventsToSend =
+                [batch.events setByAddingObject:clientMetricsEvent];
+            NSData *requestProtoData = [self constructRequestProtoWithEvents:eventsToSend];
+            NSData *gzippedData = [GDTCCTCompressionHelper gzippedData:requestProtoData];
+            BOOL usingGzipData = gzippedData != nil && gzippedData.length < requestProtoData.length;
+            NSData *dataToSend = usingGzipData ? gzippedData : requestProtoData;
+            NSURLRequest *request = [self constructRequestWithURL:self.uploadURL
+                                                        forTarget:target
+                                                             data:dataToSend];
+            GDTCORLogDebug(@"CTT: request containing %lu events for batch: %@ for target: "
+                           @"%ld created: %@",
+                           (unsigned long)batch.events.count, batch.batchID, (long)target, request);
+            return request;
+          })
       .thenOn(self.uploaderQueue,
               ^FBLPromise<GULURLSessionDataResponse *> *(NSURLRequest *request) {
                 // 2. Send URL request.
@@ -498,12 +505,14 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 #pragma mark - Client metrics
 
 - (FBLPromise<GDTCOREvent *> *)clientMetricsEvent {
-  return [self.metricsController getMetrics]
-    .thenOn(self.uploaderQueue, ^GDTCOREvent *(GDTCORClientMetrics *metrics) {
-      GDTCOREvent *event = [[GDTCOREvent alloc] initWithMappingID:kClientMetricsMappingID target:self.target];
-      event.dataObject = metrics;
-      return event;
-    });
+  return [self.metricsController getMetrics].thenOn(
+      self.uploaderQueue, ^GDTCOREvent *(GDTCORClientMetrics *metrics) {
+        self.clientMetricsToUpload = metrics;
+        GDTCOREvent *event = [[GDTCOREvent alloc] initWithMappingID:kClientMetricsMappingID
+                                                             target:self.target];
+        event.dataObject = metrics;
+        return event;
+      });
 }
 
 #pragma mark - NSURLSessionDelegate
