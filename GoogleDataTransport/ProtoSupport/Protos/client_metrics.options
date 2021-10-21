@@ -15,12 +15,9 @@
 
 # Options for client_metrics.proto
 
-gdt_client_metrics.ClientMetrics.window type:FT_POINTER
 gdt_client_metrics.ClientMetrics.log_source_metrics type:FT_POINTER
-gdt_client_metrics.ClientMetrics.global_metrics type:FT_POINTER
 gdt_client_metrics.ClientMetrics.app_namespace type:FT_POINTER
 
-gdt_client_metrics.GlobalMetrics.storage_metrics type:FT_POINTER
 
 gdt_client_metrics.LogSourceMetrics.log_source type:FT_POINTER
 gdt_client_metrics.LogSourceMetrics.log_event_dropped type:FT_POINTER

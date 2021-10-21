@@ -16,23 +16,11 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/ClientMetrics/GDTCORClientMetrics.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation GDTCORClientMetrics
-
-- (instancetype)initWithCurrentStorageSize:(GDTCORStorageSizeBytes)currentStorageSize
-                        maximumStorageSize:(GDTCORStorageSizeBytes)maximumStorageSize
-                  droppedEventsByMappingID:
-                      (NSDictionary<NSString *, GDTCORDroppedEventsCounter *> *)
-                          droppedEventsByMappingID {
-  self = [super init];
-  if (self) {
-    _currentStorageSize = currentStorageSize;
-    _maximumStorageSize = maximumStorageSize;
-    _droppedEventsByMappingID = [droppedEventsByMappingID copy];
-  }
-  return self;
-}
+@interface GDTCORClientMetrics (GDTCCTSupport) <GDTCOREventDataObject>
 
 @end
 

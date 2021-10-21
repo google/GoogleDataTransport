@@ -42,20 +42,6 @@ typedef enum _gdt_client_metrics_LogEventDropped_Reason {
 #define _gdt_client_metrics_LogEventDropped_Reason_ARRAYSIZE ((gdt_client_metrics_LogEventDropped_Reason)(gdt_client_metrics_LogEventDropped_Reason_SERVER_ERROR+1))
 
 /* Struct definitions */
-typedef struct _gdt_client_metrics_ClientMetrics {
-    struct _gdt_client_metrics_TimeWindow *window;
-    pb_size_t log_source_metrics_count;
-    struct _gdt_client_metrics_LogSourceMetrics *log_source_metrics;
-    struct _gdt_client_metrics_GlobalMetrics *global_metrics;
-    pb_bytes_array_t *app_namespace;
-/* @@protoc_insertion_point(struct:gdt_client_metrics_ClientMetrics) */
-} gdt_client_metrics_ClientMetrics;
-
-typedef struct _gdt_client_metrics_GlobalMetrics {
-    struct _gdt_client_metrics_StorageMetrics *storage_metrics;
-/* @@protoc_insertion_point(struct:gdt_client_metrics_GlobalMetrics) */
-} gdt_client_metrics_GlobalMetrics;
-
 typedef struct _gdt_client_metrics_LogSourceMetrics {
     pb_bytes_array_t *log_source;
     pb_size_t log_event_dropped_count;
@@ -81,28 +67,37 @@ typedef struct _gdt_client_metrics_TimeWindow {
 /* @@protoc_insertion_point(struct:gdt_client_metrics_TimeWindow) */
 } gdt_client_metrics_TimeWindow;
 
+typedef struct _gdt_client_metrics_GlobalMetrics {
+    gdt_client_metrics_StorageMetrics storage_metrics;
+/* @@protoc_insertion_point(struct:gdt_client_metrics_GlobalMetrics) */
+} gdt_client_metrics_GlobalMetrics;
+
+typedef struct _gdt_client_metrics_ClientMetrics {
+    gdt_client_metrics_TimeWindow window;
+    pb_size_t log_source_metrics_count;
+    struct _gdt_client_metrics_LogSourceMetrics *log_source_metrics;
+    gdt_client_metrics_GlobalMetrics global_metrics;
+    pb_bytes_array_t *app_namespace;
+/* @@protoc_insertion_point(struct:gdt_client_metrics_ClientMetrics) */
+} gdt_client_metrics_ClientMetrics;
+
 /* Default values for struct fields */
 
 /* Initializer values for message structs */
-#define gdt_client_metrics_ClientMetrics_init_default {NULL, 0, NULL, NULL, NULL}
+#define gdt_client_metrics_ClientMetrics_init_default {gdt_client_metrics_TimeWindow_init_default, 0, NULL, gdt_client_metrics_GlobalMetrics_init_default, NULL}
 #define gdt_client_metrics_TimeWindow_init_default {0, 0}
-#define gdt_client_metrics_GlobalMetrics_init_default {NULL}
+#define gdt_client_metrics_GlobalMetrics_init_default {gdt_client_metrics_StorageMetrics_init_default}
 #define gdt_client_metrics_StorageMetrics_init_default {0, 0}
 #define gdt_client_metrics_LogSourceMetrics_init_default {NULL, 0, NULL}
 #define gdt_client_metrics_LogEventDropped_init_default {0, _gdt_client_metrics_LogEventDropped_Reason_MIN}
-#define gdt_client_metrics_ClientMetrics_init_zero {NULL, 0, NULL, NULL, NULL}
+#define gdt_client_metrics_ClientMetrics_init_zero {gdt_client_metrics_TimeWindow_init_zero, 0, NULL, gdt_client_metrics_GlobalMetrics_init_zero, NULL}
 #define gdt_client_metrics_TimeWindow_init_zero  {0, 0}
-#define gdt_client_metrics_GlobalMetrics_init_zero {NULL}
+#define gdt_client_metrics_GlobalMetrics_init_zero {gdt_client_metrics_StorageMetrics_init_zero}
 #define gdt_client_metrics_StorageMetrics_init_zero {0, 0}
 #define gdt_client_metrics_LogSourceMetrics_init_zero {NULL, 0, NULL}
 #define gdt_client_metrics_LogEventDropped_init_zero {0, _gdt_client_metrics_LogEventDropped_Reason_MIN}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define gdt_client_metrics_ClientMetrics_window_tag 1
-#define gdt_client_metrics_ClientMetrics_log_source_metrics_tag 2
-#define gdt_client_metrics_ClientMetrics_global_metrics_tag 3
-#define gdt_client_metrics_ClientMetrics_app_namespace_tag 4
-#define gdt_client_metrics_GlobalMetrics_storage_metrics_tag 1
 #define gdt_client_metrics_LogSourceMetrics_log_source_tag 1
 #define gdt_client_metrics_LogSourceMetrics_log_event_dropped_tag 2
 #define gdt_client_metrics_LogEventDropped_events_dropped_count_tag 1
@@ -111,6 +106,11 @@ typedef struct _gdt_client_metrics_TimeWindow {
 #define gdt_client_metrics_StorageMetrics_max_cache_size_bytes_tag 2
 #define gdt_client_metrics_TimeWindow_start_ms_tag 1
 #define gdt_client_metrics_TimeWindow_end_ms_tag 2
+#define gdt_client_metrics_GlobalMetrics_storage_metrics_tag 1
+#define gdt_client_metrics_ClientMetrics_window_tag 1
+#define gdt_client_metrics_ClientMetrics_log_source_metrics_tag 2
+#define gdt_client_metrics_ClientMetrics_global_metrics_tag 3
+#define gdt_client_metrics_ClientMetrics_app_namespace_tag 4
 
 /* Struct field encoding specification for nanopb */
 extern const pb_field_t gdt_client_metrics_ClientMetrics_fields[5];
@@ -123,7 +123,7 @@ extern const pb_field_t gdt_client_metrics_LogEventDropped_fields[3];
 /* Maximum encoded size of messages (where known) */
 /* gdt_client_metrics_ClientMetrics_size depends on runtime parameters */
 #define gdt_client_metrics_TimeWindow_size       22
-/* gdt_client_metrics_GlobalMetrics_size depends on runtime parameters */
+#define gdt_client_metrics_GlobalMetrics_size    24
 #define gdt_client_metrics_StorageMetrics_size   22
 /* gdt_client_metrics_LogSourceMetrics_size depends on runtime parameters */
 #define gdt_client_metrics_LogEventDropped_size  13

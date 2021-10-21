@@ -18,14 +18,12 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
-
 @class GDTCORDroppedEventsCounter;
 
 NS_ASSUME_NONNULL_BEGIN
 
 /// A data model to keep and pass client metrics.
-@interface GDTCORClientMetrics : NSObject <GDTCOREventDataObject>
+@interface GDTCORClientMetrics : NSObject
 
 /// The date when the metrics collection started.
 @property(nonatomic, readonly) NSDate *collectedSinceDate;
