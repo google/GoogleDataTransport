@@ -16,8 +16,8 @@
 
 #import "GoogleDataTransport/GDTCCTLibrary/GDTCORClientMetrics+GDTCCTSupport.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
 
 #include "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/client_metrics.nanopb.h"
 
@@ -76,7 +76,8 @@
   }
 
   NSUInteger logMetricsCount = self.droppedEventsByMappingID.count;
-  clientMetrics.log_source_metrics = calloc(logMetricsCount, sizeof(gdt_client_metrics_LogSourceMetrics));
+  clientMetrics.log_source_metrics =
+      calloc(logMetricsCount, sizeof(gdt_client_metrics_LogSourceMetrics));
 
   NSUInteger logMetricsIndex = 0;
   for (GDTCORDroppedEventsCounter *counter in self.droppedEventsByMappingID.allValues) {
@@ -89,7 +90,8 @@
   return clientMetrics;
 }
 
-- (gdt_client_metrics_LogEventDropped)logEventDroppedWithCounter:(GDTCORDroppedEventsCounter *)counter {
+- (gdt_client_metrics_LogEventDropped)logEventDroppedWithCounter:
+    (GDTCORDroppedEventsCounter *)counter {
   gdt_client_metrics_LogEventDropped proto = gdt_client_metrics_LogEventDropped_init_zero;
   proto.events_dropped_count = counter.eventCount;
   proto.reason = [self reasonProtoWithReason:counter.dropReason];

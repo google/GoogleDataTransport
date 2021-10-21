@@ -38,9 +38,9 @@
 
 #import <GoogleUtilities/GULURLSessionDataResponse.h>
 #import <GoogleUtilities/NSURLSession+GULPromises.h>
+#import "GoogleDataTransport/GDTCCTLibrary/GDTCORClientMetrics+GDTCCTSupport.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTCompressionHelper.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
-#import "GoogleDataTransport/GDTCCTLibrary/GDTCORClientMetrics+GDTCCTSupport.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
