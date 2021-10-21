@@ -57,7 +57,7 @@
 }
 
 - (gdt_client_metrics_ClientMetrics)clientMetricsProto {
-  gdt_client_metrics_ClientMetrics clientMetrics = gdt_client_metrics_ClientMetrics_init_default;
+  __block gdt_client_metrics_ClientMetrics clientMetrics = gdt_client_metrics_ClientMetrics_init_default;
 
   // App namespace.
   clientMetrics.app_namespace = GDTCCTEncodeString([NSBundle mainBundle].bundleIdentifier);
@@ -78,14 +78,23 @@
   NSUInteger logMetricsCount = self.droppedEventsByMappingID.count;
   clientMetrics.log_source_metrics =
       calloc(logMetricsCount, sizeof(gdt_client_metrics_LogSourceMetrics));
+  clientMetrics.log_source_metrics_count = (pb_size_t)logMetricsCount;
 
-  NSUInteger logMetricsIndex = 0;
-  for (GDTCORDroppedEventsCounter *counter in self.droppedEventsByMappingID.allValues) {
-    gdt_client_metrics_LogSourceMetrics logMetrics = gdt_client_metrics_LogSourceMetrics_init_zero;
-    logMetrics.log_source = GDTCCTEncodeString(counter.mappingID);
-    logMetrics.log_event_dropped[logMetricsIndex] = [self logEventDroppedWithCounter:counter];
-    logMetricsIndex += 1;
-  }
+  __block NSUInteger logSourceIndex = 0;
+  [self.droppedEventsByMappingID enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull mappingID, NSArray<GDTCORDroppedEventsCounter *> * _Nonnull counters, BOOL * _Nonnull stop) {
+    __block gdt_client_metrics_LogSourceMetrics logMetrics = gdt_client_metrics_LogSourceMetrics_init_zero;
+    logMetrics.log_source = GDTCCTEncodeString(mappingID);
+    logMetrics.log_event_dropped = calloc(counters.count, sizeof(gdt_client_metrics_LogEventDropped));
+    logMetrics.log_event_dropped_count = (pb_size_t)counters.count;
+
+    [counters enumerateObjectsUsingBlock:^(GDTCORDroppedEventsCounter * _Nonnull counter, NSUInteger idx, BOOL * _Nonnull stop) {
+      logMetrics.log_event_dropped[idx] = [self logEventDroppedWithCounter:counter];
+    }];
+
+    clientMetrics.log_source_metrics[logSourceIndex] = logMetrics;
+
+    logSourceIndex += 1;
+  }];
 
   return clientMetrics;
 }
