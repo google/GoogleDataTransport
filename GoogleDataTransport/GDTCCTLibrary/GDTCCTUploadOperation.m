@@ -243,10 +243,13 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
               }
 
               GDTCORLogDebug(@"CCT: batch %@ delivered", batchID);
-            } else {
+            } else if (shouldDeleteEvents) {
               GDTCORLogDebug(
                   @"CCT: batch %@ was rejected by the server and will be deleted with all events",
                   batchID);
+            } else {
+              GDTCORLogDebug(@"CCT: batch %@ upload failed. Will retry upload of the events later.",
+                             batchID);
             }
 
             return [storage removeBatchWithID:batch.batchID deleteEvents:shouldDeleteEvents];
