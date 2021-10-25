@@ -62,7 +62,7 @@ static NSString *const kStorageVersionKey = @"storageVersion";
     GDTCORLogWarning(GDTCORMCDDebugLog,
                      @"GDTCORDroppedEventsCounter was encoded by a newer coder version %ld. "
                      @"Current coder version is %ld. Some installation data may be lost.",
-                     decodedStorageVersion, kCurrentStorageVersion);
+                     decodedStorageVersion, (long)kCurrentStorageVersion);
   }
 
   // Even if the mapping ID is corrupted, we still would like to capture the dropped event with an
