@@ -887,12 +887,6 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
                 });
 }
 
-//#pragma mark - Errors
-//
-//- (NSError *)notFoundError {
-//
-//}
-
 @end
 
 NS_ASSUME_NONNULL_END
