@@ -406,6 +406,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
 
 #pragma mark - Library data
 
+// TODO: Remove as unused.
 - (void)libraryDataForKey:(nonnull NSString *)key
           onFetchComplete:(nonnull void (^)(NSData *_Nullable, NSError *_Nullable))onFetchComplete
               setNewValue:(NSData *_Nullable (^_Nullable)(void))setValueBlock {
@@ -434,6 +435,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
   });
 }
 
+// TODO: Remove as unused.
 - (void)storeLibraryData:(NSData *)data
                   forKey:(nonnull NSString *)key
               onComplete:(nullable void (^)(NSError *_Nullable error))onComplete {
@@ -455,6 +457,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
   });
 }
 
+// TODO: Remove as unused.
 - (void)removeLibraryDataForKey:(nonnull NSString *)key
                      onComplete:(nonnull void (^)(NSError *_Nullable error))onComplete {
   dispatch_async(_storageQueue, ^{
