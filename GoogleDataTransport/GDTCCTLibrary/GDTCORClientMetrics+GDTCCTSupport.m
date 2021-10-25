@@ -57,7 +57,8 @@
 }
 
 - (gdt_client_metrics_ClientMetrics)clientMetricsProto {
-  __block gdt_client_metrics_ClientMetrics clientMetrics = gdt_client_metrics_ClientMetrics_init_default;
+  __block gdt_client_metrics_ClientMetrics clientMetrics =
+      gdt_client_metrics_ClientMetrics_init_default;
 
   // App namespace.
   clientMetrics.app_namespace = GDTCCTEncodeString([NSBundle mainBundle].bundleIdentifier);
@@ -81,20 +82,26 @@
   clientMetrics.log_source_metrics_count = (pb_size_t)logMetricsCount;
 
   __block NSUInteger logSourceIndex = 0;
-  [self.droppedEventsByMappingID enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull mappingID, NSArray<GDTCORDroppedEventsCounter *> * _Nonnull counters, BOOL * _Nonnull stop) {
-    __block gdt_client_metrics_LogSourceMetrics logMetrics = gdt_client_metrics_LogSourceMetrics_init_zero;
-    logMetrics.log_source = GDTCCTEncodeString(mappingID);
-    logMetrics.log_event_dropped = calloc(counters.count, sizeof(gdt_client_metrics_LogEventDropped));
-    logMetrics.log_event_dropped_count = (pb_size_t)counters.count;
+  [self.droppedEventsByMappingID
+      enumerateKeysAndObjectsUsingBlock:^(NSString *_Nonnull mappingID,
+                                          NSArray<GDTCORDroppedEventsCounter *> *_Nonnull counters,
+                                          BOOL *_Nonnull stop) {
+        __block gdt_client_metrics_LogSourceMetrics logMetrics =
+            gdt_client_metrics_LogSourceMetrics_init_zero;
+        logMetrics.log_source = GDTCCTEncodeString(mappingID);
+        logMetrics.log_event_dropped =
+            calloc(counters.count, sizeof(gdt_client_metrics_LogEventDropped));
+        logMetrics.log_event_dropped_count = (pb_size_t)counters.count;
 
-    [counters enumerateObjectsUsingBlock:^(GDTCORDroppedEventsCounter * _Nonnull counter, NSUInteger idx, BOOL * _Nonnull stop) {
-      logMetrics.log_event_dropped[idx] = [self logEventDroppedWithCounter:counter];
-    }];
+        [counters enumerateObjectsUsingBlock:^(GDTCORDroppedEventsCounter *_Nonnull counter,
+                                               NSUInteger idx, BOOL *_Nonnull stop) {
+          logMetrics.log_event_dropped[idx] = [self logEventDroppedWithCounter:counter];
+        }];
 
-    clientMetrics.log_source_metrics[logSourceIndex] = logMetrics;
+        clientMetrics.log_source_metrics[logSourceIndex] = logMetrics;
 
-    logSourceIndex += 1;
-  }];
+        logSourceIndex += 1;
+      }];
 
   return clientMetrics;
 }

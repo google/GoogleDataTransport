@@ -22,7 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithCurrentStorageSize:(GDTCORStorageSizeBytes)currentStorageSize
                         maximumStorageSize:(GDTCORStorageSizeBytes)maximumStorageSize
-                  droppedEventsByMappingID:(NSDictionary<NSString *, NSArray<GDTCORDroppedEventsCounter *> *> *)droppedEventsByMappingID {
+                  droppedEventsByMappingID:
+                      (NSDictionary<NSString *, NSArray<GDTCORDroppedEventsCounter *> *> *)
+                          droppedEventsByMappingID {
   self = [super init];
   if (self) {
     _currentStorageSize = currentStorageSize;

@@ -35,14 +35,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) GDTCORStorageSizeBytes maximumStorageSize;
 
 /// Dropped event counters.
-@property(nonatomic, readonly)NSDictionary<NSString *, NSArray<GDTCORDroppedEventsCounter *> *> *droppedEventsByMappingID;
+@property(nonatomic, readonly)
+    NSDictionary<NSString *, NSArray<GDTCORDroppedEventsCounter *> *> *droppedEventsByMappingID;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 /// Designated initializer. See corresponding property docs for details.
 - (instancetype)initWithCurrentStorageSize:(GDTCORStorageSizeBytes)currentStorageSize
                         maximumStorageSize:(GDTCORStorageSizeBytes)maximumStorageSize
-                  droppedEventsByMappingID:(NSDictionary<NSString *, NSArray<GDTCORDroppedEventsCounter *> *> *)droppedEventsByMappingID NS_DESIGNATED_INITIALIZER;
+                  droppedEventsByMappingID:
+                      (NSDictionary<NSString *, NSArray<GDTCORDroppedEventsCounter *> *> *)
+                          droppedEventsByMappingID NS_DESIGNATED_INITIALIZER;
 
 @end
 

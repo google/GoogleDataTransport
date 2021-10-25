@@ -27,10 +27,13 @@
 @implementation GDTCORClientMetrics_GDTCCTSupportTests
 
 - (void)testTransportBytes {
-//  NSDictionary<NSString *, GDTCORDroppedEventsCounter *> *droppedEventsByMappingID = @ {
-//    @"111" : [[GDTCORDroppedEventsCounter alloc] initWithEventCount:111 dropReason:<#(GDTCOREventDropReason)#> mappingID:<#(nonnull NSString *)#>]
-//  };
-//  GDTCORClientMetrics *clientMetrics = [[GDTCORClientMetrics alloc] initWithCurrentStorageSize:1234 maximumStorageSize:5678 droppedEventsByMappingID:droppedEventsByMappingID];
+  //  NSDictionary<NSString *, GDTCORDroppedEventsCounter *> *droppedEventsByMappingID = @ {
+  //    @"111" : [[GDTCORDroppedEventsCounter alloc] initWithEventCount:111
+  //    dropReason:<#(GDTCOREventDropReason)#> mappingID:<#(nonnull NSString *)#>]
+  //  };
+  //  GDTCORClientMetrics *clientMetrics = [[GDTCORClientMetrics alloc]
+  //  initWithCurrentStorageSize:1234 maximumStorageSize:5678
+  //  droppedEventsByMappingID:droppedEventsByMappingID];
 }
 
 @end
