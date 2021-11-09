@@ -57,7 +57,7 @@
 
     [notificationCenter addObserver:kGDTCORApplicationWillTerminateNotification
                            selector:@selector(applicationWillTerminateNotification:)
-                               name:name
+                               name:kGDTCORApplicationWillTerminateNotification
                              object:nil];
   }
   return self;
