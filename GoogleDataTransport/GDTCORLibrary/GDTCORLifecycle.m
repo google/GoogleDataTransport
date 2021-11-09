@@ -55,7 +55,7 @@
                                name:kGDTCORApplicationWillEnterForegroundNotification
                              object:nil];
 
-    [notificationCenter addObserver:kGDTCORApplicationWillTerminateNotification
+    [notificationCenter addObserver:self
                            selector:@selector(applicationWillTerminateNotification:)
                                name:kGDTCORApplicationWillTerminateNotification
                              object:nil];
