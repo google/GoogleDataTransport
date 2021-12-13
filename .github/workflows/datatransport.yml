@@ -34,7 +34,7 @@ jobs:
       run: scripts/third_party/travis/retry.sh scripts/test_catalyst.sh GoogleDataTransport build
 
   watchos-testapp:
-    runs-on: macOS-latest
+    runs-on: macOS-10.15
     steps:
     - uses: actions/checkout@v2
     - name: Xcode 12
