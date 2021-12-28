@@ -168,4 +168,14 @@ FOUNDATION_EXPORT
 id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget(
     GDTCORTarget target);
 
+// TODO(ncooke3): Document.
+@protocol GDTCORStorageDelegate <NSObject>
+// TODO(ncooke3): Document.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
+    didRemoveExpiredEvent:(GDTCOREvent *)event;
+
+// TODO(ncooke3): Document.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event;
+@end
+
 NS_ASSUME_NONNULL_END
