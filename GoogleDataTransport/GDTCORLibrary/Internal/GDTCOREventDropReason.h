@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-// TODO(nickcooke): Document.
+// TODO(ncooke3): Document.
 typedef NS_ENUM(NSInteger, GDTCOREventDropReason) {
   GDTCOREventDropReasonUnknown = 0,
   GDTCOREventDropReasonMessageTooOld,
