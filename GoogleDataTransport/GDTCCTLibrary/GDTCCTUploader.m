@@ -89,6 +89,9 @@ static NSURL *_testServerURL = nil;
     return;
   }
 
+  id<GDTCORMetricsControllerProtocol> metricsController =
+      GDTCORMetricsControllerInstanceForTarget(target);
+
   GDTCCTUploadOperation *uploadOperation =
       [[GDTCCTUploadOperation alloc] initWithTarget:target
                                          conditions:conditions
