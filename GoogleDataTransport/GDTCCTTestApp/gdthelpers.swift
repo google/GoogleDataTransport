@@ -17,7 +17,7 @@
 import GoogleDataTransport
 
 class FirelogTestMessageHolder: NSObject, GDTCOREventDataObject {
-  public var root: FirelogTestMessage = FirelogTestMessage()
+  public var root: FirelogTestMessage = .init()
 
   func transportBytes() -> Data {
     do {

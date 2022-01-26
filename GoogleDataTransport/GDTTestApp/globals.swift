@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct Globals {
+public enum Globals {
   public static var SharedViewController: ViewController?
 
   public static let MonkeyTestLength: TimeInterval = 20.0
