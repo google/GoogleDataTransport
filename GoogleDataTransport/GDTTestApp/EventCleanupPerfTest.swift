@@ -22,7 +22,7 @@ import os.signpost
 
 /// The test actions to run under the profiler to measure performance of `GDTCORFlatFileStorage.checkForExpirations()` method.
 @available(iOS 12.0, *)
-class EventCleanupPerfTest {
+enum EventCleanupPerfTest {
   static let log = OSLog(subsystem: "GoogleDataTransport-TestApp", category: "EventCleanupPerfTest")
 
   static func run(completion: @escaping () -> Void) {
@@ -44,7 +44,7 @@ class EventCleanupPerfTest {
 
     os_signpost(.begin, log: log, name: "generateTestEvents", signpostID: signpostID)
 
-    _ = (0 ..< count).compactMap { (_) -> GDTCOREvent? in
+    _ = (0 ..< count).compactMap { _ -> GDTCOREvent? in
       group.enter()
       let event = GDTCOREventGenerator.generateEvent(for: .test, qosTier: nil, mappingID: nil)
       GDTCORFlatFileStorage.sharedInstance().store(event) { _, _ in

@@ -21,8 +21,8 @@ import Dispatch
 import GoogleDataTransport
 
 class InterfaceController: WKInterfaceController {
-  let transport: GDTCORTransport = GDTCORTransport(mappingID: "1234", transformers: nil,
-                                                   target: GDTCORTarget.test)!
+  let transport: GDTCORTransport = .init(mappingID: "1234", transformers: nil,
+                                         target: GDTCORTarget.test)!
 
   override func awake(withContext context: Any?) {
     super.awake(withContext: context)

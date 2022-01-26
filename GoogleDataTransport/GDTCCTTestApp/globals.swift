@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct Globals {
+public enum Globals {
   public static var SharedViewController: ViewController?
 
   public static var IsMonkeyTesting: Bool = false

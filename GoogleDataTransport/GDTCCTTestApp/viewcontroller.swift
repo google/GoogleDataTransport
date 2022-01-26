@@ -122,7 +122,7 @@ public extension ViewController {
     print("Beginning monkey test")
     Globals.IsMonkeyTesting = true
 
-    let sema: DispatchSemaphore = DispatchSemaphore(value: 0)
+    let sema = DispatchSemaphore(value: 0)
     var generateEvents = true
     DispatchQueue.global().asyncAfter(deadline: .now() + Globals.MonkeyTestLength) {
       generateEvents = false
