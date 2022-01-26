@@ -32,12 +32,21 @@ import GoogleDataTransport
   }
 
   public class ViewController: UIViewController {
-    let cctTransport: GDTCORTransport = .init(mappingID: "1018", transformers: nil,
-                                              target: GDTCORTarget.CCT)!
-    let fllTransport: GDTCORTransport = .init(mappingID: "1018", transformers: nil,
-                                              target: GDTCORTarget.FLL)!
-    let cshTransport: GDTCORTransport = .init(mappingID: "1018", transformers: nil,
-                                              target: GDTCORTarget.CSH)!
+    let cctTransport = GDTCORTransport(
+      mappingID: "1018",
+      transformers: nil,
+      target: GDTCORTarget.CCT
+    )!
+    let fllTransport = GDTCORTransport(
+      mappingID: "1018",
+      transformers: nil,
+      target: GDTCORTarget.FLL
+    )!
+    let cshTransport = GDTCORTransport(
+      mappingID: "1018",
+      transformers: nil,
+      target: GDTCORTarget.CSH
+    )!
 
     @IBOutlet var backendSwitch: UISegmentedControl?
 
@@ -97,12 +106,21 @@ import GoogleDataTransport
   }
 
   public class ViewController: NSViewController {
-    let cctTransport: GDTCORTransport = .init(mappingID: "1018", transformers: nil,
-                                              target: GDTCORTarget.CCT)!
-    let fllTransport: GDTCORTransport = .init(mappingID: "1018", transformers: nil,
-                                              target: GDTCORTarget.FLL)!
-    let cshTransport: GDTCORTransport = .init(mappingID: "1018", transformers: nil,
-                                              target: GDTCORTarget.CSH)!
+    let cctTransport = GDTCORTransport(
+      mappingID: "1018",
+      transformers: nil,
+      target: GDTCORTarget.CCT
+    )!
+    let fllTransport = GDTCORTransport(
+      mappingID: "1018",
+      transformers: nil,
+      target: GDTCORTarget.FLL
+    )!
+    let cshTransport = GDTCORTransport(
+      mappingID: "1018",
+      transformers: nil,
+      target: GDTCORTarget.CSH
+    )!
 
     @IBOutlet var backendSwitch: NSSegmentedControl?
 
