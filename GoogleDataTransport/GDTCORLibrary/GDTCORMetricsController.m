@@ -68,13 +68,17 @@
   return [FBLPromise resolvedWith:nil];
 }
 
++ (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
+  // TODO(ncooke3): Implement.
+}
+
 - (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
     didDropEvent:(nonnull GDTCOREvent *)event {
   // TODO(ncooke3): Implement.
 }
 
-- (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
-    didRemoveExpiredEvent:(nonnull GDTCOREvent *)event {
+- (void)storage:(nonnull id<GDTCORStorageProtocol>)storage
+    didRemoveExpiredEvents:(nonnull NSSet<GDTCOREvent *> *)event {
   // TODO(ncooke3): Implement.
 }
 

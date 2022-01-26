@@ -26,6 +26,8 @@
 
 @class FBLPromise<ValueType>;
 
+@protocol GDTCORStorageDelegate;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /** The data type to represent storage size. */
@@ -34,10 +36,15 @@ typedef uint64_t GDTCORStorageSizeBytes;
 typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
                                         NSSet<GDTCOREvent *> *_Nullable batchEvents);
 
+// MARK: - GDTCORStorageProtocol
+
 /** Defines the interface a storage subsystem is expected to implement. */
 @protocol GDTCORStorageProtocol <NSObject, GDTCORLifecycleProtocol>
 
 @required
+
+/** TODO(ncooke3): Add documentation. */
+@property(nonatomic, nullable, weak) id<GDTCORStorageDelegate> delegate;
 
 /** Stores an event and calls onComplete with a non-nil error if anything went wrong.
  *
@@ -123,6 +130,8 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 @end
 
+// MARK: - GDTCORStoragePromiseProtocol
+
 // TODO: Consider complete replacing block based API by promise API.
 
 /** Promise based version of API defined in GDTCORStorageProtocol. See API docs for corresponding
@@ -168,14 +177,16 @@ FOUNDATION_EXPORT
 id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget(
     GDTCORTarget target);
 
+// MARK: - GDTCORStorageDelegate
+
 // TODO(ncooke3): Document.
 @protocol GDTCORStorageDelegate <NSObject>
 // TODO(ncooke3): Document.
-- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
-    didRemoveExpiredEvent:(GDTCOREvent *)event;
+- (void)storage:(id<GDTCORStorageProtocol>)storage
+    didRemoveExpiredEvents:(NSSet<GDTCOREvent *> *)event;
 
 // TODO(ncooke3): Document.
-- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event;
+- (void)storage:(id<GDTCORStorageProtocol>)storage didDropEvent:(GDTCOREvent *)event;
 @end
 
 NS_ASSUME_NONNULL_END
