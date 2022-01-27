@@ -16,6 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORUploader.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
@@ -44,6 +45,10 @@ NS_ASSUME_NONNULL_BEGIN
  * @param target The target this backend object will be responsible for.
  */
 - (void)registerStorage:(id<GDTCORStorageProtocol>)storage target:(GDTCORTarget)target;
+
+// TODO(ncooke3): Document.
+- (void)registerMetricsController:(id<GDTCORMetricsControllerProtocol>)metricsController
+                           target:(GDTCORTarget)target;
 
 @end
 
