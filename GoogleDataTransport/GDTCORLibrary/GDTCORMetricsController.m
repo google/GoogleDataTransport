@@ -29,8 +29,10 @@
 @implementation GDTCORMetricsController
 
 + (void)load {
-  [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance] target:kGDTCORTargetCSH];
-  [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance] target:kGDTCORTargetFLL];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
+                                                       target:kGDTCORTargetCSH];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
+                                                       target:kGDTCORTargetFLL];
 }
 
 + (instancetype)sharedInstance {
