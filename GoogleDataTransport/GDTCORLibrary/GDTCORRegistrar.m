@@ -35,11 +35,16 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
 }
 
 @implementation GDTCORRegistrar {
+  // TODO(ncooke3): Replace ivar declarations with @synthesize attributes.
+
   /** Backing ivar for targetToUploader property. */
   NSMutableDictionary<NSNumber *, id<GDTCORUploader>> *_targetToUploader;
 
   /** Backing ivar for targetToStorage property. */
   NSMutableDictionary<NSNumber *, id<GDTCORStorageProtocol>> *_targetToStorage;
+
+  // TODO(ncooke3): Document.
+  NSMutableDictionary<NSNumber *, id<GDTCORMetricsControllerProtocol>> *_targetToMetricsController;
 }
 
 + (instancetype)sharedInstance {
@@ -57,6 +62,7 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
     _registrarQueue = dispatch_queue_create("com.google.GDTCORRegistrar", DISPATCH_QUEUE_SERIAL);
     _targetToUploader = [[NSMutableDictionary alloc] init];
     _targetToStorage = [[NSMutableDictionary alloc] init];
+    _targetToMetricsController = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -83,6 +89,11 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
   });
 }
 
+- (void)registerMetricsController:(id<GDTCORMetricsControllerProtocol>)metricsController
+                           target:(GDTCORTarget)target {
+  // TODO(ncooke3): Implement.
+}
+
 - (NSMutableDictionary<NSNumber *, id<GDTCORUploader>> *)targetToUploader {
   __block NSMutableDictionary<NSNumber *, id<GDTCORUploader>> *targetToUploader;
   __weak GDTCORRegistrar *weakSelf = self;
@@ -105,6 +116,12 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
     }
   });
   return targetToStorage;
+}
+
+- (NSMutableDictionary<NSNumber *, id<GDTCORMetricsControllerProtocol>> *)
+    targetToMetricsController {
+  // TODO(ncooke3): Implement.
+  return [NSMutableDictionary dictionary];
 }
 
 #pragma mark - GDTCORLifecycleProtocol

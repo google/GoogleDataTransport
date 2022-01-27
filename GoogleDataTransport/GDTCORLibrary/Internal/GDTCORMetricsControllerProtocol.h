@@ -24,17 +24,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO(nickcooke): Document.
+// TODO(ncooke3): Document.
 @protocol GDTCORMetricsControllerProtocol <GDTCORStorageDelegate>
-// TODO(nickcooke): Document.
+// TODO(ncooke3): Document.
 - (void)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                        eventCount:(NSUInteger)eventCount
                         mappingID:(NSString *)mappingID;
 
-// TODO(nickcooke): Document.
+// TODO(ncooke3): Document.
 - (FBLPromise<GDTCORMetrics *> *)metrics;
 
-// TODO(nickcooke): Document.
+// TODO(ncooke3): Document.
 - (FBLPromise<NSNull *> *)resetMetrics:(GDTCORMetrics *)metrics;
 
 @end
