@@ -24,32 +24,58 @@
 #import "FBLPromises.h"
 #endif
 
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
+
 @implementation GDTCORMetricsController
 
-- (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
-    didDropEvent:(nonnull GDTCOREvent *)event {
-  // TODO(nickcooke): Implement.
++ (void)load {
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
+                                                       target:kGDTCORTargetCSH];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
+                                                       target:kGDTCORTargetFLL];
 }
 
-- (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
-    didRemoveExpiredEvent:(nonnull GDTCOREvent *)event {
-  // TODO(nickcooke): Implement.
++ (instancetype)sharedInstance {
+  static id sharedInstance;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    sharedInstance = [[self alloc] init];
+  });
+  return sharedInstance;
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    // TODO(ncooke3): Implement.
+  }
+  return self;
 }
 
 - (void)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                        eventCount:(NSUInteger)eventCount
                         mappingID:(nonnull NSString *)mappingID {
-  // TODO(nickcooke): Implement.
+  // TODO(ncooke3): Implement.
 }
 
 - (nonnull FBLPromise<GDTCORMetrics *> *)metrics {
-  // TODO(nickcooke): Implement.
+  // TODO(ncooke3): Implement.
   return [FBLPromise resolvedWith:nil];
 }
 
 - (nonnull FBLPromise<NSNull *> *)resetMetrics:(nonnull GDTCORMetrics *)metrics {
-  // TODO(nickcooke): Implement.
+  // TODO(ncooke3): Implement.
   return [FBLPromise resolvedWith:nil];
+}
+
+- (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
+    didDropEvent:(nonnull GDTCOREvent *)event {
+  // TODO(ncooke3): Implement.
+}
+
+- (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
+    didRemoveExpiredEvent:(nonnull GDTCOREvent *)event {
+  // TODO(ncooke3): Implement.
 }
 
 @end
