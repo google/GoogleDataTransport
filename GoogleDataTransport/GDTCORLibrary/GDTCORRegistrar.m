@@ -23,7 +23,6 @@ id<GDTCORStorageProtocol> _Nullable GDTCORStorageInstanceForTarget(GDTCORTarget 
   return [GDTCORRegistrar sharedInstance].targetToStorage[@(target)];
 }
 
-FOUNDATION_EXPORT
 id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget(
     GDTCORTarget target) {
   id storage = [GDTCORRegistrar sharedInstance].targetToStorage[@(target)];
@@ -34,7 +33,6 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
   }
 }
 
-FOUNDATION_EXPORT
 id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceForTarget(
     GDTCORTarget target) {
   // TODO(ncooke3): Implement.
