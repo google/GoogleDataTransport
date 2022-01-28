@@ -38,6 +38,7 @@ FOUNDATION_EXPORT
 id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceForTarget(
     GDTCORTarget target) {
   // TODO(ncooke3): Implement.
+  return nil;
 }
 
 @implementation GDTCORRegistrar {
