@@ -98,6 +98,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
     _uploadURL = uploadURL;
     _storage = storage;
     _metadataProvider = metadataProvider;
+    _metricsController = metricsController;
   }
   return self;
 }
