@@ -34,6 +34,12 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
   }
 }
 
+FOUNDATION_EXPORT
+id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceForTarget(
+    GDTCORTarget target) {
+  // TODO(ncooke3): Implement.
+}
+
 @implementation GDTCORRegistrar {
   // TODO(ncooke3): Replace ivar declarations with @synthesize attributes.
 

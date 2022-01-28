@@ -19,6 +19,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORUploader.h"
 
 @protocol GDTCORStoragePromiseProtocol;
+@protocol GDTCORMetricsControllerProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
