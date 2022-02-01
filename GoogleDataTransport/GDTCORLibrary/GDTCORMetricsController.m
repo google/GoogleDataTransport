@@ -52,26 +52,42 @@
   return self;
 }
 
-- (void)logEventsDroppedForReason:(GDTCOREventDropReason)reason
-                       eventCount:(NSUInteger)eventCount
-                        mappingID:(nonnull NSString *)mappingID {
-  // TODO(ncooke3): Implement.
-}
-
-- (nonnull FBLPromise<GDTCORMetrics *> *)metrics {
+- (nonnull FBLPromise<NSNull *> *)confirmMetrics:(nonnull GDTCORMetrics *)metrics
+                                    wereUploaded:(BOOL)uploaded {
   // TODO(ncooke3): Implement.
   return [FBLPromise resolvedWith:nil];
 }
 
-- (nonnull FBLPromise<NSNull *> *)resetMetrics:(nonnull GDTCORMetrics *)metrics {
+- (nonnull FBLPromise<GDTCORMetrics *> *)fetchMetrics {
   // TODO(ncooke3): Implement.
   return [FBLPromise resolvedWith:nil];
 }
 
-+ (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
+- (nonnull FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
+                                                     events:(nonnull NSSet<GDTCOREvent *> *)events {
   // TODO(ncooke3): Implement.
+  return [FBLPromise resolvedWith:nil];
 }
 
+- (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
+  switch (target) {
+    // Only the Firelog backend supports metrics collection.
+    case kGDTCORTargetFLL:
+    case kGDTCORTargetCSH:
+    case kGDTCORTargetTest:
+      return YES;
+
+    case kGDTCORTargetCCT:
+    case kGDTCORTargetINT:
+      return NO;
+  }
+
+  NSAssert(NO, @"This code path shouldn't be reached.");
+}
+
+#pragma mark - GDTCORStorageDelegate
+
+// Consider renaming to like storage: couldNotStoreEvent:
 - (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
     didDropEvent:(nonnull GDTCOREvent *)event {
   // TODO(ncooke3): Implement.

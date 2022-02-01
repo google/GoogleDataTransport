@@ -467,7 +467,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
       }
     }
 
-    if ([expiredEvents count] > 0) {
+    if (self.delegate && [expiredEvents count] > 0) {
       // TODO(ncooke3): Add debug logging.
       [[self delegate] storage:self didRemoveExpiredEvents:[expiredEvents copy]];
     }
