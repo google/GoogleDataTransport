@@ -39,4 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+FOUNDATION_EXPORT
+id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceForTarget(
+    GDTCORTarget target);
+
 NS_ASSUME_NONNULL_END
