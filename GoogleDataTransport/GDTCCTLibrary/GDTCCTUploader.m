@@ -89,13 +89,17 @@ static NSURL *_testServerURL = nil;
     return;
   }
 
+  id<GDTCORMetricsControllerProtocol> metricsController =
+      GDTCORMetricsControllerInstanceForTarget(target);
+
   GDTCCTUploadOperation *uploadOperation =
       [[GDTCCTUploadOperation alloc] initWithTarget:target
                                          conditions:conditions
                                           uploadURL:[[self class] serverURLForTarget:target]
                                               queue:self.uploadQueue
                                             storage:storage
-                                   metadataProvider:self];
+                                   metadataProvider:self
+                                  metricsController:metricsController];
 
   GDTCORLogDebug(@"Upload operation created: %@, target: %@", uploadOperation, @(target));
 
