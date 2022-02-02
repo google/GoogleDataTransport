@@ -71,7 +71,13 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 @property(nonatomic, readonly, nullable) id<GDTCORMetricsControllerProtocol> metricsController;
 
 /** The URL session that will attempt upload. */
-@property(nonatomic) NSURLSession *uploaderSession;
+@property(nonatomic, nullable) NSURLSession *uploaderSession;
+
+/// The metrics being uploaded by the operation. These metrics are fetched and included as an event
+/// in the upload batch as part of the upload process.
+///
+/// Metrics being uploaded are retained so they can be reset when upload is successful.
+@property(nonatomic, nullable) GDTCORMetrics *currentMetrics;
 
 /// NSOperation state properties implementation.
 @property(nonatomic, readwrite, getter=isExecuting) BOOL executing;
