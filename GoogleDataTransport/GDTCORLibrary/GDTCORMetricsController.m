@@ -87,15 +87,13 @@
 
 #pragma mark - GDTCORStorageDelegate
 
-// Consider renaming to like storage: couldNotStoreEvent:
-- (void)storage:(nonnull id<GDTCORStoragePromiseProtocol>)storage
-    didDropEvent:(nonnull GDTCOREvent *)event {
-  // TODO(ncooke3): Implement.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
+    didRemoveExpiredEvent:(GDTCOREvent *)event {
+  // TODO(ncooke): Implement.
 }
 
-- (void)storage:(nonnull id<GDTCORStorageProtocol>)storage
-    didRemoveExpiredEvents:(nonnull NSSet<GDTCOREvent *> *)event {
-  // TODO(ncooke3): Implement.
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event {
+  // TODO(ncooke): Implement.
 }
 
 @end

@@ -61,13 +61,12 @@
   }
 }
 
-- (void)storage:(nonnull id<GDTCORStorageProtocol>)storage
-    didDropEvent:(nonnull GDTCOREvent *)event {
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
+    didRemoveExpiredEvent:(GDTCOREvent *)event {
   // TODO(ncooke): Implement.
 }
 
-- (void)storage:(nonnull id<GDTCORStorageProtocol>)storage
-    didRemoveExpiredEvents:(nonnull NSSet<GDTCOREvent *> *)event {
+- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event {
   // TODO(ncooke): Implement.
 }
 

@@ -23,8 +23,6 @@
   NSMutableDictionary<NSString *, GDTCOREvent *> *_storedEvents;
 }
 
-@synthesize delegate;
-
 - (void)storeEvent:(GDTCOREvent *)event
         onComplete:(void (^_Nullable)(BOOL wasWritten, NSError *_Nullable))completion {
   static dispatch_once_t onceToken;

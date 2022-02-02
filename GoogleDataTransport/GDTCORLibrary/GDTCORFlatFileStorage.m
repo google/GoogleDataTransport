@@ -65,7 +65,6 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
 @implementation GDTCORFlatFileStorage
 
 @synthesize sizeTracker = _sizeTracker;
-@synthesize delegate;
 
 + (void)load {
 #if !NDEBUG
@@ -158,7 +157,6 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
                  userInfo:@{
                    NSLocalizedFailureReasonErrorKey : @"Storage size limit has been reached."
                  }];
-      [[self delegate] storage:self didDropEvent:event];
       completion(NO, error);
       return;
     }
@@ -423,7 +421,6 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     }
 
     // Find expired events and remove them from the storage.
-    NSMutableSet<GDTCOREvent *> *expiredEvents = [NSMutableSet set];
     NSString *eventDataPath = [GDTCORFlatFileStorage eventDataStoragePath];
     NSDirectoryEnumerator *enumerator = [fileManager enumeratorAtPath:eventDataPath];
     NSString *path;
@@ -443,33 +440,15 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
         NSDate *expirationDate = eventComponents[kGDTCOREventComponentsExpirationKey];
         if (expirationDate != nil && expirationDate.timeIntervalSince1970 < now) {
           NSString *pathToDelete = [eventDataPath stringByAppendingPathComponent:path];
-          // TODO(ncooke3): Add comment.
-          NSError *decodeError;
-          GDTCOREvent *event = (GDTCOREvent *)GDTCORDecodeArchive([GDTCOREvent class], pathToDelete,
-                                                                  nil, &decodeError);
-          if (event == nil || decodeError) {
-            GDTCORLogDebug(@"Error deserializing event while checking for expired events: %@",
-                           decodeError);
-            event = nil;
-          }
-          // TODO(ncooke3): Add comment.
-          NSError *removeError;
-          [fileManager removeItemAtPath:pathToDelete error:&removeError];
-          if (removeError != nil) {
-            GDTCORLogDebug(@"There was an error deleting an expired item: %@", removeError);
+          NSError *error;
+          [fileManager removeItemAtPath:pathToDelete error:&error];
+          if (error != nil) {
+            GDTCORLogDebug(@"There was an error deleting an expired item: %@", error);
           } else {
             GDTCORLogDebug(@"Item deleted because it expired: %@", pathToDelete);
-            if (event) {
-              [expiredEvents addObject:event];
-            }
           }
         }
       }
-    }
-
-    if (self.delegate && [expiredEvents count] > 0) {
-      // TODO(ncooke3): Add debug logging.
-      [[self delegate] storage:self didRemoveExpiredEvents:[expiredEvents copy]];
     }
 
     [self.sizeTracker resetCachedSize];
