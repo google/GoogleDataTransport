@@ -148,17 +148,17 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   // 1. Check if the conditions for the target are suitable.
   [self isReadyToUploadTarget:target conditions:conditions]
       .validateOn(self.uploaderQueue,
-                  ^BOOL(id result) {
+                  ^BOOL(NSNull *result) {
                     // 2. Stop the operation if it has been cancelled.
                     return !self.isCancelled;
                   })
       .thenOn(self.uploaderQueue,
-              ^id(id result) {
+              ^FBLPromise *(NSNull *result) {
                 // 3. Remove previously attempted batches.
                 return [storage removeAllBatchesForTarget:target deleteEvents:NO];
               })
       .thenOn(self.uploaderQueue,
-              ^FBLPromise<NSNumber *> *(id result) {
+              ^FBLPromise<NSNumber *> *(NSNull *result) {
                 // There may be a big amount of events stored, so creating a batch may be an
                 // expensive operation.
 
@@ -172,7 +172,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                     return hasEvents.boolValue;
                   })
       .thenOn(self.uploaderQueue,
-              ^FBLPromise<GDTCORUploadBatch *> *(id result) {
+              ^FBLPromise<GDTCORUploadBatch *> *(NSNumber *result) {
                 // 6. Fetch events to upload.
                 GDTCORStorageEventSelector *eventSelector = [self eventSelectorTarget:target
                                                                        withConditions:conditions];
@@ -189,7 +189,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                 return [self batchByAddingMetricsEventToBatch:batch forTarget:target];
               })
       .validateOn(self.uploaderQueue,
-                  ^BOOL(id result) {
+                  ^BOOL(GDTCORUploadBatch *result) {
                     // 8. Stop the operation if it has been cancelled.
                     return !self.isCancelled;
                   })
