@@ -263,12 +263,11 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   } else {
     GDTCORLogDebug(@"CCT: batch %@ upload failed. Batch will be deleted.", batch.batchID);
 
-    // Log events that will be dropped due to the upload error.
-    GDTCOREventDropReason reason = /* isInvalidPayloadError */ statusCode == 400
-                                       ? GDTCOREventDropReasonInvalidPayload
-                                       : GDTCOREventDropReasonUnknown;
-
-    [self.metricsController logEventsDroppedForReason:reason events:batch.events];
+    if (/* isInvalidPayloadError */ statusCode == 400) {
+      // Log events that will be dropped due to the upload error.
+      [self.metricsController logEventsDroppedForReason:GDTCOREventDropReasonInvalidPayload
+                                                 events:batch.events];
+    }
   }
 
   return [storage removeBatchWithID:batch.batchID deleteEvents:shouldDeleteEvents];
