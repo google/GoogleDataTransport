@@ -35,8 +35,7 @@ id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget
 
 id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceForTarget(
     GDTCORTarget target) {
-  // TODO(ncooke3): Implement.
-  return nil;
+  return [GDTCORRegistrar sharedInstance].targetToMetricsController[@(target)];
 }
 
 @implementation GDTCORRegistrar {
@@ -65,9 +64,9 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
   self = [super init];
   if (self) {
     _registrarQueue = dispatch_queue_create("com.google.GDTCORRegistrar", DISPATCH_QUEUE_SERIAL);
-    _targetToUploader = [[NSMutableDictionary alloc] init];
-    _targetToStorage = [[NSMutableDictionary alloc] init];
-    _targetToMetricsController = [[NSMutableDictionary alloc] init];
+    _targetToUploader = [NSMutableDictionary dictionary];
+    _targetToStorage = [NSMutableDictionary dictionary];
+    _targetToMetricsController = [NSMutableDictionary dictionary];
   }
   return self;
 }
@@ -94,9 +93,18 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
   });
 }
 
+// TODO(ncooke): Add `GDTCORRegistar` test for this API.
 - (void)registerMetricsController:(id<GDTCORMetricsControllerProtocol>)metricsController
                            target:(GDTCORTarget)target {
-  // TODO(ncooke3): Implement.
+  __weak GDTCORRegistrar *weakSelf = self;
+  dispatch_async(_registrarQueue, ^{
+    GDTCORRegistrar *strongSelf = weakSelf;
+    if (strongSelf) {
+      GDTCORLogDebug(@"Registered metrics controller: %@ for target:%ld", metricsController,
+                     (long)target);
+      strongSelf->_targetToMetricsController[@(target)] = metricsController;
+    }
+  });
 }
 
 - (NSMutableDictionary<NSNumber *, id<GDTCORUploader>> *)targetToUploader {
@@ -125,8 +133,16 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
 
 - (NSMutableDictionary<NSNumber *, id<GDTCORMetricsControllerProtocol>> *)
     targetToMetricsController {
-  // TODO(ncooke3): Implement.
-  return [NSMutableDictionary dictionary];
+  __block NSMutableDictionary<NSNumber *, id<GDTCORMetricsControllerProtocol>>
+      *targetToMetricsController;
+  __weak GDTCORRegistrar *weakSelf = self;
+  dispatch_sync(_registrarQueue, ^{
+    GDTCORRegistrar *strongSelf = weakSelf;
+    if (strongSelf) {
+      targetToMetricsController = strongSelf->_targetToMetricsController;
+    }
+  });
+  return targetToMetricsController;
 }
 
 #pragma mark - GDTCORLifecycleProtocol

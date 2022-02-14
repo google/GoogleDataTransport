@@ -25,6 +25,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORUploadBatch.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
@@ -71,7 +72,13 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 @property(nonatomic, readonly, nullable) id<GDTCORMetricsControllerProtocol> metricsController;
 
 /** The URL session that will attempt upload. */
-@property(nonatomic) NSURLSession *uploaderSession;
+@property(nonatomic, nullable) NSURLSession *uploaderSession;
+
+/// The metrics being uploaded by the operation. These metrics are fetched and included as an event
+/// in the upload batch as part of the upload process.
+///
+/// Metrics being uploaded are retained so they can be reset when upload is successful.
+@property(nonatomic, nullable) GDTCORMetrics *currentMetrics;
 
 /// NSOperation state properties implementation.
 @property(nonatomic, readwrite, getter=isExecuting) BOOL executing;
@@ -140,59 +147,66 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
   // 1. Check if the conditions for the target are suitable.
   [self isReadyToUploadTarget:target conditions:conditions]
+      .validateOn(self.uploaderQueue,
+                  ^BOOL(NSNull *result) {
+                    // 2. Stop the operation if it has been cancelled.
+                    return !self.isCancelled;
+                  })
       .thenOn(self.uploaderQueue,
-              ^id(id result) {
-                // 2. Remove previously attempted batches
+              ^FBLPromise *(NSNull *result) {
+                // 3. Remove previously attempted batches.
                 return [storage removeAllBatchesForTarget:target deleteEvents:NO];
               })
       .thenOn(self.uploaderQueue,
-              ^FBLPromise<NSNumber *> *(id result) {
+              ^FBLPromise<NSNumber *> *(NSNull *result) {
                 // There may be a big amount of events stored, so creating a batch may be an
                 // expensive operation.
 
-                // 3. Do a lightweight check if there are any events for the target first to
-                // finish early if there are no.
+                // 4. Do a lightweight check if there are any events for the target first to
+                // finish early if there are none.
                 return [storage hasEventsForTarget:target];
               })
       .validateOn(self.uploaderQueue,
                   ^BOOL(NSNumber *hasEvents) {
-                    // Stop operation if there are no events to upload.
+                    // 5. Stop operation if there are no events to upload.
                     return hasEvents.boolValue;
                   })
       .thenOn(self.uploaderQueue,
-              ^FBLPromise<GDTCORUploadBatch *> *(id result) {
-                if (self.isCancelled) {
-                  return nil;
-                }
-
-                // 4. Fetch events to upload.
+              ^FBLPromise<GDTCORUploadBatch *> *(NSNumber *result) {
+                // 6. Fetch events to upload.
                 GDTCORStorageEventSelector *eventSelector = [self eventSelectorTarget:target
                                                                        withConditions:conditions];
                 return [storage batchWithEventSelector:eventSelector
                                        batchExpiration:[NSDate dateWithTimeIntervalSinceNow:600]];
               })
+      .thenOn(self.uploaderQueue,
+              ^FBLPromise<GDTCORUploadBatch *> *(GDTCORUploadBatch *batch) {
+                // 7. Add metrics to batch if metrics collection is supported.
+                if (![self.metricsController isMetricsCollectionSupportedForTarget:target]) {
+                  return [FBLPromise resolvedWith:batch];
+                }
+
+                return [self batchByAddingMetricsEventToBatch:batch forTarget:target];
+              })
       .validateOn(self.uploaderQueue,
-                  ^BOOL(GDTCORUploadBatch *batch) {
-                    // 5. Validate batch.
-                    return batch.batchID != nil && batch.events.count > 0;
+                  ^BOOL(GDTCORUploadBatch *result) {
+                    // 8. Stop the operation if it has been cancelled.
+                    return !self.isCancelled;
                   })
       .thenOn(self.uploaderQueue,
               ^FBLPromise *(GDTCORUploadBatch *batch) {
                 // A non-empty batch has been created, consider it as an upload attempt.
                 self.uploadAttempted = YES;
 
-                // 6. Perform upload URL request.
-                return [self sendURLRequestWithBatch:batch target:target storage:storage];
+                // 9. Perform upload.
+                return [self uploadBatch:batch toTarget:target storage:storage];
               })
-      .thenOn(self.uploaderQueue,
-              ^id(id result) {
-                // 7. Finish operation.
-                [self finishOperation];
-                backgroundTaskCompletion();
-                return nil;
-              })
-      .catchOn(self.uploaderQueue, ^(NSError *error) {
-        // TODO: Maybe report the error to the client.
+      .catchOn(self.uploaderQueue,
+               ^(NSError *error){
+                   // TODO: Consider reporting the error to the client.
+               })
+      .alwaysOn(self.uploaderQueue, ^{
+        // 10. Finish operation.
         [self finishOperation];
         backgroundTaskCompletion();
       });
@@ -200,48 +214,63 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
 #pragma mark - Upload implementation details
 
-/** Sends URL request to upload the provided batch and handle the response. */
-- (FBLPromise<NSNull *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
-                                           target:(GDTCORTarget)target
-                                          storage:(id<GDTCORStoragePromiseProtocol>)storage {
-  NSNumber *batchID = batch.batchID;
-
+/** TODO(ncooke3): Document. */
+- (FBLPromise<NSNull *> *)uploadBatch:(GDTCORUploadBatch *)batch
+                             toTarget:(GDTCORTarget)target
+                              storage:(id<GDTCORStoragePromiseProtocol>)storage {
   // 1. Send URL request.
   return [self sendURLRequestWithBatch:batch target:target]
-      .thenOn(
-          self.uploaderQueue,
-          ^FBLPromise<NSNull *> *(GULURLSessionDataResponse *response) {
-            // 2. Parse response and update the next upload time if can.
-            [self updateNextUploadTimeWithResponse:response forTarget:target];
+      .thenOn(self.uploaderQueue,
+              ^FBLPromise *(GULURLSessionDataResponse *response) {
+                // 2. Update the next upload time and process response.
+                [self updateNextUploadTimeWithResponse:response forTarget:target];
 
-            // 3. Cleanup batch.
-
-            // Only retry if one of these codes is returned:
-            // 429 - Too many requests;
-            // 5xx - Server errors.
-            NSInteger statusCode = response.HTTPResponse.statusCode;
-            if (statusCode == 429 || (statusCode >= 500 && statusCode < 600)) {
-              // Move the events back to the main storage to be uploaded on the next attempt.
-              return [storage removeBatchWithID:batchID deleteEvents:NO];
-            } else {
-              if (statusCode >= 200 && statusCode <= 300) {
-                GDTCORLogDebug(@"CCT: batch %@ delivered", batchID);
-              } else {
-                GDTCORLogDebug(
-                    @"CCT: batch %@ was rejected by the server and will be deleted with all events",
-                    batchID);
-              }
-
-              // The events are either delivered or unrecoverable broken, so remove the batch with
-              // events.
-              return [storage removeBatchWithID:batch.batchID deleteEvents:YES];
-            }
-          })
+                return [self processResponse:response forBatch:batch storage:storage];
+              })
       .recoverOn(self.uploaderQueue, ^id(NSError *error) {
-        // In the case of a network error move the events back to the main storage to be uploaded on
-        // the next attempt.
-        return [storage removeBatchWithID:batchID deleteEvents:NO];
+        // If a network error occurred, move the events back to the main
+        // storage so they can attempt to be uploaded in the next attempt.
+        return [storage removeBatchWithID:batch.batchID deleteEvents:NO];
       });
+}
+
+/** TODO(ncooke3): Document. */
+- (FBLPromise<NSNull *> *)processResponse:(GULURLSessionDataResponse *)response
+                                 forBatch:(GDTCORUploadBatch *)batch
+                                  storage:(id<GDTCORStoragePromiseProtocol>)storage {
+  // 1. Cleanup batch based on the response's status code.
+  NSInteger statusCode = response.HTTPResponse.statusCode;
+  BOOL isSuccess = statusCode >= 200 && statusCode < 300;
+  // Transient errors include "too many requests" (429) and server errors (5xx).
+  BOOL isTransientError =
+      statusCode == 429 || statusCode == 404 || (statusCode >= 500 && statusCode < 600);
+
+  BOOL shouldDeleteEvents = isSuccess || !isTransientError;
+
+  // Reset metrics if upload is successful.
+  GDTCORMetrics *uploadedMetrics = [self currentMetrics];
+  if (uploadedMetrics) {
+    [self.metricsController confirmMetrics:uploadedMetrics wereUploaded:isSuccess];
+  }
+
+  if (isSuccess) {
+    GDTCORLogDebug(@"CCT: batch %@ uploaded. Batch will be deleted.", batch.batchID);
+
+  } else if (isTransientError) {
+    GDTCORLogDebug(@"CCT: batch %@ upload failed. Batch will attempt to be uploaded later.",
+                   batch.batchID);
+
+  } else {
+    GDTCORLogDebug(@"CCT: batch %@ upload failed. Batch will be deleted.", batch.batchID);
+
+    if (/* isInvalidPayloadError */ statusCode == 400) {
+      // Log events that will be dropped due to the upload error.
+      [self.metricsController logEventsDroppedForReason:GDTCOREventDropReasonInvalidPayload
+                                                 events:batch.events];
+    }
+  }
+
+  return [storage removeBatchWithID:batch.batchID deleteEvents:shouldDeleteEvents];
 }
 
 /** Composes and sends URL request. */
@@ -487,6 +516,30 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                                                    eventIDs:nil
                                                  mappingIDs:nil
                                                    qosTiers:qosTiers];
+}
+
+// TODO(ncooke3): Consider another approach: Adding metrics property to `GDTCORUploadBatch`.
+- (FBLPromise<GDTCORUploadBatch *> *)batchByAddingMetricsEventToBatch:(GDTCORUploadBatch *)batch
+                                                            forTarget:(GDTCORTarget)target {
+  return [self.metricsController fetchMetrics].thenOn(
+      self.uploaderQueue, ^GDTCORUploadBatch *(GDTCORMetrics *metrics) {
+        // TODO(ncooke3): Define kMetricEventMappingID.
+        // TODO(ncooke3): Consider if `fetchMetrics` should instead return
+        // the metrics in a `GDTCOREvent`.
+        GDTCOREvent *metricsEvent = [[GDTCOREvent alloc] initWithMappingID:@"kMetricEventMappingID"
+                                                                    target:target];
+
+        [metricsEvent setDataObject:metrics];
+
+        // Save the metrics so they can be reset later upon successful upload.
+        [self setCurrentMetrics:metrics];
+
+        GDTCORUploadBatch *batchWithMetricEvent = [[GDTCORUploadBatch alloc]
+            initWithBatchID:batch.batchID
+                     events:[batch.events setByAddingObject:metricsEvent]];
+
+        return batchWithMetricEvent;
+      });
 }
 
 #pragma mark - NSURLSessionDelegate

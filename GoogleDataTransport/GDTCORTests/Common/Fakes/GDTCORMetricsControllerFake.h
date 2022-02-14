@@ -17,7 +17,8 @@
 #import <Foundation/Foundation.h>
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
 
 @class FBLPromise<ResultType>;
 @class GDTCOREvent;
@@ -25,26 +26,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO(ncooke3): Document.
-@protocol GDTCORMetricsControllerProtocol <GDTCORStorageDelegate>
+@interface GDTCORMetricsControllerFake : NSObject <GDTCORMetricsControllerProtocol>
 
-// TODO(ncooke3): Document.
-- (FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
-                                             events:(NSSet<GDTCOREvent *> *)events;
+@property(nonatomic, copy, nullable) void (^onLogEventsDroppedHandler)
+    (GDTCOREventDropReason reason, NSSet<GDTCOREvent *> *events);
 
-// TODO(ncooke3): Document.
-- (FBLPromise<GDTCORMetrics *> *)fetchMetrics;
+@property(nonatomic, copy, nullable) FBLPromise<GDTCORMetrics *> * (^onFetchMetricsHandler)(void);
 
-// TODO(ncooke3): Document.
-- (FBLPromise<NSNull *> *)confirmMetrics:(GDTCORMetrics *)metrics wereUploaded:(BOOL)uploaded;
+@property(nonatomic, copy, nullable) void (^onConfirmMetricsHandler)
+    (GDTCORMetrics *metrics, BOOL uploaded);
 
-// TODO(ncooke3): Document.
-- (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target;
+@property(nonatomic, copy, nullable) BOOL (^onTargetSupportsMetricsCollectionHandler)(GDTCORTarget);
 
 @end
-
-FOUNDATION_EXPORT
-id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceForTarget(
-    GDTCORTarget target);
 
 NS_ASSUME_NONNULL_END
