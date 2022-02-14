@@ -89,7 +89,7 @@
 
   self.transport = [[GDTCORTransport alloc] initWithMappingID:@"1018"
                                                  transformers:nil
-                                                       target:kGDTCORTargetCSH];
+                                                       target:kGDTCORTargetCCT];
 }
 
 - (void)tearDown {

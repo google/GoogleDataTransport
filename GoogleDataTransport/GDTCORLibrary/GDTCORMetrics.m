@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-#import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORRegistrar+Testing.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORRegistrar_Private.h"
+@implementation GDTCORMetrics
 
-@implementation GDTCORRegistrar (Testing)
-
-- (void)reset {
-  // These calls occur on the queue.
-  [self.targetToUploader removeAllObjects];
-  [self.targetToStorage removeAllObjects];
-  [self.targetToMetricsController removeAllObjects];
-  dispatch_sync(self.registrarQueue, ^{
-                });
+- (nonnull NSData *)transportBytes {
+  // TODO(ncooke3): Implement.
+  return [NSData data];
 }
 
 @end
