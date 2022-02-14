@@ -163,7 +163,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                 // expensive operation.
 
                 // 4. Do a lightweight check if there are any events for the target first to
-                // finish early if there are no.
+                // finish early if there are none.
                 return [storage hasEventsForTarget:target];
               })
       .validateOn(self.uploaderQueue,
