@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
                                              events:(NSSet<GDTCOREvent *> *)events;
 
 // TODO(ncooke3): Document.
-- (FBLPromise<GDTCORMetrics *> *)fetchMetrics;
+- (FBLPromise<GDTCORMetrics *> *)getAndResetMetrics;
 
 // TODO(ncooke3): Document.
 - (FBLPromise<NSNull *> *)confirmMetrics:(GDTCORMetrics *)metrics wereUploaded:(BOOL)uploaded;

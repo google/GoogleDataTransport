@@ -16,20 +16,27 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
 
 @class GDTCOREventMetricsCounter;
 
 NS_ASSUME_NONNULL_BEGIN
 
 // TODO(ncooke3): Document.
-@interface GDTCORMetrics : NSObject <GDTCOREventDataObject>
+@interface GDTCORMetricsMetadata : NSObject <NSSecureCoding>
 
 // TODO(ncooke3): Document.
-@property(nonatomic, readonly) NSDate *collectionStartDate;
+@property(nonatomic, copy, readonly) NSDate *collectionStartDate;
 
 // TODO(ncooke3): Document.
-@property(nonatomic, readonly) GDTCOREventMetricsCounter *droppedEventCounter;
+@property(nonatomic, copy, readonly, nullable) GDTCOREventMetricsCounter *droppedEventCounter;
+
+// TODO(ncooke3): Document.
++ (instancetype)metadataWithCollectionStartDate:(NSDate *)collectedSinceDate
+                            eventMetricsCounter:
+                                (nullable GDTCOREventMetricsCounter *)eventMetricsCounter;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

@@ -16,20 +16,24 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
 
-@class GDTCOREventMetricsCounter;
+@class GDTCOREvent;
 
 NS_ASSUME_NONNULL_BEGIN
 
 // TODO(ncooke3): Document.
-@interface GDTCORMetrics : NSObject <GDTCOREventDataObject>
+// TODO(ncooke3): Consider renaming to `GDTCORMetricsDroppedEventCounter`.
+@interface GDTCOREventMetricsCounter : NSObject <NSSecureCoding>
 
 // TODO(ncooke3): Document.
-@property(nonatomic, readonly) NSDate *collectionStartDate;
++ (instancetype)counterWithEvents:(NSArray<GDTCOREvent *> *)events
+                 droppedForReason:(GDTCOREventDropReason)reason;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // TODO(ncooke3): Document.
-@property(nonatomic, readonly) GDTCOREventMetricsCounter *droppedEventCounter;
+- (GDTCOREventMetricsCounter *)counterByMergingWithCounter:(GDTCOREventMetricsCounter *)counter;
 
 @end
 

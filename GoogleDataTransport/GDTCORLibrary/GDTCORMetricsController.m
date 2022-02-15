@@ -24,7 +24,25 @@
 #import "FBLPromises.h"
 #endif
 
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
+
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h"
+
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage+Promises.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
+
+// TODO(ncooke3): Document.
+static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
+
+@interface GDTCORMetricsController ()
+// TODO(ncooke3): Document.
+@property(nonatomic) id<GDTCORStoragePromiseProtocol> storage;
+
+@end
 
 @implementation GDTCORMetricsController
 
@@ -39,34 +57,108 @@
   static id sharedInstance;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    sharedInstance = [[self alloc] init];
+    sharedInstance = [[self alloc] initWithStorage:[GDTCORFlatFileStorage sharedInstance]];
   });
   return sharedInstance;
 }
 
-- (instancetype)init {
+- (instancetype)initWithStorage:(id<GDTCORStoragePromiseProtocol>)storage {
   self = [super init];
   if (self) {
-    // TODO(ncooke3): Implement.
+    _storage = storage;
   }
   return self;
 }
 
-- (nonnull FBLPromise<NSNull *> *)confirmMetrics:(nonnull GDTCORMetrics *)metrics
-                                    wereUploaded:(BOOL)uploaded {
-  // TODO(ncooke3): Implement.
-  return [FBLPromise resolvedWith:nil];
-}
-
-- (nonnull FBLPromise<GDTCORMetrics *> *)fetchMetrics {
-  // TODO(ncooke3): Implement.
-  return [FBLPromise resolvedWith:nil];
-}
-
 - (nonnull FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                                                      events:(nonnull NSSet<GDTCOREvent *> *)events {
-  // TODO(ncooke3): Implement.
-  return [FBLPromise resolvedWith:nil];
+  GDTCORStorageLibraryDataReadWriteBlock readWriteblock =
+      ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *currentMetricsMetadata, NSError *fetchError) {
+    // TODO(ncooke3): Add clarifying comment.
+    NSDate *collectedSinceDate = [NSDate date];
+    GDTCOREventMetricsCounter *metricsCounter =
+        [GDTCOREventMetricsCounter counterWithEvents:[events allObjects] droppedForReason:reason];
+
+    if (fetchError) {
+      GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
+    }
+
+    // TODO(ncooke3): Add clarifying comment.
+    if (currentMetricsMetadata) {
+      collectedSinceDate = [currentMetricsMetadata collectionStartDate];
+      metricsCounter =
+          [[currentMetricsMetadata droppedEventCounter] counterByMergingWithCounter:metricsCounter];
+    }
+
+    return [GDTCORMetricsMetadata metadataWithCollectionStartDate:collectedSinceDate
+                                              eventMetricsCounter:metricsCounter];
+  };
+
+  return [_storage fetchAndUpdateLibraryDataForKey:kMetricsLibraryDataKey
+                                             klass:[GDTCORMetricsMetadata class]
+                                    readWriteBlock:readWriteblock]
+      .then(^id _Nullable(GDTCORLibraryData _Nullable value) {
+        return nil;
+      });
+}
+
+- (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
+  __block GDTCORMetricsMetadata *snapshottedMetricsMetadata = nil;
+
+  GDTCORStorageLibraryDataReadWriteBlock readWriteblock =
+      ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *currentMetricsMetadata, NSError *fetchError) {
+    if (fetchError) {
+      GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
+    }
+
+    snapshottedMetricsMetadata = currentMetricsMetadata;
+
+    // TODO(ncooke3): Revisit passing `nil` to `eventMetricsCounter` param.
+    return [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                              eventMetricsCounter:nil];
+  };
+
+  return [_storage fetchAndUpdateLibraryDataForKey:kMetricsLibraryDataKey
+                                             klass:[GDTCORMetricsMetadata class]
+                                    readWriteBlock:readWriteblock]
+      .then(^id _Nullable(GDTCORLibraryData _Nullable value) {
+        // TODO(ncooke3): Create metrics object using snapshottedMetadata.
+        return nil;
+      });
+}
+
+- (nonnull FBLPromise<NSNull *> *)confirmMetrics:(nonnull GDTCORMetrics *)metrics
+                                    wereUploaded:(BOOL)uploaded {
+  // TODO(ncooke3): Add clarifying comment as to why we return early.
+  if (uploaded) return [FBLPromise resolvedWith:nil];
+
+  GDTCORStorageLibraryDataReadWriteBlock readWriteblock =
+      ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *currentMetricsMetadata, NSError *fetchError) {
+    if (fetchError) {
+      GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
+    }
+
+    NSDate *currentCollectionStartDate =
+        [currentMetricsMetadata collectionStartDate] ?: [NSDate date];
+    GDTCOREventMetricsCounter *currentEventMetricsCounter =
+        [currentMetricsMetadata droppedEventCounter];
+
+    // TODO(ncooke3): Add clarifying comment here.
+    if ([metrics collectionStartDate] < currentCollectionStartDate) {
+      currentEventMetricsCounter =
+          [[metrics droppedEventCounter] counterByMergingWithCounter:currentEventMetricsCounter];
+    }
+
+    return [GDTCORMetricsMetadata metadataWithCollectionStartDate:currentCollectionStartDate
+                                              eventMetricsCounter:currentEventMetricsCounter];
+  };
+
+  return [_storage fetchAndUpdateLibraryDataForKey:kMetricsLibraryDataKey
+                                             klass:[GDTCORMetricsMetadata class]
+                                    readWriteBlock:readWriteblock]
+      .then(^id _Nullable(GDTCORLibraryData _Nullable value) {
+        return nil;
+      });
 }
 
 - (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
@@ -89,11 +181,13 @@
 
 - (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
     didRemoveExpiredEvent:(GDTCOREvent *)event {
-  // TODO(ncooke): Implement.
+  [self logEventsDroppedForReason:GDTCOREventDropReasonMessageTooOld
+                           events:[NSSet setWithObject:event]];
 }
 
 - (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event {
-  // TODO(ncooke): Implement.
+  [self logEventsDroppedForReason:GDTCOREventDropReasonStorageFull
+                           events:[NSSet setWithObject:event]];
 }
 
 @end

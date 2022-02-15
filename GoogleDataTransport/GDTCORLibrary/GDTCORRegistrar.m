@@ -93,7 +93,7 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
   });
 }
 
-// TODO(ncooke): Add `GDTCORRegistar` test for this API.
+// TODO(ncooke3): Add `GDTCORRegistar` test for this API.
 - (void)registerMetricsController:(id<GDTCORMetricsControllerProtocol>)metricsController
                            target:(GDTCORTarget)target {
   __weak GDTCORRegistrar *weakSelf = self;
