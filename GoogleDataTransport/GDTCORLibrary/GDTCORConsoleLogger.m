@@ -48,9 +48,8 @@ void GDTCORLog(GDTCORMessageCode code, GDTCORLoggingLevel logLevel, NSString *fo
 
   va_list args;
   va_start(args, format);
-  GULLogBasic(gulLevel, kGDTCORConsoleLogger,
-              false, GDTCORMessageCodeEnumToString(code),
-              format, args);
+  GULLogBasic(gulLevel, kGDTCORConsoleLogger, false, GDTCORMessageCodeEnumToString(code), format,
+              args);
   va_end(args);
 }
 
