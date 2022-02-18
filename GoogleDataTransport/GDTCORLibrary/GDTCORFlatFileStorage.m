@@ -439,7 +439,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
         }
 
         // The enumerator finds directories too, but we can't split them, so skip directories
-        bool isDirectory = false;
+        BOOL isDirectory = false;
         NSString *fullPath = [NSString pathWithComponents:@[ eventDataPath, path ]];
         if ([fileManager fileExistsAtPath:fullPath isDirectory:&isDirectory] && isDirectory) {
           continue;
