@@ -164,7 +164,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     // Write the encoded event to the file.
     BOOL writeResult = GDTCORWriteDataToFile(encodedEvent, filePath, &error);
     if (writeResult == NO || error) {
-      GDTCORLogError(GDTCORMCEFileStorageError, @"Attempt to write archive failed: path:%@ error:%@", filePath, error);
+      GDTCORLogError(GDTCORMCEFileStorageError,
+                     @"Attempt to write archive failed: path:%@ error:%@", filePath, error);
       completion(NO, error);
       return;
     } else {
@@ -221,7 +222,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
                                                   toPath:destinationPath
                                                    error:&error];
           if (error) {
-            GDTCORLogError(GDTCORMCEBatchingError, @"An event file wasn't moveable into the batch directory: %@", error);
+            GDTCORLogError(GDTCORMCEBatchingError,
+                           @"An event file wasn't moveable into the batch directory: %@", error);
           }
           [events addObject:event];
         }
@@ -327,7 +329,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
           [self.sizeTracker fileWasRemovedAtPath:dataPath withSize:data.length];
           [self.sizeTracker fileWasAddedAtPath:dataPath withSize:newValue.length];
         } else {
-          GDTCORLogError(GDTCORMCEFileStorageError, @"Error writing new value in libraryDataForKey: %@", newValueError);
+          GDTCORLogError(GDTCORMCEFileStorageError,
+                         @"Error writing new value in libraryDataForKey: %@", newValueError);
         }
       }
     }
@@ -437,9 +440,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
 
         // The enumerator finds directories too, but we can't split them, so skip directories
         bool isDirectory = false;
-        NSString *fullPath = [NSString pathWithComponents:@[eventDataPath, path]];
+        NSString *fullPath = [NSString pathWithComponents:@[ eventDataPath, path ]];
         if ([fileManager fileExistsAtPath:fullPath isDirectory:&isDirectory] && isDirectory) {
-
           continue;
         }
 
@@ -451,7 +453,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
           NSError *error;
           [fileManager removeItemAtPath:pathToDelete error:&error];
           if (error != nil) {
-            GDTCORLogError(GDTCORMCEFileStorageError, @"There was an error deleting an expired item: %@", error);
+            GDTCORLogError(GDTCORMCEFileStorageError,
+                           @"There was an error deleting an expired item: %@", error);
           } else {
             GDTCORLogDebug(@"Item deleted because it expired: %@", pathToDelete);
           }
@@ -490,7 +493,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
                                        error:&error];
   if (batches == nil) {
     *outError = error;
-    GDTCORLogError(GDTCORMCEBatchingError, @"Failed to find event file paths for batchID: %@, error: %@", batchID, error);
+    GDTCORLogError(GDTCORMCEBatchingError,
+                   @"Failed to find event file paths for batchID: %@, error: %@", batchID, error);
     return nil;
   }
 
@@ -590,7 +594,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
           GDTCORLogDebug(@"Batched events at path: %@ moved back to the storage: %@", batchDirPath,
                          destinationPath);
         } else {
-          GDTCORLogError(GDTCORMCEBatchingError, @"Error encountered whilst moving events back: %@", error);
+          GDTCORLogError(GDTCORMCEBatchingError, @"Error encountered whilst moving events back: %@",
+                         error);
         }
 
         // Even if not all events where moved back to the storage, there is not much can be done at
@@ -696,7 +701,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     NSError *error;
     NSArray<NSString *> *dirPaths = [fileManager contentsOfDirectoryAtPath:targetPath error:&error];
     if (error) {
-      GDTCORLogError(GDTCORMCEFileReadError, @"There was an error reading the contents of the target path: %@", error);
+      GDTCORLogError(GDTCORMCEFileReadError,
+                     @"There was an error reading the contents of the target path: %@", error);
       completion(paths);
       return;
     }
@@ -717,7 +723,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
       NSString *filename = [path lastPathComponent];
       NSDictionary<NSString *, id> *eventComponents = [self eventComponentsFromFilename:filename];
       if (!eventComponents) {
-        GDTCORLogError(GDTCORMCEFileReadError, @"There was an error reading the filename components: %@", eventComponents);
+        GDTCORLogError(GDTCORMCEFileReadError,
+                       @"There was an error reading the filename components: %@", eventComponents);
         continue;
       }
       NSString *eventID = eventComponents[kGDTCOREventComponentsEventIDKey];
@@ -772,7 +779,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     NSString *mappingID = [[components subarrayWithRange:NSMakeRange(3, components.count - 3)]
         componentsJoinedByString:kMetadataSeparator];
     if (eventID == nil || qosTier == nil || mappingID == nil || expirationDate == nil) {
-      GDTCORLogError(GDTCORMCEFileReadError, @"There was an error parsing the event filename components: %@", components);
+      GDTCORLogError(GDTCORMCEFileReadError,
+                     @"There was an error parsing the event filename components: %@", components);
       return nil;
     }
     return @{
@@ -793,7 +801,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     NSNumber *batchID = @(components[1].integerValue);
     NSDate *expirationDate = [NSDate dateWithTimeIntervalSince1970:components[2].doubleValue];
     if (target == nil || batchID == nil || expirationDate == nil) {
-      GDTCORLogError(GDTCORMCEBatchingError, @"There was an error parsing the batch filename components: %@", components);
+      GDTCORLogError(GDTCORMCEBatchingError,
+                     @"There was an error parsing the batch filename components: %@", components);
       return nil;
     }
     return @{
