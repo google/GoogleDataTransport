@@ -97,7 +97,7 @@ static void GDTCORReachabilityCallback(GDTCORNetworkReachabilityRef reachability
     dispatch_async(_reachabilityQueue, ^{
       Boolean valid = SCNetworkReachabilityGetFlags(self->_reachabilityRef, &self->_flags);
       if (!valid) {
-        GDTCORLogDebug(@"%@", @"Determining reachability failed.");
+        GDTCORLogWarning(GDTCORMCWReachabilityFailed, @"%@", @"Determining reachability failed.");
         self->_flags = 0;
       }
     });

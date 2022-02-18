@@ -296,7 +296,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       futureUploadTime =
           [GDTCORClock clockSnapshotInTheFuture:logResponse.next_request_wait_millis];
     } else if (decodingError) {
-      GDTCORLogDebug(@"There was a response decoding error: %@", decodingError);
+      GDTCORLogError(GDTCORMCEServerDecodingError, @"There was a response decoding error: %@", decodingError);
     }
     pb_release(gdt_cct_LogResponse_fields, &logResponse);
   }
@@ -317,7 +317,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   }
 
   if (!futureUploadTime) {
-    GDTCORLogDebug(@"%@", @"CCT: The backend response failed to parse, so the next request "
+    GDTCORLogWarning(GDTCORMCEServerDecodingError, @"%@", @"CCT: The backend response failed to parse, so the next request "
                           @"won't occur until 15 minutes from now");
     // 15 minutes from now.
     futureUploadTime = [GDTCORClock clockSnapshotInTheFuture:15 * 60 * 1000];

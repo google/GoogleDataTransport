@@ -39,7 +39,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
           [[NSJSONSerialization JSONObjectWithData:self.customBytes options:0
                                              error:&error] mutableCopy];
       if (error) {
-        GDTCORLogDebug(@"Error when setting an event's event_code: %@", error);
+        GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an event's event_code: %@", error);
         return;
       }
       NSNumber *eventCode = bytesDict[GDTCCTEventCodeInfo];
@@ -50,7 +50,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
                                               error:&error];
       }
     } @catch (NSException *exception) {
-      GDTCORLogDebug(@"Error when setting the event for needs_network_connection_info: %@",
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting the event for needs_network_connection_info: %@",
                      exception);
     }
   } else {
@@ -62,7 +62,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
                                                      options:0
                                                        error:&error] mutableCopy];
         if (error) {
-          GDTCORLogDebug(@"Error when setting an even'ts event_code: %@", error);
+          GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an even'ts event_code: %@", error);
           return;
         }
       } else {
@@ -71,7 +71,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
       [bytesDict setObject:@YES forKey:GDTCCTNeedsNetworkConnectionInfo];
       self.customBytes = [NSJSONSerialization dataWithJSONObject:bytesDict options:0 error:&error];
     } @catch (NSException *exception) {
-      GDTCORLogDebug(@"Error when setting the event for needs_network_connection_info: %@",
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting the event for needs_network_connection_info: %@",
                      exception);
     }
   }
@@ -86,7 +86,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
                                                                   error:&error];
       return bytesDict && !error && [bytesDict[GDTCCTNeedsNetworkConnectionInfo] boolValue];
     } @catch (NSException *exception) {
-      GDTCORLogDebug(@"Error when checking the event for needs_network_connection_info: %@",
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when checking the event for needs_network_connection_info: %@",
                      exception);
     }
   }
@@ -104,7 +104,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
                                                      options:0
                                                        error:&error] mutableCopy];
         if (error) {
-          GDTCORLogDebug(@"Error when setting an even'ts event_code: %@", error);
+          GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an even'ts event_code: %@", error);
           return;
         }
       } else {
@@ -114,11 +114,11 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
       self.customBytes = [NSJSONSerialization dataWithJSONObject:bytesDict options:0 error:&error];
       if (error) {
         self.customBytes = nil;
-        GDTCORLogDebug(@"Error when setting an event's network_connection_info: %@", error);
+        GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an event's network_connection_info: %@", error);
       }
     }
   } @catch (NSException *exception) {
-    GDTCORLogDebug(@"Error when setting an event's network_connection_info: %@", exception);
+    GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an event's network_connection_info: %@", exception);
   }
 }
 
@@ -137,13 +137,13 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
       NSData *networkConnectionInfoData = [[NSData alloc] initWithBase64EncodedString:base64Data
                                                                               options:0];
       if (error) {
-        GDTCORLogDebug(@"Error when getting an event's network_connection_info: %@", error);
+        GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when getting an event's network_connection_info: %@", error);
         return nil;
       } else {
         return networkConnectionInfoData;
       }
     } @catch (NSException *exception) {
-      GDTCORLogDebug(@"Error when getting an event's network_connection_info: %@", exception);
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when getting an event's network_connection_info: %@", exception);
     }
   }
   return nil;
@@ -167,13 +167,13 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
       NSNumber *eventCode = [formatter numberFromString:eventCodeString];
 
       if (error) {
-        GDTCORLogDebug(@"Error when getting an event's network_connection_info: %@", error);
+        GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when getting an event's network_connection_info: %@", error);
         return nil;
       } else {
         return eventCode;
       }
     } @catch (NSException *exception) {
-      GDTCORLogDebug(@"Error when getting an event's event_code: %@", exception);
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when getting an event's event_code: %@", exception);
     }
   }
   return nil;
@@ -190,7 +190,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
                                                                       options:0
                                                                         error:&error] mutableCopy];
     if (error) {
-      GDTCORLogDebug(@"Error when setting an event's event_code: %@", error);
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an event's event_code: %@", error);
       return;
     }
 
@@ -198,7 +198,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
     self.customBytes = [NSJSONSerialization dataWithJSONObject:bytesDict options:0 error:&error];
     if (error) {
       self.customBytes = nil;
-      GDTCORLogDebug(@"Error when setting an event's event_code: %@", error);
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an event's event_code: %@", error);
       return;
     }
     return;
@@ -211,7 +211,7 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
       bytesDict = [[NSJSONSerialization JSONObjectWithData:self.customBytes options:0
                                                      error:&error] mutableCopy];
       if (error) {
-        GDTCORLogDebug(@"Error when setting an event's event_code: %@", error);
+        GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an event's event_code: %@", error);
         return;
       }
     } else {
@@ -228,12 +228,12 @@ NSString *const GDTCCTEventCodeInfo = @"event_code_info";
     self.customBytes = [NSJSONSerialization dataWithJSONObject:bytesDict options:0 error:&error];
     if (error) {
       self.customBytes = nil;
-      GDTCORLogDebug(@"Error when setting an event's network_connection_info: %@", error);
+      GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when setting an event's network_connection_info: %@", error);
       return;
     }
 
   } @catch (NSException *exception) {
-    GDTCORLogDebug(@"Error when getting an event's network_connection_info: %@", exception);
+    GDTCORLogError(GDTCORMCESetEventInfoError, @"Error when getting an event's network_connection_info: %@", exception);
   }
 }
 

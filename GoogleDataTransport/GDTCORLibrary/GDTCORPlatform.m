@@ -188,7 +188,7 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
                          attributes:nil
                               error:error];
     if (result == NO || *error) {
-      GDTCORLogDebug(@"Attempt to create directory failed: path:%@ error:%@", filePath, *error);
+      GDTCORLogError(GDTCORMCEPlatformError, @"Attempt to create directory failed: path:%@ error:%@", filePath, *error);
       return nil;
     }
   }
@@ -198,13 +198,13 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
                                        requiringSecureCoding:YES
                                                        error:error];
     if (resultData == nil || (error != NULL && *error != nil)) {
-      GDTCORLogDebug(@"Encoding an object failed: %@", *error);
+      GDTCORLogError(GDTCORMCEPlatformError, @"Encoding an object failed: %@", *error);
       return nil;
     }
     if (filePath.length > 0) {
       result = [resultData writeToFile:filePath options:NSDataWritingAtomic error:error];
       if (result == NO || *error) {
-        GDTCORLogDebug(@"Attempt to write archive failed: path:%@ error:%@", filePath, *error);
+        GDTCORLogError(GDTCORMCEPlatformError, @"Attempt to write archive failed: path:%@ error:%@", filePath, *error);
       } else {
         GDTCORLogDebug(@"Writing archive succeeded: %@", filePath);
       }
@@ -218,7 +218,7 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
       if (filePath.length > 0) {
         result = [resultData writeToFile:filePath options:NSDataWritingAtomic error:error];
         if (result == NO || *error) {
-          GDTCORLogDebug(@"Attempt to write archive failed: URL:%@ error:%@", filePath, *error);
+          GDTCORLogError(GDTCORMCEPlatformError, @"Attempt to write archive failed: URL:%@ error:%@", filePath, *error);
         } else {
           GDTCORLogDebug(@"Writing archive succeeded: %@", filePath);
         }
@@ -231,8 +231,12 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
                                userInfo:@{NSLocalizedFailureReasonErrorKey : errorString}];
     }
     if (filePath.length > 0) {
-      GDTCORLogDebug(@"Attempt to write archive. successful:%@ URL:%@ error:%@",
-                     result ? @"YES" : @"NO", filePath, *error);
+      if (result) {
+        GDTCORLogDebug(@"Attempt to write archive. successful:%@ URL:%@ error:%@",
+                       result ? @"YES" : @"NO", filePath, *error);
+      } else {
+        GDTCORLogError(GDTCORMCEPlatformError, @"Attempt to write archive failed URL:%@ error:%@", filePath, *error);
+      }
     }
   }
   return resultData;
@@ -278,7 +282,7 @@ BOOL GDTCORWriteDataToFile(NSData *data, NSString *filePath, NSError *_Nullable 
                          attributes:nil
                               error:outError];
     if (result == NO || *outError) {
-      GDTCORLogDebug(@"Attempt to create directory failed: path:%@ error:%@", filePath, *outError);
+      GDTCORLogError(GDTCORMCEPlatformError, @"Attempt to create directory failed: path:%@ error:%@", filePath, *outError);
       return result;
     }
   }
@@ -286,7 +290,7 @@ BOOL GDTCORWriteDataToFile(NSData *data, NSString *filePath, NSError *_Nullable 
   if (filePath.length > 0) {
     result = [data writeToFile:filePath options:NSDataWritingAtomic error:outError];
     if (result == NO || *outError) {
-      GDTCORLogDebug(@"Attempt to write archive failed: path:%@ error:%@", filePath, *outError);
+      GDTCORLogError(GDTCORMCEPlatformError, @"Attempt to write archive failed: path:%@ error:%@", filePath, *outError);
     } else {
       GDTCORLogDebug(@"Writing archive succeeded: %@", filePath);
     }

@@ -100,6 +100,21 @@ typedef NS_ENUM(NSInteger, GDTCORMessageCode) {
 
   /** For errors related to running sqlite. */
   GDTCORMCEDatabaseError = 1009,
+
+  /** For errors related to decoding the server response. */
+  GDTCORMCEServerDecodingError = 1010,
+
+  /** For errors related to setting the event's Network and Event info. */
+  GDTCORMCESetEventInfoError = 1011,
+
+  /** For errors related to writing to file storage */
+  GDTCORMCEFileStorageError = 1012,
+
+  /** For errors related to batching events */
+  GDTCORMCEBatchingError = 1013,
+
+  /** For errors related to platform */
+  GDTCORMCEPlatformError = 1014,
 };
 
 /** Prints the given code and format string to the console.
