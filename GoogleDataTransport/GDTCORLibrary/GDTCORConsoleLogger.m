@@ -18,8 +18,6 @@
 
 #import <GoogleUtilities/GULLogger.h>
 
-volatile NSInteger GDTCORConsoleLoggerLoggingLevel = GDTCORLoggingLevelWarnings;
-
 /** The console logger prefix. */
 static NSString *kGDTCORConsoleLogger = @"[GoogleDataTransport]";
 
@@ -28,6 +26,7 @@ NSString *GDTCORMessageCodeEnumToString(GDTCORMessageCode code) {
 }
 
 void GDTCORLog(GDTCORMessageCode code, GDTCORLoggingLevel logLevel, NSString *format, ...) {
+#if !NDEBUG
   GULLoggerLevel gulLevel = GULLoggerLevelDebug;
   switch (logLevel) {
     case GDTCORLoggingLevelDebug:
@@ -51,6 +50,7 @@ void GDTCORLog(GDTCORMessageCode code, GDTCORLoggingLevel logLevel, NSString *fo
   GULLogBasic(gulLevel, kGDTCORConsoleLogger, false, GDTCORMessageCodeEnumToString(code), format,
               args);
   va_end(args);
+#endif  // !NDEBUG
 }
 
 void GDTCORLogAssert(
