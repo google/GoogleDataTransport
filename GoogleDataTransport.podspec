@@ -39,7 +39,7 @@ Shared library for iOS SDK data transport needs.
 
   s.libraries = ['z']
 
-  s.dependency 'GoogleUtilities/Environment', '~> 7.2'
+  s.dependency 'GoogleUtilities/Environment', '~> 7.7'
   s.dependency 'GoogleUtilities/Logger', '~> 7.7'
   s.dependency 'nanopb', '~> 2.30908.0'
   s.dependency 'PromisesObjC', '>= 1.2', '< 3.0'
