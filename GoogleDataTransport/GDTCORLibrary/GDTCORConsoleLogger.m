@@ -16,40 +16,46 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
 
-volatile NSInteger GDTCORConsoleLoggerLoggingLevel = GDTCORLoggingLevelErrors;
+#import <GoogleUtilities/GULLogger.h>
 
 /** The console logger prefix. */
 static NSString *kGDTCORConsoleLogger = @"[GoogleDataTransport]";
 
 NSString *GDTCORMessageCodeEnumToString(GDTCORMessageCode code) {
-  return [[NSString alloc] initWithFormat:@"I-GDTCOR%06ld", (long)code];
+  return [[NSString alloc] initWithFormat:@"I-GDT%06ld", (long)code];
 }
 
 void GDTCORLog(GDTCORMessageCode code, GDTCORLoggingLevel logLevel, NSString *format, ...) {
-// Don't log anything in not debug builds.
 #if !NDEBUG
-  if (logLevel >= GDTCORConsoleLoggerLoggingLevel) {
-    NSString *logFormat = [NSString stringWithFormat:@"%@[%@] %@", kGDTCORConsoleLogger,
-                                                     GDTCORMessageCodeEnumToString(code), format];
-    va_list args;
-    va_start(args, format);
-    NSLogv(logFormat, args);
-    va_end(args);
+  GULLoggerLevel gulLevel = GULLoggerLevelDebug;
+  switch (logLevel) {
+    case GDTCORLoggingLevelDebug:
+      gulLevel = GULLoggerLevelDebug;
+      break;
+    case GDTCORLoggingLevelVerbose:
+      gulLevel = GULLoggerLevelInfo;
+      break;
+    case GDTCORLoggingLevelWarnings:
+      gulLevel = GULLoggerLevelWarning;
+      break;
+    case GDTCORLoggingLevelErrors:
+      gulLevel = GULLoggerLevelError;
+      break;
+    default:
+      break;
   }
+
+  va_list args;
+  va_start(args, format);
+  GULLogBasic(gulLevel, kGDTCORConsoleLogger, false, GDTCORMessageCodeEnumToString(code), format,
+              args);
+  va_end(args);
 #endif  // !NDEBUG
 }
 
 void GDTCORLogAssert(
     BOOL wasFatal, NSString *_Nonnull file, NSInteger line, NSString *_Nullable format, ...) {
-// Don't log anything in not debug builds.
-#if !NDEBUG
   GDTCORMessageCode code = wasFatal ? GDTCORMCEFatalAssertion : GDTCORMCEGeneralError;
-  NSString *logFormat =
-      [NSString stringWithFormat:@"%@[%@] (%@:%ld) : %@", kGDTCORConsoleLogger,
-                                 GDTCORMessageCodeEnumToString(code), file, (long)line, format];
-  va_list args;
-  va_start(args, format);
-  NSLogv(logFormat, args);
-  va_end(args);
-#endif  // !NDEBUG
+
+  GDTCORLog(code, GDTCORLoggingLevelErrors, @"(%@:%ld) : %@", file, (long)line, format);
 }
