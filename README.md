@@ -124,7 +124,11 @@ The release process is as follows:
 
 ## Set logging level
 
-GoogleDataTransport will follow the logging level of the underlying GoogleUtilities logger. If GoogleDataTransport is being used with a Firebase App, you can enable debug logs by adding the command line argumen `-FIRDebugEnabled` to your app's Arguments Passed on Launch. You can disable debug logs with `-FIRDebugDisabled`.
+GoogleDataTransport will follow the logging level of the underlying
+GoogleUtilities logger. If GoogleDataTransport is being used with a Firebase
+App, you can enable debug logs by adding the command line argument
+`-FIRDebugEnabled` to your app's Arguments Passed on Launch. You can disable
+debug logs with `-FIRDebugDisabled`.
 
 For performance reasons, GoogleDataTransport will not log in release builds.
 
