@@ -88,6 +88,25 @@ message NetworkConnectionInfo {
   optional MobileSubtype mobile_subtype = 2 [default = UNKNOWN_MOBILE_SUBTYPE];
 }
 
+message MacClientInfo {
+
+  // The major OS version of the macOS client. Eg: "10.7".
+  optional string os_major_version = 1;
+
+  // The complete OS version of a macOS client. Eg: "10.7.3".
+  optional string os_full_version = 2;
+
+  // The client application version.
+  optional string application_build = 3;
+
+  // The chosen country from the client. e.g., "US", "KR", "JP".
+  // Where this comes from is currently app-specific
+  optional string country = 4;
+
+  // The bundle name of the application.
+  optional string application_bundle_id = 7;
+}
+
 message IosClientInfo {
 
   // The major OS version of an iOS client. Eg: "8", "9".
@@ -131,6 +150,8 @@ message ClientInfo {
   optional ClientType client_type = 1;
 
   optional IosClientInfo ios_client_info = 4;
+
+  optional MacClientInfo mac_client_info = 13;
 }
 
 message BatchedLogRequest {
