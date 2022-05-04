@@ -1,5 +1,9 @@
+# v9.1.3
+- Update to allow updates to support nanopb 0.3.9.8 or 0.3.9.9
+
 # v9.1.2
 - Fix crash in `GDTCCTUploadOperation` on older iOS versions. (#41)
+
 # v9.1.1 (Swift PM)
 - Fix Xcode13b4 Catalyst build (#36)
 
