@@ -12,7 +12,7 @@ target 'GDTCCTWatchOSIndependentTestAppWatchKitExtension' do
   pod 'GoogleDataTransport', :path => '../../'
   pod 'FirebaseCore'
   pod 'FirebaseMessaging'
-  pod 'FirebaseStorage'
+  pod 'FirebaseStorage', '> 9.0'
 
 end
 
