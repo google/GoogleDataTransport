@@ -1,5 +1,6 @@
 # v9.1.3
 - Update to support both nanopb 0.3.9.8 and 0.3.9.9. (#59)
+- GoogleDataTransport now uses the logging level set in GoogleUtilities. (#54)
 
 # v9.1.2
 - Fix crash in `GDTCCTUploadOperation` on older iOS versions. (#41)
