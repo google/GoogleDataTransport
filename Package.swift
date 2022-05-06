@@ -51,7 +51,6 @@ let package = Package(
         .product(name: "nanopb", package: "nanopb"),
         .product(name: "FBLPromises", package: "Promises"),
         .product(name: "GULEnvironment", package: "GoogleUtilities"),
-        .product(name: "GULLogger", package: "GoogleUtilities"),
       ],
       path: "GoogleDataTransport",
       exclude: [
