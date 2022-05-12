@@ -171,7 +171,6 @@ gdt_cct_ClientInfo GDTCCTConstructClientInfo() {
   clientInfo.ios_client_info = GDTCCTConstructiOSClientInfo();
   clientInfo.has_ios_client_info = 1;
 #elif TARGET_OS_OSX
-  // TODO(ncooke3): Does this handle macCatalyst correctly?
   clientInfo.mac_client_info = GDTCCTConstructMacOSClientInfo();
   clientInfo.has_mac_client_info = 1;
 #endif
