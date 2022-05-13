@@ -171,7 +171,7 @@ gdt_cct_ClientInfo GDTCCTConstructClientInfo() {
   clientInfo.ios_client_info = GDTCCTConstructiOSClientInfo();
   clientInfo.has_ios_client_info = 1;
 #elif TARGET_OS_OSX
-  clientInfo.mac_client_info = GDTCCTConstructMacOSClientInfo();
+  clientInfo.mac_client_info = GDTCCTConstructMacClientInfo();
   clientInfo.has_mac_client_info = 1;
 #endif
   return clientInfo;
@@ -203,7 +203,7 @@ gdt_cct_IosClientInfo GDTCCTConstructiOSClientInfo() {
   return iOSClientInfo;
 }
 
-gdt_cct_MacClientInfo GDTCCTConstructMacOSClientInfo() {
+gdt_cct_MacClientInfo GDTCCTConstructMacClientInfo() {
   gdt_cct_MacClientInfo macOSClientInfo = gdt_cct_MacClientInfo_init_default;
 
   NSOperatingSystemVersion osVersion = [NSProcessInfo processInfo].operatingSystemVersion;
