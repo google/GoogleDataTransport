@@ -1,3 +1,6 @@
+# Unreleased
+- Add and integrate `MacClientInfo` proto message. (#57)
+
 # v9.1.4
 - Rollback logging level changes from v9.1.3. (#60)
 
