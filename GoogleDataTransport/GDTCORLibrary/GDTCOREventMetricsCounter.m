@@ -45,7 +45,7 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
     }
 
     // Get the dropped event counter for the event's mapping ID (log source).
-    // If there the dropped event counter for this event's mapping ID is `nil`,
+    // If the dropped event counter for this event's mapping ID is `nil`,
     // an empty mutable counter is returned.
     NSMutableDictionary<NSNumber *, NSNumber *> *eventCounter =
         [NSMutableDictionary dictionaryWithDictionary:eventCounterByMappingID[event.mappingID]];
