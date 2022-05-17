@@ -74,16 +74,15 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
                                                      events:(nonnull NSSet<GDTCOREvent *> *)events {
   GDTCORStorageLibraryDataReadWriteBlock readWriteblock =
       ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *currentMetricsMetadata, NSError *fetchError) {
-    // TODO(ncooke3): Add clarifying comment.
-    NSDate *collectedSinceDate = [NSDate date];
-    GDTCOREventMetricsCounter *metricsCounter =
-        [GDTCOREventMetricsCounter counterWithEvents:[events allObjects] droppedForReason:reason];
-
     if (fetchError) {
       GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
     }
 
-    // TODO(ncooke3): Add clarifying comment.
+    // Create and store metrics metadata based on the current metrics metadata, if any exists.
+    NSDate *collectedSinceDate = [NSDate date];
+    GDTCOREventMetricsCounter *metricsCounter =
+        [GDTCOREventMetricsCounter counterWithEvents:[events allObjects] droppedForReason:reason];
+
     if (currentMetricsMetadata) {
       collectedSinceDate = [currentMetricsMetadata collectionStartDate];
       metricsCounter =
@@ -129,7 +128,7 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
 
 - (nonnull FBLPromise<NSNull *> *)confirmMetrics:(nonnull GDTCORMetrics *)metrics
                                     wereUploaded:(BOOL)uploaded {
-  // TODO(ncooke3): Add clarifying comment as to why we return early.
+  // Metrics are only placed back in storage if metrics are *not* uploaded.
   if (uploaded) return [FBLPromise resolvedWith:nil];
 
   GDTCORStorageLibraryDataReadWriteBlock readWriteblock =

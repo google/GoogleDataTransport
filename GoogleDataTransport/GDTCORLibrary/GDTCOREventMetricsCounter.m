@@ -74,7 +74,7 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 }
 
 - (GDTCOREventMetricsCounter *)counterByMergingWithCounter:(GDTCOREventMetricsCounter *)counter {
-  // TODO(ncooke3): Add clarifying comment.
+  // Create a new counter by merging the current counter with the given counter.
   NSDictionary<NSString *, GDTCORDroppedEventCounter *> *mergedEventCounterByMappingID = [[self
       class] dictionaryByMergingDictionary:self.droppedEventCounterByMappingID
                        withOtherDictionary:counter.droppedEventCounterByMappingID
@@ -93,7 +93,11 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
       [[[self class] alloc] initWithDroppedEventCounterByMappingID:mergedEventCounterByMappingID];
 }
 
-// TODO(ncooke3): Document.
+/// Creates a new dictionary by merging together two given dictionaries.
+/// @param dictionary A dictionary for merging.
+/// @param otherDictionary Another dictionary for merging.
+/// @param block A block that is called with the values for any duplicate keys that are encountered.
+/// The block returns the desired value for the merged dictionary.
 + (NSDictionary *)dictionaryByMergingDictionary:(NSDictionary *)dictionary
                             withOtherDictionary:(NSDictionary *)otherDictionary
                           uniquingKeysWithBlock:(id (^)(id value1, id value2))block {
@@ -102,7 +106,8 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 
   [otherDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
     if (mergedDictionary[key] != nil) {
-      // TODO(ncooke3): Add clarifying comment.
+      // The key exists in both given dictionaries so combine the corresponding values with the
+      // given block.
       id newValue = block(mergedDictionary[key], obj);
       mergedDictionary[key] = newValue;
     } else {
