@@ -75,7 +75,6 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 
 - (GDTCOREventMetricsCounter *)counterByMergingWithCounter:(GDTCOREventMetricsCounter *)counter {
   // TODO(ncooke3): Add clarifying comment.
-  // TODO(ncooke3): Optimize the ordering of `droppedEventCounterByMappingID` passed in.
   NSDictionary<NSString *, GDTCORDroppedEventCounter *> *mergedEventCounterByMappingID = [[self
       class] dictionaryByMergingDictionary:self.droppedEventCounterByMappingID
                        withOtherDictionary:counter.droppedEventCounterByMappingID
