@@ -97,6 +97,7 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 + (NSDictionary *)dictionaryByMergingDictionary:(NSDictionary *)dictionary
                             withOtherDictionary:(NSDictionary *)otherDictionary
                           uniquingKeysWithBlock:(id (^)(id value1, id value2))block {
+  // TODO(ncooke3): Optimize so larger dictionary is passed in below.
   NSMutableDictionary *mergedDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionary];
 
   [otherDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
