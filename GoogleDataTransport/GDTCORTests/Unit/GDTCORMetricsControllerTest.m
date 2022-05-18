@@ -150,7 +150,7 @@
   }
 }
 
-- (void)testGDTCORMetricsControllerInstanceForTarget {
+- (void)DISABLED_testGDTCORMetricsControllerInstanceForTarget {
   // Metrics controller registration is done at `GDTCORMetricsController +load` time.
   // Assert that it is registered for the FLL and CSH targets, but not for CCT.
   XCTAssertNotNil(GDTCORMetricsControllerInstanceForTarget(kGDTCORTargetFLL));
