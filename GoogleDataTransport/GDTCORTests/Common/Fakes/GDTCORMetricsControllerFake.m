@@ -43,9 +43,9 @@
   }
 }
 
-- (FBLPromise<NSNull *> *)confirmMetrics:(GDTCORMetrics *)metrics wereUploaded:(BOOL)uploaded {
+- (FBLPromise<NSNull *> *)offerMetrics:(GDTCORMetrics *)metrics {
   if (self.onConfirmMetricsHandler) {
-    self.onConfirmMetricsHandler(metrics, uploaded);
+    self.onConfirmMetricsHandler(metrics);
   } else {
     [self doesNotRecognizeSelector:_cmd];
   }

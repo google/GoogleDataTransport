@@ -247,10 +247,10 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
   BOOL shouldDeleteEvents = isSuccess || !isTransientError;
 
-  // Reset metrics if upload is successful.
+  // Place metrics back in storage if upload failed.
   GDTCORMetrics *uploadedMetrics = [self currentMetrics];
-  if (uploadedMetrics) {
-    [self.metricsController confirmMetrics:uploadedMetrics wereUploaded:isSuccess];
+  if (uploadedMetrics && !isSuccess) {
+    [self.metricsController offerMetrics:uploadedMetrics];
   }
 
   if (isSuccess) {

@@ -25,24 +25,35 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO(ncooke3): Document.
+/// A storage delegate that can perform metrics related tasks.
 @protocol GDTCORMetricsControllerProtocol <GDTCORStorageDelegate>
 
-// TODO(ncooke3): Document.
+/// Updates the metric's event counter for the given events dropped for a given reason.
+/// @param reason The reason why the events are being dropped.
+/// @param events The events that being dropped.
 - (FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                                              events:(NSSet<GDTCOREvent *> *)events;
 
-// TODO(ncooke3): Document.
+/// Gets and resets the currently stored metrics.
+/// @return A promise resolving with the metrics retrieved before the reset.
 - (FBLPromise<GDTCORMetrics *> *)getAndResetMetrics;
 
-// TODO(ncooke3): Document.
-- (FBLPromise<NSNull *> *)confirmMetrics:(GDTCORMetrics *)metrics wereUploaded:(BOOL)uploaded;
+/// Offers metrics for re-storing in storage.
+/// @note If the metrics are determined to be from the future, they will be ignored.
+/// @param metrics The metrics to offer for storage.
+- (FBLPromise<NSNull *> *)offerMetrics:(GDTCORMetrics *)metrics;
 
-// TODO(ncooke3): Document.
+/// Returns whether or not a given target supports metrics collection.
+/// @param target A target that may or may not support metrics collection.
+/// @return `YES` if the given target supports metrics collection; otherwise, `NO`.
 - (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target;
 
 @end
 
+/// Returns a metrics controller instance for the given target.
+/// @param target The target to retireve a corresponding metrics controller from.
+/// @return The given target's corresponding metrics controller instance, or `nil` if it does not
+/// have one.
 FOUNDATION_EXPORT
 id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceForTarget(
     GDTCORTarget target);

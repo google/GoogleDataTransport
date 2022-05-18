@@ -67,10 +67,10 @@
 
   // When
   GDTCORMetrics *metrics1 = [[GDTCORMetrics alloc] init];
-  [metricsController confirmMetrics:metrics1 wereUploaded:NO];
+  [metricsController offerMetrics:metrics1];
 
   GDTCORMetrics *metrics2 = [[GDTCORMetrics alloc] init];
-  [metricsController confirmMetrics:metrics2 wereUploaded:NO];
+  [metricsController offerMetrics:metrics2];
 
   // Then
   // - TODO(ncooke3): Add comment.
@@ -93,15 +93,13 @@
   GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
   // - Create and fetch pending metrics data.
   [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
-  GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
+  // GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
 
   // - * Client begins uploading fetched metrics... *
 
   // When
   // - Create new pending metrics data.
   [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
-  // - Confirm uploading metrics were successfully uploaded.
-  [metricsController confirmMetrics:metrics wereUploaded:YES];
 
   // Then
   // GDTCORMetrics *newPendingMetrics = FBLPromiseAwait([metricsController getAndResetMetrics],
@@ -111,21 +109,7 @@
   // TODO(ncooke3): Assert that the metrics are empty with expected time window.
 }
 
-- (void)SKIP_testConfirmMetrics_WhenMetricsWereUploaded_DoesNothing {
-  // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
-  // - TODO(ncooke3): Add context.
-  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
-  GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
-
-  // When
-  [metricsController confirmMetrics:metrics wereUploaded:YES];
-
-  // Then
-  // TODO(ncooke3): Assert that pending metrics are empty with expected time window.
-}
-
-- (void)SKIP_testConfirmMetrics_WhenMetricsWereNotUploaded_SavesMetricsForRefetchingLater {
+- (void)SKIP_testAppendingMetrics_SavesMetricsForRefetchingLater {
   // Given
   GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
   // - TODO(ncooke3): Add context.
@@ -136,7 +120,7 @@
   // When
   // - * Uploading metrics fails *
   // - Alert the metrics controller about the upload and save metrics for later.
-  [metricsController confirmMetrics:metricsThatFailedToUpload wereUploaded:NO];
+  [metricsController offerMetrics:metricsThatFailedToUpload];
 
   // Then
   GDTCORMetrics *metricsToRetryUploading =
