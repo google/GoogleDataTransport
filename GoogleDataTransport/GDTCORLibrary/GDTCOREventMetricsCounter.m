@@ -40,7 +40,7 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
   for (GDTCOREvent *event in events) {
     // TODO(ncooke3): Should I use an autorelease pool?
     // Dropped events with a `nil` or empty mapping ID (log source) are not recorded.
-    if ([event.mappingID length] == 0) {
+    if (event.mappingID.length == 0) {
       continue;
     }
 
