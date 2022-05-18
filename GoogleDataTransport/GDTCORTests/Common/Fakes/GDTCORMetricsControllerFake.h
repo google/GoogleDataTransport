@@ -31,7 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) void (^onLogEventsDroppedHandler)
     (GDTCOREventDropReason reason, NSSet<GDTCOREvent *> *events);
 
-@property(nonatomic, copy, nullable) FBLPromise<GDTCORMetrics *> * (^onFetchMetricsHandler)(void);
+@property(nonatomic, copy, nullable) FBLPromise<GDTCORMetrics *> * (^onGetAndResetMetricsHandler)
+    (void);
 
 @property(nonatomic, copy, nullable) void (^onConfirmMetricsHandler)
     (GDTCORMetrics *metrics, BOOL uploaded);

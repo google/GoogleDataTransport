@@ -34,9 +34,9 @@
   return [FBLPromise resolvedWith:nil];
 }
 
-- (FBLPromise<GDTCORMetrics *> *)fetchMetrics {
-  if (self.onFetchMetricsHandler) {
-    return self.onFetchMetricsHandler();
+- (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
+  if (self.onGetAndResetMetricsHandler) {
+    return self.onGetAndResetMetricsHandler();
   } else {
     [self doesNotRecognizeSelector:_cmd];
     return [FBLPromise resolvedWith:nil];

@@ -35,7 +35,7 @@
   [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
 
   // Then
-  GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
+  // GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
   // TODO(ncooke3): Assert that the metrics contain the previously logged events.
 }
 
@@ -52,7 +52,7 @@
 
 - (void)SKIP_testFetchMetrics_WhenNoMetricsAreStored_ReturnsEmptyMetrics {
   // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  // GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
 
   // Then
   // TODO(ncooke3): Assert that fetched metrics are empty with expected time window.
@@ -82,7 +82,7 @@
   XCTAssertEqualObjects(fetchedMetrics2, metrics1);
 
   // - TODO(ncooke3): Add comment.
-  GDTCORMetrics *fetchedMetrics3 = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
+  // GDTCORMetrics *fetchedMetrics3 = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
   // TODO(ncooke3): Assert that `metricsPromise3`'s metrics contain logged events.
 
   // TODO(ncooke3): Assert that the metrics are empty with the expected test window.
@@ -104,7 +104,8 @@
   [metricsController confirmMetrics:metrics wereUploaded:YES];
 
   // Then
-  GDTCORMetrics *newPendingMetrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
+  // GDTCORMetrics *newPendingMetrics = FBLPromiseAwait([metricsController getAndResetMetrics],
+  // nil);
   // TODO(ncooke3): Assert that the metrics contain the new pending metrics data.
 
   // TODO(ncooke3): Assert that the metrics are empty with expected time window.

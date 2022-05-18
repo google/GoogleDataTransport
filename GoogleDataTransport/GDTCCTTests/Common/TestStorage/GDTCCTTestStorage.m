@@ -207,6 +207,14 @@
       }];
 }
 
+- (FBLPromise<GDTCORLibraryData> *)
+    fetchAndUpdateLibraryDataForKey:(NSString *)key
+                              klass:(Class)klass
+                     readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock {
+  // TODO(ncooke3): Implement.
+  return [FBLPromise resolvedWith:nil];
+}
+
 - (NSError *)genericRejectedPromiseErrorWithReason:(NSString *)reason {
   return [NSError errorWithDomain:@"GDTCORFlatFileStorage"
                              code:-1
