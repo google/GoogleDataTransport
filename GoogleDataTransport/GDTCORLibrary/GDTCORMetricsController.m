@@ -72,25 +72,24 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
 
 - (nonnull FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                                                      events:(nonnull NSSet<GDTCOREvent *> *)events {
-  GDTCORStorageLibraryDataReadWriteBlock readWriteblock =
-      ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *currentMetricsMetadata, NSError *fetchError) {
-    if (fetchError) {
-      GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
-    }
-
-    // Create and store metrics metadata based on the current metrics metadata, if any exists.
-    NSDate *collectedSinceDate = [NSDate date];
+  GDTCORStorageLibraryDataReadWriteBlock readWriteblock = ^GDTCORMetricsMetadata *(
+      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
     GDTCOREventMetricsCounter *metricsCounter =
         [GDTCOREventMetricsCounter counterWithEvents:[events allObjects] droppedForReason:reason];
 
-    if (currentMetricsMetadata) {
-      collectedSinceDate = [currentMetricsMetadata collectionStartDate];
-      metricsCounter =
-          [[currentMetricsMetadata droppedEventCounter] counterByMergingWithCounter:metricsCounter];
-    }
+    if (metricsMetadata) {
+      GDTCOREventMetricsCounter *droppedEventCounter =
+          [metricsMetadata.droppedEventCounter counterByMergingWithCounter:metricsCounter];
 
-    return [GDTCORMetricsMetadata metadataWithCollectionStartDate:collectedSinceDate
-                                              eventMetricsCounter:metricsCounter];
+      return [GDTCORMetricsMetadata
+          metadataWithCollectionStartDate:[metricsMetadata collectionStartDate]
+                      eventMetricsCounter:droppedEventCounter];
+    } else {
+      // There was an error (e.g. empty storage); `metricsMetadata` is nil.
+      GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
+      return [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                                eventMetricsCounter:metricsCounter];
+    }
   };
 
   return [_storage fetchAndUpdateLibraryDataForKey:kMetricsLibraryDataKey
@@ -104,15 +103,13 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
 - (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
   __block GDTCORMetricsMetadata *snapshottedMetricsMetadata = nil;
 
-  GDTCORStorageLibraryDataReadWriteBlock readWriteblock =
-      ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *currentMetricsMetadata, NSError *fetchError) {
-    if (fetchError) {
+  GDTCORStorageLibraryDataReadWriteBlock readWriteblock = ^GDTCORMetricsMetadata *(
+      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
+    if (metricsMetadata) {
+      snapshottedMetricsMetadata = metricsMetadata;
+    } else {
       GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
     }
-
-    snapshottedMetricsMetadata = currentMetricsMetadata;
-
-    // TODO(ncooke3): Revisit passing `nil` to `eventMetricsCounter` param.
     return [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
                                               eventMetricsCounter:nil];
   };
@@ -129,28 +126,41 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
 - (nonnull FBLPromise<NSNull *> *)offerMetrics:(nonnull GDTCORMetrics *)metrics {
   GDTCORStorageLibraryDataReadWriteBlock readWriteblock = ^GDTCORMetricsMetadata *(
       GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
-    if (metricsMetadata && metrics.collectionStartDate < metricsMetadata.collectionStartDate) {
-      // If the metrics to append are older than the metrics represented by the
-      // currently stored metrics, then return a new metadata object that
-      // incorporates the data from the given metrics.
-      return [GDTCORMetricsMetadata
-          metadataWithCollectionStartDate:[metricsMetadata collectionStartDate]
-                      eventMetricsCounter:
-                          [metricsMetadata.droppedEventCounter
-                              counterByMergingWithCounter:metrics.droppedEventCounter]];
-    } else if (metricsMetadata) {
-      // This will catch an edge case where the given metrics to append are
-      // newer than metrics represented by the currently stored metrics
-      // metadata. In this case, return the existing metadata object as the
-      // given metrics can be safely ignored.
-      return metricsMetadata;
+    if (metricsMetadata) {
+      if (metrics.collectionStartDate <= metricsMetadata.collectionStartDate) {
+        // If the metrics to append are older than the metrics represented by the
+        // currently stored metrics, then return a new metadata object that
+        // incorporates the data from the given metrics.
+        return [GDTCORMetricsMetadata
+            metadataWithCollectionStartDate:[metricsMetadata collectionStartDate]
+                        eventMetricsCounter:
+                            [metricsMetadata.droppedEventCounter
+                                counterByMergingWithCounter:metrics.droppedEventCounter]];
+      } else {
+        // This catches an edge case where the given metrics to append are
+        // newer than metrics represented by the currently stored metrics
+        // metadata. In this case, return the existing metadata object as the
+        // given metrics are assumed to already be accounted for by the
+        // currenly metadata.
+        return metricsMetadata;
+      }
     } else {
-      GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
       // There was an error (e.g. empty storage); `metricsMetadata` is nil.
-      // If this occurs, store an empty metadata object intended to track
-      // metrics metadata from this time forward.
-      return [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
-                                                eventMetricsCounter:nil];
+      GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
+
+      NSDate *now = [NSDate date];
+      if (metrics.collectionStartDate <= now) {
+        // The given metrics are were recorded up until now. They wouldn't
+        // be offered if they were successfully uploaded so their
+        // corresponding metadata can be safely placed back in storage.
+        return [GDTCORMetricsMetadata metadataWithCollectionStartDate:metrics.collectionStartDate
+                                                  eventMetricsCounter:metrics.droppedEventCounter];
+      } else {
+        // This catches an edge case where the given metrics are from the
+        // future. If this occurs, ignore them and store an empty metadata
+        // object intended to track metrics metadata from this time forward.
+        return [GDTCORMetricsMetadata metadataWithCollectionStartDate:now eventMetricsCounter:nil];
+      }
     }
   };
 
