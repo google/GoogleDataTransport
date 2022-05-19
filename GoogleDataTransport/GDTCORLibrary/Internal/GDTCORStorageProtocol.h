@@ -139,6 +139,19 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (FBLPromise<NSNull *> *)removeAllBatchesForTarget:(GDTCORTarget)target
                                        deleteEvents:(BOOL)deleteEvents;
 
+// TODO(ncooke3): Document.
+typedef id<NSSecureCoding, NSObject> GDTCORLibraryData;
+
+// TODO(ncooke3): Document.
+typedef GDTCORLibraryData _Nullable (^GDTCORStorageLibraryDataReadWriteBlock)(
+    GDTCORLibraryData _Nullable fetchedValue, NSError *_Nullable fetchError);
+
+// TODO(ncooke3): Document.
+- (FBLPromise<GDTCORLibraryData> *)
+    fetchAndUpdateLibraryDataForKey:(NSString *)key
+                              klass:(Class)klass
+                     readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock;
+
 /** See `hasEventsForTarget:onComplete:`.
  *  @return A promise object that is resolved with @YES if there are events for the specified target
  * and @NO otherwise.

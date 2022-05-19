@@ -17,26 +17,23 @@
 #import <Foundation/Foundation.h>
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
-#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
 
-@class FBLPromise<ResultType>;
 @class GDTCOREvent;
-@class GDTCORMetrics;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GDTCORMetricsControllerFake : NSObject <GDTCORMetricsControllerProtocol>
+// TODO(ncooke3): Document.
+// TODO(ncooke3): Consider renaming to `GDTCORMetricsDroppedEventCounter`.
+@interface GDTCOREventMetricsCounter : NSObject <NSSecureCoding>
 
-@property(nonatomic, copy, nullable) void (^onLogEventsDroppedHandler)
-    (GDTCOREventDropReason reason, NSSet<GDTCOREvent *> *events);
+// TODO(ncooke3): Document.
++ (instancetype)counterWithEvents:(NSArray<GDTCOREvent *> *)events
+                 droppedForReason:(GDTCOREventDropReason)reason;
 
-@property(nonatomic, copy, nullable) FBLPromise<GDTCORMetrics *> * (^onGetAndResetMetricsHandler)
-    (void);
+- (instancetype)init NS_UNAVAILABLE;
 
-@property(nonatomic, copy, nullable) void (^onConfirmMetricsHandler)(GDTCORMetrics *metrics);
-
-@property(nonatomic, copy, nullable) BOOL (^onTargetSupportsMetricsCollectionHandler)(GDTCORTarget);
+// TODO(ncooke3): Document.
+- (GDTCOREventMetricsCounter *)counterByMergingWithCounter:(GDTCOREventMetricsCounter *)counter;
 
 @end
 

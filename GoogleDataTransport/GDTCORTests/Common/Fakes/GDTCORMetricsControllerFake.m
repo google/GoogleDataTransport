@@ -34,18 +34,18 @@
   return [FBLPromise resolvedWith:nil];
 }
 
-- (FBLPromise<GDTCORMetrics *> *)fetchMetrics {
-  if (self.onFetchMetricsHandler) {
-    return self.onFetchMetricsHandler();
+- (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
+  if (self.onGetAndResetMetricsHandler) {
+    return self.onGetAndResetMetricsHandler();
   } else {
     [self doesNotRecognizeSelector:_cmd];
     return [FBLPromise resolvedWith:nil];
   }
 }
 
-- (FBLPromise<NSNull *> *)confirmMetrics:(GDTCORMetrics *)metrics wereUploaded:(BOOL)uploaded {
+- (FBLPromise<NSNull *> *)offerMetrics:(GDTCORMetrics *)metrics {
   if (self.onConfirmMetricsHandler) {
-    self.onConfirmMetricsHandler(metrics, uploaded);
+    self.onConfirmMetricsHandler(metrics);
   } else {
     [self doesNotRecognizeSelector:_cmd];
   }
@@ -63,11 +63,11 @@
 
 - (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
     didRemoveExpiredEvent:(GDTCOREvent *)event {
-  // TODO(ncooke): Implement.
+  // TODO(ncooke3): Implement.
 }
 
 - (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event {
-  // TODO(ncooke): Implement.
+  // TODO(ncooke3): Implement.
 }
 
 @end
