@@ -424,17 +424,16 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
   XCTestExpectation *fetchMetricsExpectation =
       [self expectationWithDescription:@"fetchMetricsExpectation"];
-  metricsControllerFake.onFetchMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
     [fetchMetricsExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
   XCTestExpectation *metricsConfirmationExpectation =
       [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics, BOOL uploaded) {
+  metricsConfirmationExpectation.inverted = YES;
+  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
     [metricsConfirmationExpectation fulfill];
-    XCTAssertTrue(uploaded);
-    XCTAssertEqualObjects(metrics, dummyMetrics);
   };
 
   XCTestExpectation *droppedEventsAreLoggedExpectation =
@@ -491,7 +490,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   XCTestExpectation *fetchMetricsExpectation =
       [self expectationWithDescription:@"fetchMetricsExpectation"];
   fetchMetricsExpectation.inverted = YES;
-  metricsControllerFake.onFetchMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
     [fetchMetricsExpectation fulfill];
     return [FBLPromise resolvedWith:nil];
   };
@@ -499,7 +498,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   XCTestExpectation *metricsConfirmationExpectation =
       [self expectationWithDescription:@"metricsConfirmationExpectation"];
   metricsConfirmationExpectation.inverted = YES;
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *_, BOOL __) {
+  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *_) {
     [metricsConfirmationExpectation fulfill];
   };
 
@@ -557,17 +556,16 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
   XCTestExpectation *fetchMetricsExpectation =
       [self expectationWithDescription:@"fetchMetricsExpectation"];
-  metricsControllerFake.onFetchMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
     [fetchMetricsExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
   XCTestExpectation *metricsConfirmationExpectation =
       [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics, BOOL uploaded) {
+  metricsConfirmationExpectation.inverted = YES;
+  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
     [metricsConfirmationExpectation fulfill];
-    XCTAssertTrue(uploaded);
-    XCTAssertEqualObjects(metrics, dummyMetrics);
   };
 
   XCTestExpectation *droppedEventsAreLoggedExpectation =
@@ -627,16 +625,15 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
   XCTestExpectation *fetchMetricsExpectation =
       [self expectationWithDescription:@"fetchMetricsExpectation"];
-  metricsControllerFake.onFetchMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
     [fetchMetricsExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
   XCTestExpectation *metricsConfirmationExpectation =
       [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics, BOOL uploaded) {
+  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
     [metricsConfirmationExpectation fulfill];
-    XCTAssertFalse(uploaded);
     XCTAssertEqualObjects(metrics, dummyMetrics);
   };
 
@@ -698,16 +695,15 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
   XCTestExpectation *fetchMetricsExpectation =
       [self expectationWithDescription:@"fetchMetricsExpectation"];
-  metricsControllerFake.onFetchMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
     [fetchMetricsExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
   XCTestExpectation *metricsConfirmationExpectation =
       [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics, BOOL uploaded) {
+  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
     [metricsConfirmationExpectation fulfill];
-    XCTAssertFalse(uploaded);
     XCTAssertEqualObjects(metrics, dummyMetrics);
   };
 

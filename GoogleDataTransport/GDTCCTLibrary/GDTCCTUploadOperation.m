@@ -247,10 +247,10 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
   BOOL shouldDeleteEvents = isSuccess || !isTransientError;
 
-  // Reset metrics if upload is successful.
+  // Place metrics back in storage if upload failed.
   GDTCORMetrics *uploadedMetrics = [self currentMetrics];
-  if (uploadedMetrics) {
-    [self.metricsController confirmMetrics:uploadedMetrics wereUploaded:isSuccess];
+  if (uploadedMetrics && !isSuccess) {
+    [self.metricsController offerMetrics:uploadedMetrics];
   }
 
   if (isSuccess) {
@@ -518,14 +518,11 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                                                    qosTiers:qosTiers];
 }
 
-// TODO(ncooke3): Consider another approach: Adding metrics property to `GDTCORUploadBatch`.
 - (FBLPromise<GDTCORUploadBatch *> *)batchByAddingMetricsEventToBatch:(GDTCORUploadBatch *)batch
                                                             forTarget:(GDTCORTarget)target {
-  return [self.metricsController fetchMetrics].thenOn(
+  return [self.metricsController getAndResetMetrics].thenOn(
       self.uploaderQueue, ^GDTCORUploadBatch *(GDTCORMetrics *metrics) {
         // TODO(ncooke3): Define kMetricEventMappingID.
-        // TODO(ncooke3): Consider if `fetchMetrics` should instead return
-        // the metrics in a `GDTCOREvent`.
         GDTCOREvent *metricsEvent = [[GDTCOREvent alloc] initWithMappingID:@"kMetricEventMappingID"
                                                                     target:target];
 
