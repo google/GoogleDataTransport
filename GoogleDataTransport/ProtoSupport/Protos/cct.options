@@ -26,7 +26,6 @@ gdt_cct.IosClientInfo.application_bundle_id type:FT_POINTER
 gdt_cct.MacClientInfo.os_major_version type:FT_POINTER
 gdt_cct.MacClientInfo.os_full_version type:FT_POINTER
 gdt_cct.MacClientInfo.application_build type:FT_POINTER
-gdt_cct.MacClientInfo.country type:FT_POINTER
 gdt_cct.MacClientInfo.application_bundle_id type:FT_POINTER
 
 gdt_cct.LogRequest.log_event type:FT_POINTER

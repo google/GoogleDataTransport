@@ -223,12 +223,6 @@ gdt_cct_MacClientInfo GDTCCTConstructMacClientInfo() {
     macOSClientInfo.application_build = GDTCCTEncodeString(version);
   }
 
-  NSLocale *locale = [NSLocale currentLocale];
-  NSString *countryCode = [locale objectForKey:NSLocaleCountryCode];
-  if (countryCode) {
-    macOSClientInfo.country = GDTCCTEncodeString([locale objectForKey:NSLocaleCountryCode]);
-  }
-
   NSString *bundleID = bundle.bundleIdentifier;
   if (bundleID) {
     macOSClientInfo.application_bundle_id = GDTCCTEncodeString(bundleID);
