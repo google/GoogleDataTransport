@@ -14,12 +14,16 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GDTCORMetricsController : NSObject <GDTCORMetricsControllerProtocol>
-
+// TODO: Document.
+@interface GDTCORStorageMetadata : NSObject
+// TODO: Document.
+@property(nonatomic, readonly) GDTCORStorageSizeBytes currentCacheSize;
+// TODO: Document.
+@property(nonatomic, readonly) GDTCORStorageSizeBytes maxCacheSize;
 @end
 
 NS_ASSUME_NONNULL_END

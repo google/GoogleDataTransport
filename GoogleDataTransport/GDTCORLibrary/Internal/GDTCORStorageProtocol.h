@@ -18,6 +18,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORLifecycle.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageEventSelector.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
 
 @class GDTCOREvent;
@@ -27,9 +28,6 @@
 @class FBLPromise<ValueType>;
 
 NS_ASSUME_NONNULL_BEGIN
-
-/** The data type to represent storage size. */
-typedef uint64_t GDTCORStorageSizeBytes;
 
 typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
                                         NSSet<GDTCOREvent *> *_Nullable batchEvents);
@@ -123,7 +121,10 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 @end
 
-// TODO: Consider complete replacing block based API by promise API.
+// TODO(ncooke3): Consider complete replacing block based API by promise API.
+
+@class GDTCORMetricsMetadata;
+@class GDTCORStorageMetadata;
 
 /** Promise based version of API defined in GDTCORStorageProtocol. See API docs for corresponding
  * methods in GDTCORStorageProtocol. */
@@ -139,18 +140,11 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (FBLPromise<NSNull *> *)removeAllBatchesForTarget:(GDTCORTarget)target
                                        deleteEvents:(BOOL)deleteEvents;
 
-// TODO(ncooke3): Document.
-typedef id<NSSecureCoding, NSObject> GDTCORLibraryData;
+- (FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithReadWriteBlock:
+    (GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
+                                          NSError *_Nullable fetchError))readWriteBlock;
 
-// TODO(ncooke3): Document.
-typedef GDTCORLibraryData _Nullable (^GDTCORStorageLibraryDataReadWriteBlock)(
-    GDTCORLibraryData _Nullable fetchedValue, NSError *_Nullable fetchError);
-
-// TODO(ncooke3): Document.
-- (FBLPromise<GDTCORLibraryData> *)
-    fetchAndUpdateLibraryDataForKey:(NSString *)key
-                              klass:(Class)klass
-                     readWriteBlock:(GDTCORStorageLibraryDataReadWriteBlock)readWriteBlock;
+- (FBLPromise<GDTCORStorageMetadata *> *)fetchStorageMetadata;
 
 /** See `hasEventsForTarget:onComplete:`.
  *  @return A promise object that is resolved with @YES if there are events for the specified target
@@ -175,8 +169,6 @@ typedef GDTCORLibraryData _Nullable (^GDTCORStorageLibraryDataReadWriteBlock)(
 FOUNDATION_EXPORT
 id<GDTCORStorageProtocol> _Nullable GDTCORStorageInstanceForTarget(GDTCORTarget target);
 
-// TODO: Ideally we should remove completion-based API and use promise-based one. Need to double
-// check if it's ok.
 FOUNDATION_EXPORT
 id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget(
     GDTCORTarget target);

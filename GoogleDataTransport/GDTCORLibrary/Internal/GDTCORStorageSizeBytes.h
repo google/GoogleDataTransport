@@ -12,14 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import <Foundation/Foundation.h>
-
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface GDTCORMetricsController : NSObject <GDTCORMetricsControllerProtocol>
-
-@end
-
-NS_ASSUME_NONNULL_END
+/// The data type to represent storage size.
+typedef uint64_t GDTCORStorageSizeBytes;
