@@ -20,16 +20,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO(ncooke3): Document.
+/// An encodable model object that contains metadata that is persisted in storage until ready to be
+/// used to create a ``GDTCORMetrics`` instance.
 @interface GDTCORMetricsMetadata : NSObject <NSSecureCoding>
 
-// TODO(ncooke3): Document.
+/// The start of the time window over which the metrics were collected.
 @property(nonatomic, copy, readonly) NSDate *collectionStartDate;
 
-// TODO(ncooke3): Document.
+/// The dropped event counter associated with the metrics.
 @property(nonatomic, copy, readonly, nullable) GDTCOREventMetricsCounter *droppedEventCounter;
 
-// TODO(ncooke3): Document.
+/// Creates a metrics metadata object with the provided information.
+/// @param collectedSinceDate The start of the time window over which the metrics were collected.
+/// @param eventMetricsCounter The dropped event counter associated with the metrics.
 + (instancetype)metadataWithCollectionStartDate:(NSDate *)collectedSinceDate
                             eventMetricsCounter:
                                 (nullable GDTCOREventMetricsCounter *)eventMetricsCounter;

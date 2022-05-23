@@ -23,9 +23,9 @@
 
 /// The end of the time window over which the metrics were collected.
 @property(nonatomic, readonly) NSDate *collectionEndDate;
-/// The number of bytes of storage the event cache was consuming.
+/// The number of bytes the event cache was consuming in storage.
 @property(nonatomic, readonly) GDTCORStorageSizeBytes currentCacheSize;
-/// The maximum number of bytes to which the event cache is allowed to grow.
+/// The maximum number of bytes that the event cache is allowed to grow.
 @property(nonatomic, readonly) GDTCORStorageSizeBytes maxCacheSize;
 /// The bundle ID associated with the metrics being collected.
 @property(nonatomic, readonly) NSString *bundleID;

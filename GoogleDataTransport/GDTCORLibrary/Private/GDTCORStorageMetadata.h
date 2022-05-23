@@ -18,12 +18,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO: Document.
+/// A model object that contains metadata about the current state of the SDK's storage container.
 @interface GDTCORStorageMetadata : NSObject
-// TODO: Document.
+
+/// The number of bytes the event cache is consuming in storage.
 @property(nonatomic, readonly) GDTCORStorageSizeBytes currentCacheSize;
-// TODO: Document.
+
+/// The maximum number of bytes that the event cache may consume in storage.
 @property(nonatomic, readonly) GDTCORStorageSizeBytes maxCacheSize;
+
 @end
 
 NS_ASSUME_NONNULL_END
