@@ -153,7 +153,7 @@
         // newer than metrics represented by the currently stored metrics
         // metadata. In this case, return the existing metadata object as the
         // given metrics are assumed to already be accounted for by the
-        // currenly metadata.
+        // currently stored metadata.
         return metricsMetadata;
       }
     } else {
