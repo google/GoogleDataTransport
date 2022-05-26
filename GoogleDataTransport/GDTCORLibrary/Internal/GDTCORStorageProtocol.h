@@ -140,9 +140,9 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (FBLPromise<NSNull *> *)removeAllBatchesForTarget:(GDTCORTarget)target
                                        deleteEvents:(BOOL)deleteEvents;
 
-- (FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithReadWriteBlock:
+- (FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithHandler:
     (GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
-                                          NSError *_Nullable fetchError))readWriteBlock;
+                                          NSError *_Nullable fetchError))handler;
 
 - (FBLPromise<GDTCORStorageMetadata *> *)fetchStorageMetadata;
 

@@ -94,9 +94,9 @@
         }];
 }
 
-- (FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithReadWriteBlock:
+- (FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithHandler:
     (GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
-                                          NSError *_Nullable fetchError))readWriteBlock {
+                                          NSError *_Nullable fetchError))handler {
   // TODO(ncooke3): Implement.
   return [FBLPromise resolvedWith:nil];
 }

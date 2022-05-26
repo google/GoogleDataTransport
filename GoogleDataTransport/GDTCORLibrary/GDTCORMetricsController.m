@@ -67,8 +67,8 @@
 
 - (nonnull FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                                                      events:(nonnull NSSet<GDTCOREvent *> *)events {
-  __auto_type readWriteblock = ^GDTCORMetricsMetadata *(
-      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
+  __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
+                                                 NSError *_Nullable fetchError) {
     GDTCOREventMetricsCounter *metricsCounter =
         [GDTCOREventMetricsCounter counterWithEvents:[events allObjects] droppedForReason:reason];
 
@@ -87,14 +87,14 @@
     }
   };
 
-  return [_storage fetchAndUpdateClientMetricsWithReadWriteBlock:readWriteblock];
+  return [_storage fetchAndUpdateClientMetricsWithHandler:handler];
 }
 
 - (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
   __block GDTCORMetricsMetadata *snapshottedMetricsMetadata = nil;
 
-  __auto_type readWriteblock = ^GDTCORMetricsMetadata *(
-      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
+  __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
+                                                 NSError *_Nullable fetchError) {
     if (metricsMetadata) {
       snapshottedMetricsMetadata = metricsMetadata;
     } else {
@@ -106,8 +106,7 @@
 
   return FBLPromise
       .all(@[
-        [_storage fetchAndUpdateClientMetricsWithReadWriteBlock:readWriteblock],
-        [_storage fetchStorageMetadata]
+        [_storage fetchAndUpdateClientMetricsWithHandler:handler], [_storage fetchStorageMetadata]
       ])
       .then(^GDTCORMetrics *(NSArray *metricsMetadataAndStorageMetadata) {
         return
@@ -117,8 +116,8 @@
 }
 
 - (nonnull FBLPromise<NSNull *> *)offerMetrics:(nonnull GDTCORMetrics *)metrics {
-  __auto_type readWriteblock = ^GDTCORMetricsMetadata *(
-      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
+  __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
+                                                 NSError *_Nullable fetchError) {
     if (metricsMetadata) {
       if (metrics.collectionStartDate <= metricsMetadata.collectionStartDate) {
         // If the metrics to append are older than the metrics represented by
@@ -157,7 +156,7 @@
     }
   };
 
-  return [_storage fetchAndUpdateClientMetricsWithReadWriteBlock:readWriteblock];
+  return [_storage fetchAndUpdateClientMetricsWithHandler:handler];
 }
 
 - (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
