@@ -114,14 +114,14 @@
   return [FBLPromise resolvedWith:nil];
 }
 
-- (nonnull FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithReadWriteBlock:
+- (nonnull FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithHandler:
     (nonnull GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable,
-                                                  NSError *_Nullable))readWriteBlock {
+                                                  NSError *_Nullable))handler {
   if (_storedMetricsMetadata != nil) {
-    _storedMetricsMetadata = readWriteBlock(_storedMetricsMetadata, nil);
+    _storedMetricsMetadata = handler(_storedMetricsMetadata, nil);
   } else {
     NSError *emptyStorageError = [NSError errorWithDomain:@"GDTCORStorageFake" code:1 userInfo:nil];
-    _storedMetricsMetadata = readWriteBlock(nil, emptyStorageError);
+    _storedMetricsMetadata = handler(nil, emptyStorageError);
   }
 
   return [FBLPromise resolvedWith:nil];
