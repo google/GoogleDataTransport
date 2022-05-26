@@ -16,11 +16,25 @@
 
 #import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORStorageFake.h"
 
+#if __has_include(<FBLPromises/FBLPromises.h>)
+#import <FBLPromises/FBLPromises.h>
+#else
+#import "FBLPromises.h"
+#endif
+
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORStorageMetadata.h"
+
 @implementation GDTCORStorageFake {
-  /** Store the events in memory. */
+  /// Store the events in memory.
   NSMutableDictionary<NSString *, GDTCOREvent *> *_storedEvents;
+  /// Store the metrics metadata in memory.
+  GDTCORMetricsMetadata *_Nullable _storedMetricsMetadata;
+}
+
++ (instancetype)storageFake {
+  return [[self alloc] init];
 }
 
 - (void)storeEvent:(GDTCOREvent *)event
@@ -88,6 +102,55 @@
 }
 
 - (void)checkForExpirations {
+}
+
+- (nonnull FBLPromise<NSSet<NSNumber *> *> *)batchIDsForTarget:(GDTCORTarget)target {
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (nonnull FBLPromise<GDTCORUploadBatch *> *)batchWithEventSelector:
+                                                 (nonnull GDTCORStorageEventSelector *)eventSelector
+                                                    batchExpiration:(nonnull NSDate *)expiration {
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (nonnull FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithHandler:
+    (nonnull GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable,
+                                                  NSError *_Nullable))handler {
+  if (_storedMetricsMetadata != nil) {
+    _storedMetricsMetadata = handler(_storedMetricsMetadata, nil);
+  } else {
+    NSError *emptyStorageError = [NSError errorWithDomain:@"GDTCORStorageFake" code:1 userInfo:nil];
+    _storedMetricsMetadata = handler(nil, emptyStorageError);
+  }
+
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (nonnull FBLPromise<GDTCORStorageMetadata *> *)fetchStorageMetadata {
+  GDTCORStorageMetadata *storageMetadata =
+      [GDTCORStorageMetadata metadataWithCurrentCacheSize:15 * 1000 * 1000    // 15 MB
+                                             maxCacheSize:20 * 1000 * 1000];  // 20 MB
+  return [FBLPromise resolvedWith:storageMetadata];
+}
+
+- (nonnull FBLPromise<NSNumber *> *)hasEventsForTarget:(GDTCORTarget)target {
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (nonnull FBLPromise<NSNull *> *)removeAllBatchesForTarget:(GDTCORTarget)target
+                                               deleteEvents:(BOOL)deleteEvents {
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (nonnull FBLPromise<NSNull *> *)removeBatchWithID:(nonnull NSNumber *)batchID
+                                       deleteEvents:(BOOL)deleteEvents {
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (nonnull FBLPromise<NSNull *> *)removeBatchesWithIDs:(nonnull NSSet<NSNumber *> *)batchIDs
+                                          deleteEvents:(BOOL)deleteEvents {
+  return [FBLPromise resolvedWith:nil];
 }
 
 @end

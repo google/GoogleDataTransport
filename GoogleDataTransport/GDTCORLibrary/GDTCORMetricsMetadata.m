@@ -19,13 +19,12 @@
 @implementation GDTCORMetricsMetadata
 
 + (instancetype)metadataWithCollectionStartDate:(NSDate *)collectedSinceDate
-                            eventMetricsCounter:
-                                (nullable GDTCOREventMetricsCounter *)eventMetricsCounter {
+                            eventMetricsCounter:(GDTCOREventMetricsCounter *)eventMetricsCounter {
   return [[self alloc] initWithCollectionStartDate:collectedSinceDate counter:eventMetricsCounter];
 }
 
 - (instancetype)initWithCollectionStartDate:(NSDate *)collectionStartDate
-                                    counter:(nullable GDTCOREventMetricsCounter *)counter {
+                                    counter:(GDTCOREventMetricsCounter *)counter {
   self = [super init];
   if (self) {
     _collectionStartDate = collectionStartDate;

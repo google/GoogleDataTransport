@@ -1,18 +1,16 @@
-/*
- * Copyright 2022 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #import <Foundation/Foundation.h>
 
@@ -24,14 +22,18 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 
 @interface GDTCOREventMetricsCounter ()
 
-/// A dictionary of log sources that map to counters that reflect the number of events dropped for a given set
-/// of reasons (``GDTCOREventDropReason``).
+/// A dictionary of log sources that map to counters that reflect the number of events dropped for a
+/// given set of reasons (``GDTCOREventDropReason``).
 @property(nonatomic)
     NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByMappingID;
 
 @end
 
 @implementation GDTCOREventMetricsCounter
+
++ (instancetype)counter {
+  return [[self alloc] initWithDroppedEventCounterByMappingID:@{}];
+}
 
 + (instancetype)counterWithEvents:(NSArray<GDTCOREvent *> *)events
                  droppedForReason:(GDTCOREventDropReason)reason {
@@ -117,6 +119,33 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
   }];
 
   return [mergedDictionary copy];
+}
+
+#pragma mark - Equality
+
+- (BOOL)isEqualToDroppedEventCounter:(GDTCOREventMetricsCounter *)otherDroppedEventCounter {
+  return [_droppedEventCounterByMappingID
+      isEqualToDictionary:otherDroppedEventCounter.droppedEventCounterByMappingID];
+}
+
+- (BOOL)isEqual:(nullable id)object {
+  if (object == nil) {
+    return NO;
+  }
+
+  if (self == object) {
+    return YES;
+  }
+
+  if (![object isKindOfClass:[self class]]) {
+    return NO;
+  }
+
+  return [self isEqualToDroppedEventCounter:(GDTCOREventMetricsCounter *)object];
+}
+
+- (NSUInteger)hash {
+  return [_droppedEventCounterByMappingID hash];
 }
 
 #pragma mark - NSSecureCoding

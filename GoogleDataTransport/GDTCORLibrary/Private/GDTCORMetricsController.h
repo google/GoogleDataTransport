@@ -16,9 +16,18 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
 
+@protocol GDTCORStoragePromiseProtocol;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface GDTCORMetricsController : NSObject <GDTCORMetricsControllerProtocol>
+
+/// Designated initializer.
+/// @param storage The storage object to read and write metrics data from.
+- (instancetype)initWithStorage:(id<GDTCORStoragePromiseProtocol>)storage NS_DESIGNATED_INITIALIZER;
+
+/// This API is unavailable.
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

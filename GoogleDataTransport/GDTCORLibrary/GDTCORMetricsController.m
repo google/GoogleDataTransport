@@ -67,6 +67,11 @@
 
 - (nonnull FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                                                      events:(nonnull NSSet<GDTCOREvent *> *)events {
+  // No-op if there are no events to log.
+  if ([events count] == 0) {
+    return [FBLPromise resolvedWith:nil];
+  }
+
   __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
                                                  NSError *_Nullable fetchError) {
     GDTCOREventMetricsCounter *metricsCounter =
@@ -91,7 +96,7 @@
 }
 
 - (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
-  __block GDTCORMetricsMetadata *snapshottedMetricsMetadata = nil;
+  __block GDTCORMetricsMetadata *_Nullable snapshottedMetricsMetadata = nil;
 
   __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
                                                  NSError *_Nullable fetchError) {
@@ -100,18 +105,26 @@
     } else {
       GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
     }
-    return [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
-                                              eventMetricsCounter:nil];
+    return
+        [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                           eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
   };
 
-  return FBLPromise
-      .all(@[
-        [_storage fetchAndUpdateClientMetricsWithHandler:handler], [_storage fetchStorageMetadata]
-      ])
-      .then(^GDTCORMetrics *(NSArray *metricsMetadataAndStorageMetadata) {
-        return
-            [GDTCORMetrics metricsWithMetricsMetadata:metricsMetadataAndStorageMetadata.firstObject
-                                      storageMetadata:metricsMetadataAndStorageMetadata.lastObject];
+  return [_storage fetchAndUpdateClientMetricsWithHandler:handler]
+      .validate(^BOOL(NSNull *__unused _) {
+        // Break and reject the promise chain when storage contains no metrics
+        // metadata.
+        return snapshottedMetricsMetadata != nil;
+      })
+      .then(^FBLPromise *(NSNull *__unused _) {
+        // Fetch and return storage metadata (needed for metrics).
+        return [self.storage fetchStorageMetadata];
+      })
+      .then(^GDTCORMetrics *(GDTCORStorageMetadata *storageMetadata) {
+        // Use the fetched metrics & storage metadata to create and return a
+        // complete metrics object.
+        return [GDTCORMetrics metricsWithMetricsMetadata:snapshottedMetricsMetadata
+                                         storageMetadata:storageMetadata];
       });
 }
 
@@ -151,7 +164,9 @@
         // This catches an edge case where the given metrics are from the
         // future. If this occurs, ignore them and store an empty metadata
         // object intended to track metrics metadata from this time forward.
-        return [GDTCORMetricsMetadata metadataWithCollectionStartDate:now eventMetricsCounter:nil];
+        return [GDTCORMetricsMetadata
+            metadataWithCollectionStartDate:[NSDate date]
+                        eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
       }
     }
   };

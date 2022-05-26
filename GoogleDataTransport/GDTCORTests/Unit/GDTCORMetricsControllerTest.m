@@ -17,49 +17,117 @@
 #import "FBLPromise+Await.h"
 #import "FBLPromise+Testing.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
+
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsController.h"
+
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORStorageFake.h"
 
 @interface GDTCORMetricsControllerTest : GDTCORTestCase
 @end
 
 @implementation GDTCORMetricsControllerTest
 
-- (void)SKIP_testLoggedEventsAreFetchedAsMetrics {
+- (void)testLoggingEvents_WhenEventSetIsEmpty_ThenNoOp {
   // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
 
   // When
   [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
 
   // Then
-  // GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
-  // TODO(ncooke3): Assert that the metrics contain the previously logged events.
+  __auto_type metricsPromise = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert([metricsPromise isRejected]);
 }
 
-- (void)SKIP_testLogEvents_WhenNoEvents_DoesNothing {
+- (void)testLoggingEvents_WhenNoMetricsAreStored_StoresEventsAsMetrics {
   // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
+
+  NSSet<GDTCOREvent *> *droppedEvents = [NSSet setWithArray:@[
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+  ]];
+
+  GDTCOREventMetricsCounter *expectedCounter =
+      [GDTCOREventMetricsCounter counterWithEvents:[droppedEvents allObjects]
+                                  droppedForReason:GDTCOREventDropReasonUnknown];
 
   // When
-  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
+  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:droppedEvents];
 
   // Then
-  // TODO(ncooke3): Assert that the metrics are empty with expected time window.
+  __auto_type metricsPromise = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+
+  XCTAssertEqualObjects([metricsPromise.value droppedEventCounter], expectedCounter);
 }
 
-- (void)SKIP_testFetchMetrics_WhenNoMetricsAreStored_ReturnsEmptyMetrics {
+- (void)testLoggingEvents_WhenMetricsAreStored_StoresEventsAsMetrics {
   // Given
-  // GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
+
+  NSSet<GDTCOREvent *> *droppedEvents1 = [NSSet setWithArray:@[
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+  ]];
+
+  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:droppedEvents1];
+
+  // When
+  NSSet<GDTCOREvent *> *droppedEvents2 = [NSSet setWithArray:@[
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_3" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_3" target:kGDTCORTargetTest],
+  ]];
+
+  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:droppedEvents2];
 
   // Then
-  // TODO(ncooke3): Assert that fetched metrics are empty with expected time window.
+  __auto_type metricsPromise = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+
+  GDTCOREventMetricsCounter *expectedCounter1 =
+      [GDTCOREventMetricsCounter counterWithEvents:[droppedEvents1 allObjects]
+                                  droppedForReason:GDTCOREventDropReasonUnknown];
+
+  GDTCOREventMetricsCounter *expectedCounter2 =
+      [GDTCOREventMetricsCounter counterWithEvents:[droppedEvents2 allObjects]
+                                  droppedForReason:GDTCOREventDropReasonUnknown];
+
+  GDTCOREventMetricsCounter *expectedCounterCombined =
+      [expectedCounter1 counterByMergingWithCounter:expectedCounter2];
+
+  XCTAssertEqualObjects([metricsPromise.value droppedEventCounter], expectedCounterCombined);
+}
+
+- (void)testGetAndResetMetrics_WhenNoMetricsAreStored_ReturnsRejectedPromise {
+  // Given
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
+
+  // When
+  __auto_type metricsPromise = [metricsController getAndResetMetrics];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert([metricsPromise isRejected]);
 }
 
 - (void)
     SKIP_testFetchMetrics_WhenSomeMetricsNeedReupload_ReturnsLastConfirmedMetricsThatFailedToUpload {
   // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
   // - Create pending metrics.
   [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
 
@@ -88,7 +156,8 @@
 
 - (void)SKIP_testFetchMetrics_WhenNoMetricsNeedReuploading_ReturnsNewMetricsFromPendingMetricsData {
   // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
   // - Create and fetch pending metrics data.
   [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
   // GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
@@ -109,7 +178,8 @@
 
 - (void)SKIP_testAppendingMetrics_SavesMetricsForRefetchingLater {
   // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
   // - TODO(ncooke3): Add context.
   [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
   GDTCORMetrics *metricsThatFailedToUpload =
@@ -130,7 +200,8 @@
 
 - (void)testIsMetricsCollectionSupportedForTarget {
   // Given
-  GDTCORMetricsController *metricsController = [[GDTCORMetricsController alloc] init];
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
   NSDictionary *targetSupportMatrix = @{
     @(kGDTCORTargetTest) : @YES,
     @(kGDTCORTargetFLL) : @YES,
