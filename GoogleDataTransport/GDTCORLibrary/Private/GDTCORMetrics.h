@@ -19,17 +19,25 @@
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
 
 @class GDTCOREventMetricsCounter;
+@class GDTCORMetricsMetadata;
+@class GDTCORStorageMetadata;
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO(ncooke3): Document.
+/// An object representing metrics that represent a snapshot of the SDK's state and performance.
 @interface GDTCORMetrics : NSObject <GDTCOREventDataObject>
 
-// TODO(ncooke3): Document.
+/// The start of the time window over which the metrics were collected.
 @property(nonatomic, readonly) NSDate *collectionStartDate;
 
-// TODO(ncooke3): Document.
+/// The dropped event counter associated with the metrics.
 @property(nonatomic, readonly) GDTCOREventMetricsCounter *droppedEventCounter;
+
+/// Creates a metrics instance with the provided metadata.
+/// @param metricsMetadata The provided metrics metadata.
+/// @param storageMetadata The provided storage metadata.
++ (instancetype)metricsWithMetricsMetadata:(GDTCORMetricsMetadata *)metricsMetadata
+                           storageMetadata:(GDTCORStorageMetadata *)storageMetadata;
 
 @end
 
