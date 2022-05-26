@@ -14,11 +14,18 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GDTCORMetricsController : NSObject <GDTCORMetricsControllerProtocol>
+/// A model object that contains metadata about the current state of the SDK's storage container.
+@interface GDTCORStorageMetadata : NSObject
+
+/// The number of bytes the event cache is consuming in storage.
+@property(nonatomic, readonly) GDTCORStorageSizeBytes currentCacheSize;
+
+/// The maximum number of bytes that the event cache may consume in storage.
+@property(nonatomic, readonly) GDTCORStorageSizeBytes maxCacheSize;
 
 @end
 

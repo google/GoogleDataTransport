@@ -1,18 +1,16 @@
-/*
- * Copyright 2022 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #import <Foundation/Foundation.h>
 
@@ -35,11 +33,8 @@
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 
-// TODO(ncooke3): Document.
-static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
-
 @interface GDTCORMetricsController ()
-// TODO(ncooke3): Document.
+/// The underlying storage object where metrics are stored.
 @property(nonatomic) id<GDTCORStoragePromiseProtocol> storage;
 
 @end
@@ -72,8 +67,8 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
 
 - (nonnull FBLPromise<NSNull *> *)logEventsDroppedForReason:(GDTCOREventDropReason)reason
                                                      events:(nonnull NSSet<GDTCOREvent *> *)events {
-  GDTCORStorageLibraryDataReadWriteBlock readWriteblock = ^GDTCORMetricsMetadata *(
-      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
+  __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
+                                                 NSError *_Nullable fetchError) {
     GDTCOREventMetricsCounter *metricsCounter =
         [GDTCOREventMetricsCounter counterWithEvents:[events allObjects] droppedForReason:reason];
 
@@ -92,19 +87,14 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
     }
   };
 
-  return [_storage fetchAndUpdateLibraryDataForKey:kMetricsLibraryDataKey
-                                             klass:[GDTCORMetricsMetadata class]
-                                    readWriteBlock:readWriteblock]
-      .then(^id _Nullable(GDTCORLibraryData _Nullable value) {
-        return nil;
-      });
+  return [_storage fetchAndUpdateClientMetricsWithHandler:handler];
 }
 
 - (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
   __block GDTCORMetricsMetadata *snapshottedMetricsMetadata = nil;
 
-  GDTCORStorageLibraryDataReadWriteBlock readWriteblock = ^GDTCORMetricsMetadata *(
-      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
+  __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
+                                                 NSError *_Nullable fetchError) {
     if (metricsMetadata) {
       snapshottedMetricsMetadata = metricsMetadata;
     } else {
@@ -114,22 +104,24 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
                                               eventMetricsCounter:nil];
   };
 
-  return [_storage fetchAndUpdateLibraryDataForKey:kMetricsLibraryDataKey
-                                             klass:[GDTCORMetricsMetadata class]
-                                    readWriteBlock:readWriteblock]
-      .then(^id _Nullable(GDTCORLibraryData _Nullable value) {
-        // TODO(ncooke3): Create metrics object using snapshottedMetadata.
-        return nil;
+  return FBLPromise
+      .all(@[
+        [_storage fetchAndUpdateClientMetricsWithHandler:handler], [_storage fetchStorageMetadata]
+      ])
+      .then(^GDTCORMetrics *(NSArray *metricsMetadataAndStorageMetadata) {
+        return
+            [GDTCORMetrics metricsWithMetricsMetadata:metricsMetadataAndStorageMetadata.firstObject
+                                      storageMetadata:metricsMetadataAndStorageMetadata.lastObject];
       });
 }
 
 - (nonnull FBLPromise<NSNull *> *)offerMetrics:(nonnull GDTCORMetrics *)metrics {
-  GDTCORStorageLibraryDataReadWriteBlock readWriteblock = ^GDTCORMetricsMetadata *(
-      GDTCORMetricsMetadata *_Nullable metricsMetadata, NSError *_Nullable fetchError) {
+  __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
+                                                 NSError *_Nullable fetchError) {
     if (metricsMetadata) {
       if (metrics.collectionStartDate <= metricsMetadata.collectionStartDate) {
-        // If the metrics to append are older than the metrics represented by the
-        // currently stored metrics, then return a new metadata object that
+        // If the metrics to append are older than the metrics represented by
+        // the currently stored metrics, then return a new metadata object that
         // incorporates the data from the given metrics.
         return [GDTCORMetricsMetadata
             metadataWithCollectionStartDate:[metricsMetadata collectionStartDate]
@@ -164,12 +156,7 @@ static NSString *const kMetricsLibraryDataKey = @"metrics-library-data";
     }
   };
 
-  return [_storage fetchAndUpdateLibraryDataForKey:kMetricsLibraryDataKey
-                                             klass:[GDTCORMetricsMetadata class]
-                                    readWriteBlock:readWriteblock]
-      .then(^id _Nullable(GDTCORLibraryData _Nullable value) {
-        return nil;
-      });
+  return [_storage fetchAndUpdateClientMetricsWithHandler:handler];
 }
 
 - (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
