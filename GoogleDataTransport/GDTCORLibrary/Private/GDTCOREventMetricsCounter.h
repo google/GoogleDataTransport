@@ -25,6 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// reasons. An event is considered "dropped" when the event is no longer persisted by the SDK.
 @interface GDTCOREventMetricsCounter : NSObject <NSSecureCoding>
 
+/// Creates an empty dropped event counter.
++ (instancetype)counter;
+
 /// Creates a dropped event counter for a collection of events that were dropped for a given reason.
 /// @param events The collection of events that were dropped.
 /// @param reason The reason for which given events were dropped.
@@ -37,6 +40,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// Returns a counter created by merging this counter with the given counter.
 /// @param counter The given counter to merge with.
 - (GDTCOREventMetricsCounter *)counterByMergingWithCounter:(GDTCOREventMetricsCounter *)counter;
+
+/// Returns a Boolean value that indicates whether the receiving dropped event counter is equal to
+/// the given dropped event counter.
+/// @param otherDroppedEventCounter The dropped event counter with which to compare the
+/// receiving dropped event counter.
+- (BOOL)isEqualToDroppedEventCounter:(GDTCOREventMetricsCounter *)otherDroppedEventCounter;
 
 @end
 

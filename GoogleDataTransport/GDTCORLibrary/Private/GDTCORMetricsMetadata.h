@@ -34,8 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param collectedSinceDate The start of the time window over which the metrics were collected.
 /// @param eventMetricsCounter The dropped event counter associated with the metrics.
 + (instancetype)metadataWithCollectionStartDate:(NSDate *)collectedSinceDate
-                            eventMetricsCounter:
-                                (nullable GDTCOREventMetricsCounter *)eventMetricsCounter;
+                            eventMetricsCounter:(GDTCOREventMetricsCounter *)eventMetricsCounter;
 
 /// This API is unavailable.
 - (instancetype)init NS_UNAVAILABLE;

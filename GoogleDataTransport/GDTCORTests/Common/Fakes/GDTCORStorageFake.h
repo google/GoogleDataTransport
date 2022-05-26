@@ -19,7 +19,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /** A functionless fake that can be injected into classes that need it. */
-@interface GDTCORStorageFake : NSObject <GDTCORStorageProtocol>
+@interface GDTCORStorageFake : NSObject <GDTCORStorageProtocol, GDTCORStoragePromiseProtocol>
+
+/// Creates an storage fake.
++ (instancetype)storageFake;
 
 @end
 
