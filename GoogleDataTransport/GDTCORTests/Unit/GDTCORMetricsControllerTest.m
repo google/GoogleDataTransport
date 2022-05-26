@@ -23,6 +23,8 @@
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsController.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORStorageMetadata.h"
 
 #import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORStorageFake.h"
 
@@ -110,7 +112,7 @@
   XCTAssertEqualObjects([metricsPromise.value droppedEventCounter], expectedCounterCombined);
 }
 
-- (void)testGetAndResetMetrics_WhenNoMetricsAreStored_ReturnsRejectedPromise {
+- (void)testGetAndResetMetrics_WhenNoMetricsDataIsStored_ReturnsRejectedPromise {
   // Given
   GDTCORMetricsController *metricsController =
       [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
@@ -119,83 +121,233 @@
   __auto_type metricsPromise = [metricsController getAndResetMetrics];
 
   // Then
+  // - Assert that the retrieved metrics promise was rejected.
   FBLWaitForPromisesWithTimeout(0.5);
-  XCTAssert([metricsPromise isRejected]);
+  XCTAssert(metricsPromise.isRejected);
+
+  // - Assert that metrics metadata was reset to start tracking metrics data
+  //   from this point forward.
+  __auto_type metricsPromise2 = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+
+  // Dates should be roughly equal (within one second of each other).
+  XCTAssertEqualWithAccuracy(metricsPromise2.value.collectionStartDate.timeIntervalSince1970,
+                             NSDate.date.timeIntervalSince1970, 1);
+  // The dropped event counter should be empty.
+  XCTAssertEqualObjects([metricsPromise2.value droppedEventCounter],
+                        [GDTCOREventMetricsCounter counter]);
 }
 
-- (void)
-    SKIP_testFetchMetrics_WhenSomeMetricsNeedReupload_ReturnsLastConfirmedMetricsThatFailedToUpload {
+- (void)testGetAndResetMetrics_WhenMetricsDataIsStored_ReturnsMetrics {
   // Given
   GDTCORMetricsController *metricsController =
       [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
-  // - Create pending metrics.
-  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
+
+  NSSet<GDTCOREvent *> *droppedEvents = [NSSet setWithArray:@[
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+  ]];
+
+  GDTCOREventMetricsCounter *expectedCounter =
+      [GDTCOREventMetricsCounter counterWithEvents:[droppedEvents allObjects]
+                                  droppedForReason:GDTCOREventDropReasonUnknown];
 
   // When
-  GDTCORMetrics *metrics1 = [[GDTCORMetrics alloc] init];
-  [metricsController offerMetrics:metrics1];
-
-  GDTCORMetrics *metrics2 = [[GDTCORMetrics alloc] init];
-  [metricsController offerMetrics:metrics2];
+  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:droppedEvents];
 
   // Then
-  // - TODO(ncooke3): Add comment.
-  GDTCORMetrics *fetchedMetrics1 = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
-  XCTAssertEqualObjects(fetchedMetrics1, metrics2);
+  // - Assert that the retrieved metrics have the expected dropped event counter.
+  __auto_type metricsPromise1 = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
 
-  // - TODO(ncooke3): Add comment.
-  GDTCORMetrics *fetchedMetrics2 = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
-  XCTAssertEqualObjects(fetchedMetrics2, metrics1);
+  XCTAssertEqualObjects([metricsPromise1.value droppedEventCounter], expectedCounter);
 
-  // - TODO(ncooke3): Add comment.
-  // GDTCORMetrics *fetchedMetrics3 = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
-  // TODO(ncooke3): Assert that `metricsPromise3`'s metrics contain logged events.
+  // - Assert that metrics metadata was reset to start tracking metrics data
+  //   from this point forward.
+  __auto_type metricsPromise2 = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
 
-  // TODO(ncooke3): Assert that the metrics are empty with the expected test window.
+  // Dates should be roughly equal (within one second of each other).
+  XCTAssertEqualWithAccuracy(metricsPromise2.value.collectionStartDate.timeIntervalSince1970,
+                             NSDate.date.timeIntervalSince1970, 1);
+  // The dropped event counter should be empty.
+  XCTAssertEqualObjects([metricsPromise2.value droppedEventCounter],
+                        [GDTCOREventMetricsCounter counter]);
 }
 
-- (void)SKIP_testFetchMetrics_WhenNoMetricsNeedReuploading_ReturnsNewMetricsFromPendingMetricsData {
+- (void)testOfferMetrics_WhenStorageErrorAndOfferedMetricsAreValid_ThenAcceptMetrics {
   // Given
   GDTCORMetricsController *metricsController =
       [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
-  // - Create and fetch pending metrics data.
-  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
-  // GDTCORMetrics *metrics = FBLPromiseAwait([metricsController getAndResetMetrics], nil);
 
-  // - * Client begins uploading fetched metrics... *
+  // - Create valid metrics to offer.
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantPast]
+                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+
+  GDTCORStorageMetadata *storageMetadata =
+      [GDTCORStorageMetadata metadataWithCurrentCacheSize:15 * 1000 * 1000    // 15 MB
+                                             maxCacheSize:20 * 1000 * 1000];  // 20 MB
+
+  GDTCORMetrics *metrics = [GDTCORMetrics metricsWithMetricsMetadata:metricsMetadata
+                                                     storageMetadata:storageMetadata];
 
   // When
-  // - Create new pending metrics data.
-  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
+  // - Storage is empty and will pass back an error. See ``GDTCORStorageFake``.
+  __auto_type offerPromise = [metricsController offerMetrics:metrics];
 
   // Then
-  // GDTCORMetrics *newPendingMetrics = FBLPromiseAwait([metricsController getAndResetMetrics],
-  // nil);
-  // TODO(ncooke3): Assert that the metrics contain the new pending metrics data.
+  // - Assert promise was resolved.
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(offerPromise.isFulfilled);
 
-  // TODO(ncooke3): Assert that the metrics are empty with expected time window.
+  // - Assert that retrieving the metrics contains the metadata from the offered metrics.
+  __auto_type metricsPromise1 = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssertEqualObjects([metricsPromise1.value collectionStartDate],
+                        metricsMetadata.collectionStartDate);
+  XCTAssertEqualObjects([metricsPromise1.value droppedEventCounter],
+                        metricsMetadata.droppedEventCounter);
 }
 
-- (void)SKIP_testAppendingMetrics_SavesMetricsForRefetchingLater {
+- (void)testOfferMetrics_WhenStorageErrorAndOfferedMetricsAreInvalid_ThenRejectMetrics {
   // Given
   GDTCORMetricsController *metricsController =
       [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
-  // - TODO(ncooke3): Add context.
-  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:[NSSet set]];
-  GDTCORMetrics *metricsThatFailedToUpload =
-      FBLPromiseAwait([metricsController getAndResetMetrics], nil);
+
+  // - Create invalid metrics to offer.
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantFuture]
+                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+
+  GDTCORStorageMetadata *storageMetadata =
+      [GDTCORStorageMetadata metadataWithCurrentCacheSize:15 * 1000 * 1000    // 15 MB
+                                             maxCacheSize:20 * 1000 * 1000];  // 20 MB
+
+  GDTCORMetrics *metrics = [GDTCORMetrics metricsWithMetricsMetadata:metricsMetadata
+                                                     storageMetadata:storageMetadata];
 
   // When
-  // - * Uploading metrics fails *
-  // - Alert the metrics controller about the upload and save metrics for later.
-  [metricsController offerMetrics:metricsThatFailedToUpload];
+  // - Storage is empty and will pass back an error. See ``GDTCORStorageFake``.
+  __auto_type offerPromise = [metricsController offerMetrics:metrics];
 
   // Then
-  GDTCORMetrics *metricsToRetryUploading =
-      FBLPromiseAwait([metricsController getAndResetMetrics], nil);
-  XCTAssertEqualObjects(metricsToRetryUploading, metricsThatFailedToUpload);
+  // - Assert promise was resolved.
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(offerPromise.isFulfilled);
 
-  // TODO(ncooke3): Assert that pending metrics are empty with expected time window.
+  // - Assert that retrieving the metrics contains the metadata from the offered metrics.
+  __auto_type metricsPromise = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+  // Dates should be roughly equal (within one second of each other).
+  XCTAssertEqualWithAccuracy(metricsPromise.value.collectionStartDate.timeIntervalSince1970,
+                             NSDate.date.timeIntervalSince1970, 1);
+  // The dropped event counter should be empty.
+  XCTAssertEqualObjects([metricsPromise.value droppedEventCounter],
+                        [GDTCOREventMetricsCounter counter]);
+}
+
+- (void)testOfferMetrics_WhenOfferedMetricsAreInvalid_ThenRejectMetrics {
+  // Given
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
+
+  // - Populate storage with metrics metadata from dropped events.
+  NSSet<GDTCOREvent *> *droppedEvents = [NSSet setWithArray:@[
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+  ]];
+
+  GDTCOREventMetricsCounter *expectedCounter =
+      [GDTCOREventMetricsCounter counterWithEvents:[droppedEvents allObjects]
+                                  droppedForReason:GDTCOREventDropReasonUnknown];
+
+  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:droppedEvents];
+
+  // - Create invalid metrics to offer.
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantFuture]
+                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+
+  GDTCORStorageMetadata *storageMetadata =
+      [GDTCORStorageMetadata metadataWithCurrentCacheSize:15 * 1000 * 1000    // 15 MB
+                                             maxCacheSize:20 * 1000 * 1000];  // 20 MB
+
+  GDTCORMetrics *metrics = [GDTCORMetrics metricsWithMetricsMetadata:metricsMetadata
+                                                     storageMetadata:storageMetadata];
+
+  // When
+  __auto_type offerPromise = [metricsController offerMetrics:metrics];
+
+  // Then
+  // - Assert promise was resolved.
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(offerPromise.isFulfilled);
+
+  // - Assert that retrieving the metrics contains the metadata from the original metrics.
+  __auto_type metricsPromise = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssertEqualObjects([metricsPromise.value droppedEventCounter], expectedCounter);
+}
+
+- (void)testOfferMetrics_WhenOfferedMetricsAreValid_ThenAcceptMetrics {
+  // Given
+  GDTCORMetricsController *metricsController =
+      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
+
+  // - Populate storage with metrics metadata from dropped events.
+  NSSet<GDTCOREvent *> *droppedEvents = [NSSet setWithArray:@[
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_1" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+  ]];
+
+  GDTCOREventMetricsCounter *originalCounter =
+      [GDTCOREventMetricsCounter counterWithEvents:[droppedEvents allObjects]
+                                  droppedForReason:GDTCOREventDropReasonUnknown];
+
+  [metricsController logEventsDroppedForReason:GDTCOREventDropReasonUnknown events:droppedEvents];
+
+  // - Create valid metrics to offer.
+  NSSet<GDTCOREvent *> *droppedEventsToOffer = [NSSet setWithArray:@[
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_2" target:kGDTCORTargetTest],
+    [[GDTCOREvent alloc] initWithMappingID:@"log_source_3" target:kGDTCORTargetTest],
+  ]];
+
+  GDTCOREventMetricsCounter *counterToOffer =
+      [GDTCOREventMetricsCounter counterWithEvents:[droppedEventsToOffer allObjects]
+                                  droppedForReason:GDTCOREventDropReasonUnknown];
+
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantPast]
+                                         eventMetricsCounter:counterToOffer];
+
+  GDTCORStorageMetadata *storageMetadata =
+      [GDTCORStorageMetadata metadataWithCurrentCacheSize:15 * 1000 * 1000    // 15 MB
+                                             maxCacheSize:20 * 1000 * 1000];  // 20 MB
+
+  GDTCORMetrics *metrics = [GDTCORMetrics metricsWithMetricsMetadata:metricsMetadata
+                                                     storageMetadata:storageMetadata];
+
+  // When
+  __auto_type offerPromise = [metricsController offerMetrics:metrics];
+
+  // Then
+  // - Assert promise was resolved.
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(offerPromise.isFulfilled);
+
+  // - Assert that retrieving the metrics contains the combined metadata from
+  //   the original metrics and the offered metrics.
+  __auto_type metricsPromise = [metricsController getAndResetMetrics];
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssertEqualObjects([metricsPromise.value collectionStartDate], [NSDate distantPast]);
+  GDTCOREventMetricsCounter *expectedCombinedCounter =
+      [originalCounter counterByMergingWithCounter:counterToOffer];
+  XCTAssertEqualObjects([metricsPromise.value droppedEventCounter], expectedCombinedCounter);
 }
 
 - (void)testIsMetricsCollectionSupportedForTarget {

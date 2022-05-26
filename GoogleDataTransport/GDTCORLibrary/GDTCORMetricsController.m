@@ -32,6 +32,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage+Promises.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORStorageMetadata.h"
 
 @interface GDTCORMetricsController ()
 /// The underlying storage object where metrics are stored.
@@ -129,15 +130,21 @@
 }
 
 - (nonnull FBLPromise<NSNull *> *)offerMetrics:(nonnull GDTCORMetrics *)metrics {
+  // No-op if there are no metrics to offer.
+  if (metrics == nil) {
+    return [FBLPromise resolvedWith:nil];
+  }
+
   __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
                                                  NSError *_Nullable fetchError) {
     if (metricsMetadata) {
-      if (metrics.collectionStartDate <= metricsMetadata.collectionStartDate) {
+      if (metrics.collectionStartDate.timeIntervalSince1970 <=
+          metricsMetadata.collectionStartDate.timeIntervalSince1970) {
         // If the metrics to append are older than the metrics represented by
         // the currently stored metrics, then return a new metadata object that
         // incorporates the data from the given metrics.
         return [GDTCORMetricsMetadata
-            metadataWithCollectionStartDate:[metricsMetadata collectionStartDate]
+            metadataWithCollectionStartDate:[metrics collectionStartDate]
                         eventMetricsCounter:
                             [metricsMetadata.droppedEventCounter
                                 counterByMergingWithCounter:metrics.droppedEventCounter]];
@@ -154,7 +161,7 @@
       GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
 
       NSDate *now = [NSDate date];
-      if (metrics.collectionStartDate <= now) {
+      if (metrics.collectionStartDate.timeIntervalSince1970 <= now.timeIntervalSince1970) {
         // The given metrics are were recorded up until now. They wouldn't
         // be offered if they were successfully uploaded so their
         // corresponding metadata can be safely placed back in storage.
