@@ -27,6 +27,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// The maximum number of bytes that the event cache may consume in storage.
 @property(nonatomic, readonly) GDTCORStorageSizeBytes maxCacheSize;
 
+/// Creates a storage metadata object with the provided information.
+/// @param currentCacheSize The current number of bytes the event cache is consuming.
+/// @param maxCacheSize The current maximum capacity (in bytes) that the event cache may consume.
++ (instancetype)metadataWithCurrentCacheSize:(GDTCORStorageSizeBytes)currentCacheSize
+                                maxCacheSize:(GDTCORStorageSizeBytes)maxCacheSize;
+
+/// This API is unavailable.
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 NS_ASSUME_NONNULL_END

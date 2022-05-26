@@ -54,6 +54,8 @@
 
 + (instancetype)metricsWithMetricsMetadata:(GDTCORMetricsMetadata *)metricsMetadata
                            storageMetadata:(GDTCORStorageMetadata *)storageMetadata {
+  NSParameterAssert(metricsMetadata);
+  NSParameterAssert(storageMetadata);
   // The window of collection ends at the time of creating the metrics object.
   NSDate *collectionEndDate = [NSDate date];
   // The main bundle ID is associated with the created metrics.
