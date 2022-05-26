@@ -194,18 +194,19 @@
       return NO;
   }
 
-  NSAssert(NO, @"This code path shouldn't be reached.");
+  // This code path shouldn't be reached.
+  return NO;
 }
 
 #pragma mark - GDTCORStorageDelegate
 
-- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
-    didRemoveExpiredEvent:(GDTCOREvent *)event {
-  [self logEventsDroppedForReason:GDTCOREventDropReasonMessageTooOld
-                           events:[NSSet setWithObject:event]];
+- (void)storage:(id<GDTCORStorageProtocol>)storage
+    didRemoveExpiredEvents:(nonnull NSSet<GDTCOREvent *> *)events {
+  [self logEventsDroppedForReason:GDTCOREventDropReasonMessageTooOld events:events];
 }
 
-- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event {
+- (void)storage:(nonnull id<GDTCORStorageProtocol>)storage
+    didDropEvent:(nonnull GDTCOREvent *)event {
   [self logEventsDroppedForReason:GDTCOREventDropReasonStorageFull
                            events:[NSSet setWithObject:event]];
 }
