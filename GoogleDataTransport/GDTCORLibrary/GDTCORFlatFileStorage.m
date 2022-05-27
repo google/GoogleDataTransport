@@ -159,7 +159,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
                    NSLocalizedFailureReasonErrorKey : @"Storage size limit has been reached."
                  }];
       if (self.delegate != nil) {
-        GDTCORLogDebug(@"%@", @"Delegate notified that 1 event was dropped.");
+        GDTCORLogDebug(@"Delegate notified that event with mapping ID %@ was dropped.",
+                       event.mappingID);
         [self.delegate storage:self didDropEvent:event];
       }
       completion(NO, error);

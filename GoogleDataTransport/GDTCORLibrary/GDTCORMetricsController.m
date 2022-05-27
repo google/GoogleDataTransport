@@ -194,7 +194,9 @@
       return NO;
   }
 
-  // This code path shouldn't be reached.
+  GDTCORLogDebug(@"This code path shouldn't be reached."
+                 @"Invalid target %ld does not support metrics collection",
+                 target);
   return NO;
 }
 

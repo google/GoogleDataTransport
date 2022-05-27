@@ -797,7 +797,6 @@
       [self expectationWithDescription:@"metricsControllerExpectation"];
   metricsControllerExpectation.inverted = YES;
   metricsController.onStorageDidRemoveExpiredEvents = ^(NSSet<GDTCOREvent *> *events) {
-    XCTAssertTrue(events.count > 0);
     [metricsControllerExpectation fulfill];
   };
 
