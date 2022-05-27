@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(atomic, readonly)
     NSMutableDictionary<NSNumber *, id<GDTCORStorageProtocol>> *targetToStorage;
 
-// TODO(ncooke3): Document.
+/** A map of targets to metrics controller instances. */
 @property(atomic, readonly)
     NSMutableDictionary<NSNumber *, id<GDTCORMetricsControllerProtocol>> *targetToMetricsController;
 
