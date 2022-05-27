@@ -18,6 +18,8 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
+static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterByMappingID";
+
 typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 
 @interface GDTCOREventMetricsCounter ()
@@ -40,7 +42,7 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
   NSMutableDictionary<NSString *, GDTCORDroppedEventCounter *> *eventCounterByMappingID =
       [NSMutableDictionary dictionary];
 
-  for (GDTCOREvent *event in events) {
+  for (GDTCOREvent *event in [events copy]) {
     // TODO(ncooke3): Should I use an autorelease pool?
     // Dropped events with a `nil` or empty mapping ID (log source) are not recorded.
     if (event.mappingID.length == 0) {
@@ -104,7 +106,6 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 + (NSDictionary *)dictionaryByMergingDictionary:(NSDictionary *)dictionary
                             withOtherDictionary:(NSDictionary *)otherDictionary
                           uniquingKeysWithBlock:(id (^)(id value1, id value2))block {
-  // TODO(ncooke3): Optimize so larger dictionary is passed in below.
   NSMutableDictionary *mergedDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionary];
 
   [otherDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
@@ -154,13 +155,19 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
   return YES;
 }
 
-- (void)encodeWithCoder:(nonnull NSCoder *)coder {
-  // TODO(ncooke3): Implement
+- (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
+  self = [super init];
+  if (self) {
+    _droppedEventCounterByMappingID =
+        [coder decodeObjectOfClasses:
+                   [NSSet setWithArray:@[ NSDictionary.class, NSString.class, NSNumber.class ]]
+                              forKey:kDroppedEventCounterByMappingID];
+  }
+  return self;
 }
 
-- (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
-  // TODO(ncooke3): Implement
-  return nil;
+- (void)encodeWithCoder:(nonnull NSCoder *)coder {
+  [coder encodeObject:self.droppedEventCounterByMappingID forKey:kDroppedEventCounterByMappingID];
 }
 
 @end
