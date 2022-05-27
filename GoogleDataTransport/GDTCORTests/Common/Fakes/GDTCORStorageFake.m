@@ -33,7 +33,7 @@
   GDTCORMetricsMetadata *_Nullable _storedMetricsMetadata;
 }
 
-@synthesize delegate;
+@synthesize delegate = _delegate;
 
 + (instancetype)storageFake {
   return [[self alloc] init];

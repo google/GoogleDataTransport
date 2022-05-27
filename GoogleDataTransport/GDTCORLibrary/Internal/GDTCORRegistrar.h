@@ -34,19 +34,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** Registers a backend implementation with the GoogleDataTransport infrastructure.
  *
- * @param backend The backend object to register.
+ * @param backend The backend object to register with the given target.
  * @param target The target this backend object will be responsible for.
  */
 - (void)registerUploader:(id<GDTCORUploader>)backend target:(GDTCORTarget)target;
 
 /** Registers a storage implementation with the GoogleDataTransport infrastructure.
  *
- * @param storage The storage instance to be associated with this uploader and target.
- * @param target The target this backend object will be responsible for.
+ * @param storage The storage object to register with the given target.
+ * @param target The target this storage object will be responsible for.
  */
 - (void)registerStorage:(id<GDTCORStorageProtocol>)storage target:(GDTCORTarget)target;
 
-// TODO(ncooke3): Document.
+/** Registers a metrics controller implementation with the GoogleDataTransport infrastructure.
+ *
+ * @param metricsController The metrics controller object to register with the given target.
+ * @param target The target this metrics controller object will be responsible for.
+ */
 - (void)registerMetricsController:(id<GDTCORMetricsControllerProtocol>)metricsController
                            target:(GDTCORTarget)target;
 
