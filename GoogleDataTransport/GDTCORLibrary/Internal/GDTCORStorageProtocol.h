@@ -27,13 +27,20 @@
 
 @class FBLPromise<ValueType>;
 
+@protocol GDTCORStorageDelegate;
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
                                         NSSet<GDTCOREvent *> *_Nullable batchEvents);
 
+#pragma mark - GDTCORStorageProtocol
+
 /** Defines the interface a storage subsystem is expected to implement. */
 @protocol GDTCORStorageProtocol <NSObject, GDTCORLifecycleProtocol>
+
+/// The object that acts as the delegate of the storage instance.
+@property(nonatomic, weak, nullable) id<GDTCORStorageDelegate> delegate;
 
 @required
 
@@ -121,6 +128,8 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 
 @end
 
+#pragma mark - GDTCORStoragePromiseProtocol
+
 // TODO(ncooke3): Consider complete replacing block based API by promise API.
 
 @class GDTCORMetricsMetadata;
@@ -173,14 +182,23 @@ FOUNDATION_EXPORT
 id<GDTCORStoragePromiseProtocol> _Nullable GDTCORStoragePromiseInstanceForTarget(
     GDTCORTarget target);
 
-// TODO(ncooke3): Document.
-@protocol GDTCORStorageDelegate <NSObject>
-// TODO(ncooke3): Document.
-- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage
-    didRemoveExpiredEvent:(GDTCOREvent *)event;
+#pragma mark - GDTCORStorageDelegate
 
-// TODO(ncooke3): Document.
-- (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event;
+/// A type that can be delegated actions from a storage instance.
+@protocol GDTCORStorageDelegate <NSObject>
+
+/// Tells the delegate that the storage instance has removed a set of expired events.
+/// @param storage The storage instance informing the delegate of this impending event.
+/// @param events A set of events that were removed from storage due to their expiration.
+- (void)storage:(id<GDTCORStorageProtocol>)storage
+    didRemoveExpiredEvents:(NSSet<GDTCOREvent *> *)events;
+
+/// Tells the delegate that the storage instance has dropped an event due to the event cache being
+/// full.
+/// @param storage The storage instance informing the delegate of this impending event.
+/// @param event An event that was dropped due to the event cache being full.
+- (void)storage:(id<GDTCORStorageProtocol>)storage didDropEvent:(GDTCOREvent *)event;
+
 @end
 
 NS_ASSUME_NONNULL_END
