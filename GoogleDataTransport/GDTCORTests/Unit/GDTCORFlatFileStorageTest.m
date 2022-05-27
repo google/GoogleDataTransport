@@ -28,6 +28,7 @@
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCOREventGenerator.h"
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORTestUploader.h"
 
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORMetricsControllerFake.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORUploadCoordinatorFake.h"
 
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
@@ -759,13 +760,23 @@
   [self waitForExpectations:@[ expectation ] timeout:10];
   [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:delay]];
   [[GDTCORFlatFileStorage sharedInstance] checkForExpirations];
+
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  [GDTCORFlatFileStorage sharedInstance].delegate = metricsController;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsController.onStorageDidRemoveExpiredEvents = ^(NSSet<GDTCOREvent *> *events) {
+    XCTAssertTrue(events.count > 0);
+    [metricsControllerExpectation fulfill];
+  };
+
   expectation = [self expectationWithDescription:@"hasEvent completion called"];
   [[GDTCORFlatFileStorage sharedInstance] hasEventsForTarget:kGDTCORTargetTest
                                                   onComplete:^(BOOL hasEvents) {
                                                     XCTAssertFalse(hasEvents);
                                                     [expectation fulfill];
                                                   }];
-  [self waitForExpectations:@[ expectation ] timeout:10];
+  [self waitForExpectations:@[ metricsControllerExpectation, expectation ] timeout:10];
 }
 
 - (void)testCheckForExpirations_WhenBatchWithNotExpiredEventsExpires {
@@ -777,6 +788,17 @@
   NSSet<GDTCOREvent *> *generatedEvents = generatedBatch[generatedBatchID];
   // 0.2. Wait for batch expiration.
   [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:batchExpiresIn]];
+
+  // 0.3. Expect that the storage delegate will not be invoked because no
+  //      events will expire in this test.
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  [GDTCORFlatFileStorage sharedInstance].delegate = metricsController;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsControllerExpectation.inverted = YES;
+  metricsController.onStorageDidRemoveExpiredEvents = ^(NSSet<GDTCOREvent *> *events) {
+    [metricsControllerExpectation fulfill];
+  };
 
   // 1. Check for expiration.
   [[GDTCORFlatFileStorage sharedInstance] checkForExpirations];
@@ -808,7 +830,10 @@
                     XCTAssertEqualObjects(batchEventsIDs, generatedEventsIDs);
                   }];
 
-  [self waitForExpectations:@[ getBatchesExpectation, getEventsExpectation ] timeout:0.5];
+  [self waitForExpectations:@[
+    metricsControllerExpectation, getBatchesExpectation, getEventsExpectation
+  ]
+                    timeout:0.5];
 }
 
 - (void)testCheckForExpirations_WhenBatchWithExpiredEventsExpires {
@@ -819,6 +844,17 @@
                                                                batchExpiringIn:batchExpiresIn];
   // 0.2. Wait for batch expiration.
   [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:batchExpiresIn]];
+
+  // 0.3. Expect that the storage delegate will be invoked because events will
+  //      expire in this test.
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  [GDTCORFlatFileStorage sharedInstance].delegate = metricsController;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsController.onStorageDidRemoveExpiredEvents = ^(NSSet<GDTCOREvent *> *events) {
+    XCTAssertTrue(events.count > 0);
+    [metricsControllerExpectation fulfill];
+  };
 
   // 1. Check for expiration.
   [[GDTCORFlatFileStorage sharedInstance] checkForExpirations];
@@ -847,7 +883,10 @@
                     XCTAssertEqual(batchEvents.count, 0);
                   }];
 
-  [self waitForExpectations:@[ getBatchesExpectation, getEventsExpectation ] timeout:0.5];
+  [self waitForExpectations:@[
+    metricsControllerExpectation, getBatchesExpectation, getEventsExpectation
+  ]
+                    timeout:0.5];
 }
 
 #pragma mark - Remove Batch tests
@@ -1136,6 +1175,15 @@
                                                           mappingID:nil];
   event.expirationDate = [NSDate dateWithTimeIntervalSinceNow:1000];
 
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  storage.delegate = metricsControllerFake;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsControllerFake.onStorageDidDropEvent = ^(GDTCOREvent *droppedEvent) {
+    XCTAssertEqual(droppedEvent, event);
+    [metricsControllerExpectation fulfill];
+  };
+
   XCTestExpectation *storeExpectation1 = [self expectationWithDescription:@"storeExpectation1"];
   [storage storeEvent:event
            onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
@@ -1145,7 +1193,7 @@
              XCTAssertEqual(error.code, GDTCORFlatFileStorageErrorSizeLimitReached);
              [storeExpectation1 fulfill];
            }];
-  [self waitForExpectations:@[ storeExpectation1 ] timeout:5];
+  [self waitForExpectations:@[ metricsControllerExpectation, storeExpectation1 ] timeout:5];
 
   // 4. Check the storage size didn't change.
   XCTAssertEqual([self storageSize], storageSize);

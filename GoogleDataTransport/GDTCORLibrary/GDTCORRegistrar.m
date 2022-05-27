@@ -89,11 +89,11 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
     if (strongSelf) {
       GDTCORLogDebug(@"Registered storage: %@ for target:%ld", storage, (long)target);
       strongSelf->_targetToStorage[@(target)] = storage;
+      [self setMetricsControllerAsStorageDelegateForTarget:target];
     }
   });
 }
 
-// TODO(ncooke3): Add `GDTCORRegistar` test for this API.
 - (void)registerMetricsController:(id<GDTCORMetricsControllerProtocol>)metricsController
                            target:(GDTCORTarget)target {
   __weak GDTCORRegistrar *weakSelf = self;
@@ -103,6 +103,7 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
       GDTCORLogDebug(@"Registered metrics controller: %@ for target:%ld", metricsController,
                      (long)target);
       strongSelf->_targetToMetricsController[@(target)] = metricsController;
+      [self setMetricsControllerAsStorageDelegateForTarget:target];
     }
   });
 }
@@ -143,6 +144,10 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
     }
   });
   return targetToMetricsController;
+}
+
+- (void)setMetricsControllerAsStorageDelegateForTarget:(GDTCORTarget)target {
+  _targetToStorage[@(target)].delegate = _targetToMetricsController[@(target)];
 }
 
 #pragma mark - GDTCORLifecycleProtocol
