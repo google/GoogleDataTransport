@@ -28,6 +28,7 @@
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCOREventGenerator.h"
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORTestUploader.h"
 
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORMetricsControllerFake.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORUploadCoordinatorFake.h"
 
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
@@ -1136,6 +1137,15 @@
                                                           mappingID:nil];
   event.expirationDate = [NSDate dateWithTimeIntervalSinceNow:1000];
 
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  storage.delegate = metricsControllerFake;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsController"];
+  metricsControllerFake.onStorageDidDropEvent = ^(GDTCOREvent *droppedEvent) {
+    XCTAssertEqual(droppedEvent, event);
+    [metricsControllerExpectation fulfill];
+  };
+
   XCTestExpectation *storeExpectation1 = [self expectationWithDescription:@"storeExpectation1"];
   [storage storeEvent:event
            onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
@@ -1145,7 +1155,7 @@
              XCTAssertEqual(error.code, GDTCORFlatFileStorageErrorSizeLimitReached);
              [storeExpectation1 fulfill];
            }];
-  [self waitForExpectations:@[ storeExpectation1 ] timeout:5];
+  [self waitForExpectations:@[ metricsControllerExpectation, storeExpectation1 ] timeout:5];
 
   // 4. Check the storage size didn't change.
   XCTAssertEqual([self storageSize], storageSize);

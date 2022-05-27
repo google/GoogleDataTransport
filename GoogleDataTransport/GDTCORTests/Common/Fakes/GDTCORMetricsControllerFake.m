@@ -60,7 +60,11 @@
 }
 
 - (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event {
-  // TODO(ncooke3): Implement.
+  if (self.onStorageDidDropEvent) {
+    return self.onStorageDidDropEvent(event);
+  } else {
+    [self doesNotRecognizeSelector:_cmd];
+  }
 }
 
 - (void)storage:(nonnull id<GDTCORStorageProtocol>)storage

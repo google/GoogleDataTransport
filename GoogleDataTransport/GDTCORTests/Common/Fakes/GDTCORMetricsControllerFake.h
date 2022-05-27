@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, copy, nullable) BOOL (^onTargetSupportsMetricsCollectionHandler)(GDTCORTarget);
 
+@property(nonatomic, copy, nullable) void (^onStorageDidDropEvent)(GDTCOREvent *event);
+
 @end
 
 NS_ASSUME_NONNULL_END
