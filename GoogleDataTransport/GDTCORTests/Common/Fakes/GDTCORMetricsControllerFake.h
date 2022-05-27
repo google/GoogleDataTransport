@@ -38,6 +38,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, copy, nullable) void (^onStorageDidDropEvent)(GDTCOREvent *event);
 
+@property(nonatomic, copy, nullable) void (^onStorageDidRemoveExpiredEvents)
+    (NSSet<GDTCOREvent *> *events);
+
 @end
 
 NS_ASSUME_NONNULL_END

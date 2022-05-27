@@ -69,7 +69,11 @@
 
 - (void)storage:(nonnull id<GDTCORStorageProtocol>)storage
     didRemoveExpiredEvents:(nonnull NSSet<GDTCOREvent *> *)events {
-  // TODO(ncooke3): Implement.
+  if (self.onStorageDidRemoveExpiredEvents) {
+    return self.onStorageDidRemoveExpiredEvents(events);
+  } else {
+    [self doesNotRecognizeSelector:_cmd];
+  }
 }
 
 @end
