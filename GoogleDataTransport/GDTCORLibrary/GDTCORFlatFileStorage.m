@@ -65,7 +65,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
 @implementation GDTCORFlatFileStorage
 
 @synthesize sizeTracker = _sizeTracker;
-@synthesize delegate;
+@synthesize delegate = _delegate;
 
 + (void)load {
 #if !NDEBUG

@@ -33,7 +33,7 @@
   NSMutableDictionary<NSNumber *, NSSet<GDTCOREvent *> *> *_batches;
 }
 
-@synthesize delegate;
+@synthesize delegate = _delegate;
 
 - (instancetype)init {
   self = [super init];
