@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSDate *collectionStartDate;
 
 /// The dropped event counter associated with the metrics.
-@property(nonatomic, copy, readonly, nullable) GDTCOREventMetricsCounter *droppedEventCounter;
+@property(nonatomic, copy, readonly) GDTCOREventMetricsCounter *droppedEventCounter;
 
 /// Creates a metrics metadata object with the provided information.
 /// @param collectedSinceDate The start of the time window over which the metrics were collected.
@@ -38,6 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// This API is unavailable.
 - (instancetype)init NS_UNAVAILABLE;
+
+/// Returns a Boolean value that indicates whether the receiving metrics metadata is equal to
+/// the given metrics metadata.
+/// @param otherMetricsMetadata The metrics metadata with which to compare the
+/// receiving metrics metadata.
+- (BOOL)isEqualToMetricsMetadata:(GDTCORMetricsMetadata *)otherMetricsMetadata;
 
 @end
 
