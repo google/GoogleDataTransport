@@ -196,7 +196,7 @@
 
   GDTCORLogDebug(@"This code path shouldn't be reached."
                  @"Invalid target %ld does not support metrics collection",
-                 target);
+                 (long)target);
   return NO;
 }
 
