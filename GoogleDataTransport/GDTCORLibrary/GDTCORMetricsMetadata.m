@@ -16,6 +16,11 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+
+static NSString *const kCollectionStartDate = @"collectionStartDate";
+static NSString *const kDroppedEventCounter = @"droppedEventCounter";
+
 @implementation GDTCORMetricsMetadata
 
 + (instancetype)metadataWithCollectionStartDate:(NSDate *)collectedSinceDate
@@ -33,19 +38,53 @@
   return self;
 }
 
+#pragma mark - Equality
+
+- (BOOL)isEqualToMetricsMetadata:(GDTCORMetricsMetadata *)otherMetricsMetadata {
+  return [self.collectionStartDate isEqualToDate:otherMetricsMetadata.collectionStartDate] &&
+         [self.droppedEventCounter
+             isEqualToDroppedEventCounter:otherMetricsMetadata.droppedEventCounter];
+}
+
+- (BOOL)isEqual:(nullable id)object {
+  if (object == nil) {
+    return NO;
+  }
+
+  if (self == object) {
+    return YES;
+  }
+
+  if (![object isKindOfClass:[self class]]) {
+    return NO;
+  }
+
+  return [self isEqualToMetricsMetadata:(GDTCORMetricsMetadata *)object];
+}
+
+- (NSUInteger)hash {
+  return [self.collectionStartDate hash] ^ [self.droppedEventCounter hash];
+}
+
 #pragma mark - NSSecureCoding
 
 + (BOOL)supportsSecureCoding {
   return YES;
 }
 
-- (void)encodeWithCoder:(nonnull NSCoder *)coder {
-  // TODO(ncooke3): Implement
+- (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
+  self = [super init];
+  if (self) {
+    _collectionStartDate = [coder decodeObjectOfClass:[NSDate class] forKey:kCollectionStartDate];
+    _droppedEventCounter = [coder decodeObjectOfClass:[GDTCOREventMetricsCounter class]
+                                               forKey:kDroppedEventCounter];
+  }
+  return self;
 }
 
-- (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
-  // TODO(ncooke3): Implement
-  return nil;
+- (void)encodeWithCoder:(nonnull NSCoder *)coder {
+  [coder encodeObject:self.collectionStartDate forKey:kCollectionStartDate];
+  [coder encodeObject:self.droppedEventCounter forKey:kDroppedEventCounter];
 }
 
 @end
