@@ -269,8 +269,9 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
   // Then
   // - Decode the counter from disk.
   NSError *decodeError;
-  GDTCOREventMetricsCounter *decodedCounter = (GDTCOREventMetricsCounter *)GDTCORDecodeArchive(
-      GDTCOREventMetricsCounter.class, filePath, nil, &decodeError);
+  GDTCOREventMetricsCounter *decodedCounter =
+      (GDTCOREventMetricsCounter *)GDTCORDecodeArchiveAtPath(GDTCOREventMetricsCounter.class,
+                                                             filePath, &decodeError);
   XCTAssertNil(decodeError);
   XCTAssertNotNil(decodedCounter);
   XCTAssertEqualObjects(decodedCounter, eventMetricsCounter);

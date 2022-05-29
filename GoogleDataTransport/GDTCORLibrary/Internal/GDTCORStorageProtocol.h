@@ -149,9 +149,14 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
 - (FBLPromise<NSNull *> *)removeAllBatchesForTarget:(GDTCORTarget)target
                                        deleteEvents:(BOOL)deleteEvents;
 
-- (FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithHandler:
-    (GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
-                                          NSError *_Nullable fetchError))handler;
+/// Fetches metrics metadata from storage, passes them to the given handler, and writes the
+/// resulting metrics metadata from the given handler to storage.
+/// @note This API is thread-safe.
+/// @param handler A handler to process the fetch result and return an updated value to store.
+/// @return A promise that is fulfilled if the update is successful, and rejected otherwise.
+- (FBLPromise<NSNull *> *)fetchAndUpdateMetricsWithHandler:
+    (GDTCORMetricsMetadata * (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
+                                 NSError *_Nullable fetchError))handler;
 
 - (FBLPromise<GDTCORStorageMetadata *> *)fetchStorageMetadata;
 

@@ -206,7 +206,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
       for (NSString *eventPath in paths) {
         NSError *error;
         GDTCOREvent *event =
-            (GDTCOREvent *)GDTCORDecodeArchive([GDTCOREvent class], eventPath, nil, &error);
+            (GDTCOREvent *)GDTCORDecodeArchiveAtPath([GDTCOREvent class], eventPath, &error);
         if (event == nil || error) {
           GDTCORLogDebug(@"Error deserializing event: %@", error);
           [[NSFileManager defaultManager] removeItemAtPath:eventPath error:nil];
@@ -450,8 +450,8 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
 
           // Decode the expired event from the path to be deleted.
           NSError *decodeError;
-          GDTCOREvent *event = (GDTCOREvent *)GDTCORDecodeArchive([GDTCOREvent class], pathToDelete,
-                                                                  nil, &decodeError);
+          GDTCOREvent *event = (GDTCOREvent *)GDTCORDecodeArchiveAtPath([GDTCOREvent class],
+                                                                        pathToDelete, &decodeError);
           if (event == nil || decodeError) {
             GDTCORLogDebug(@"Error deserializing event while checking for expired events: %@",
                            decodeError);

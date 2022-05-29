@@ -116,9 +116,9 @@
   return [FBLPromise resolvedWith:nil];
 }
 
-- (nonnull FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithHandler:
-    (nonnull GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable,
-                                                  NSError *_Nullable))handler {
+- (nonnull FBLPromise<NSNull *> *)fetchAndUpdateMetricsWithHandler:
+    (nonnull GDTCORMetricsMetadata * (^)(GDTCORMetricsMetadata *_Nullable,
+                                         NSError *_Nullable))handler {
   if (_storedMetricsMetadata != nil) {
     _storedMetricsMetadata = handler(_storedMetricsMetadata, nil);
   } else {

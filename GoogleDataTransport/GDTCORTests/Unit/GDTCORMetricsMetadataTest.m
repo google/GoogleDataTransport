@@ -100,8 +100,9 @@
   // Then
   // - Decode the metrics metadata from disk.
   NSError *decodeError;
-  GDTCORMetricsMetadata *decodedMetricsMetadata = (GDTCORMetricsMetadata *)GDTCORDecodeArchive(
-      GDTCORMetricsMetadata.class, filePath, nil, &decodeError);
+  GDTCORMetricsMetadata *decodedMetricsMetadata =
+      (GDTCORMetricsMetadata *)GDTCORDecodeArchiveAtPath(GDTCORMetricsMetadata.class, filePath,
+                                                         &decodeError);
   XCTAssertNil(decodeError);
   XCTAssertNotNil(decodedMetricsMetadata);
   XCTAssertEqualObjects(decodedMetricsMetadata, metricsMetadata);

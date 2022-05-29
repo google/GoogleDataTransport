@@ -61,7 +61,7 @@
   event = nil;
   error = nil;
   GDTCOREvent *decodedEvent =
-      (GDTCOREvent *)GDTCORDecodeArchive([GDTCOREvent class], nil, archiveData, &error);
+      (GDTCOREvent *)GDTCORDecodeArchive([GDTCOREvent class], archiveData, &error);
   XCTAssertNil(error);
   XCTAssertNotNil(decodedEvent);
   XCTAssertEqualObjects(decodedEvent.mappingID, @"testID");

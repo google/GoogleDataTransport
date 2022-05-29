@@ -93,7 +93,7 @@
     }
   };
 
-  return [_storage fetchAndUpdateClientMetricsWithHandler:handler];
+  return [_storage fetchAndUpdateMetricsWithHandler:handler];
 }
 
 - (nonnull FBLPromise<GDTCORMetrics *> *)getAndResetMetrics {
@@ -111,7 +111,7 @@
                                            eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
   };
 
-  return [_storage fetchAndUpdateClientMetricsWithHandler:handler]
+  return [_storage fetchAndUpdateMetricsWithHandler:handler]
       .validate(^BOOL(NSNull *__unused _) {
         // Break and reject the promise chain when storage contains no metrics
         // metadata.
@@ -178,7 +178,7 @@
     }
   };
 
-  return [_storage fetchAndUpdateClientMetricsWithHandler:handler];
+  return [_storage fetchAndUpdateMetricsWithHandler:handler];
 }
 
 - (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
