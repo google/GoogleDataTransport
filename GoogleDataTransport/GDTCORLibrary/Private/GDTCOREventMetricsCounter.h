@@ -18,12 +18,19 @@
 
 @class GDTCOREvent;
 
+typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
+
 NS_ASSUME_NONNULL_BEGIN
 
 // TODO(ncooke3): Consider renaming to `GDTCORMetricsDroppedEventCounter`.
 /// A counter object that tracks, per log source, the number of events dropped for a variety of
 /// reasons. An event is considered "dropped" when the event is no longer persisted by the SDK.
 @interface GDTCOREventMetricsCounter : NSObject <NSSecureCoding>
+
+/// A dictionary of log sources that map to counters that reflect the number of events dropped for a
+/// given set of reasons (``GDTCOREventDropReason``).
+@property(nonatomic, readonly)
+    NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByMappingID;
 
 /// Creates an empty dropped event counter.
 + (instancetype)counter;

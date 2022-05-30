@@ -18,6 +18,8 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
 
+#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
+
 @class GDTCOREventMetricsCounter;
 @class GDTCORMetricsMetadata;
 @class GDTCORStorageMetadata;
@@ -25,13 +27,25 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// An object representing metrics that represent a snapshot of the SDK's state and performance.
-@interface GDTCORMetrics : NSObject <GDTCOREventDataObject>
+@interface GDTCORMetrics : NSObject
 
 /// The start of the time window over which the metrics were collected.
 @property(nonatomic, readonly) NSDate *collectionStartDate;
 
 /// The dropped event counter associated with the metrics.
 @property(nonatomic, readonly) GDTCOREventMetricsCounter *droppedEventCounter;
+
+/// The end of the time window over which the metrics were collected.
+@property(nonatomic, readonly) NSDate *collectionEndDate;
+
+/// The number of bytes the event cache was consuming in storage.
+@property(nonatomic, readonly) GDTCORStorageSizeBytes currentCacheSize;
+
+/// The maximum number of bytes that the event cache is allowed to grow.
+@property(nonatomic, readonly) GDTCORStorageSizeBytes maxCacheSize;
+
+/// The bundle ID associated with the metrics being collected.
+@property(nonatomic, readonly) NSString *bundleID;
 
 /// Creates a metrics instance with the provided metadata.
 /// @param metricsMetadata The provided metrics metadata.

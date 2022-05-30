@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import <Foundation/Foundation.h>
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 
-/// The reason the event was "dropped". An event is considered "dropped" when it is no longer
-/// tracked by the SDK (i.e. deleted).
-typedef NS_ENUM(NSInteger, GDTCOREventDropReason) {
-  GDTCOREventDropReasonUnknown = 0,
-  GDTCOREventDropReasonMessageTooOld,
-  GDTCOREventDropReasonStorageFull,
-  GDTCOREventDropReasonPayloadTooBig,
-  GDTCOREventDropReasonMaxRetriesReached,
-  GDTCOREventDropReasonInvalidPayload,
-  GDTCOREventDropReasonServerError
-};
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface GDTCORMetrics (GDTCCTSupport) <GDTCOREventDataObject>
+
+@end
+
+NS_ASSUME_NONNULL_END
