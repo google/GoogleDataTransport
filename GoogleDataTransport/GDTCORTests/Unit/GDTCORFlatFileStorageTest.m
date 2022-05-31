@@ -16,7 +16,12 @@
 
 #import "GoogleDataTransport/GDTCORTests/Unit/GDTCORTestCase.h"
 
+#import "FBLPromise+Testing.h"
+
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage+Promises.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORRegistrar_Private.h"
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
@@ -291,6 +296,105 @@
                       object:nil];
   }
   self.continueAfterFailure = originalValueOfContinueAfterFailure;
+}
+
+- (void)testFetchAndUpdateMetrics {
+  // Given
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+
+  __auto_type fetchAndUpdatePromise1 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        return metricsMetadata;
+      }];
+
+  // When
+  __auto_type fetchAndUpdatePromise2 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNotNil(fetchedMetadata);
+        XCTAssertNil(fetchError);
+        XCTAssertEqualObjects(fetchedMetadata, metricsMetadata);
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise1.isFulfilled);
+  XCTAssert(fetchAndUpdatePromise2.isFulfilled);
+}
+
+- (void)testFetchAndUpdateMetrics_WhenDecodeError {
+  // When
+  __auto_type fetchAndUpdatePromise = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        XCTAssertEqualObjects(fetchError.localizedFailureReason, @"The file doesn’t exist.");
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise.isFulfilled);
+}
+
+- (void)testFetchAndUpdateMetrics_WhenUpdatedMetadataIsUnexpected_DoesNothing {
+  // Given
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+
+  __auto_type fetchAndUpdatePromise1 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        return metricsMetadata;
+      }];
+
+  // When
+  __auto_type fetchAndUpdatePromise2 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNotNil(fetchedMetadata);
+        XCTAssertNil(fetchError);
+        return nil;
+      }];
+
+  // Then
+  __auto_type fetchAndUpdatePromise3 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNotNil(fetchedMetadata);
+        XCTAssertNil(fetchError);
+        XCTAssertEqualObjects(fetchedMetadata, metricsMetadata);
+      }];
+
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise1.isFulfilled);
+  XCTAssert(fetchAndUpdatePromise2.isFulfilled);
+  XCTAssert(fetchAndUpdatePromise3.isFulfilled);
+}
+
+- (void)testFetchAndUpdateMetrics_WhenUpdateFails_RejectsPromise {
+  // When
+  __auto_type fetchAndUpdatePromise = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        // Return an object that doesn't conform to `NSCoding` so the update
+        // will fail because the "GDTCORMetricsMetadata" cannot be encoded.
+        return (GDTCORMetricsMetadata *)[[NSObject alloc] init];
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise.isRejected);
 }
 
 - (void)testSaveAndLoadLibraryData {

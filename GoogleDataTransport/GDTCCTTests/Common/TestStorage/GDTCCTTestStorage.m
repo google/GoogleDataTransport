@@ -209,9 +209,9 @@
       }];
 }
 
-- (FBLPromise<NSNull *> *)fetchAndUpdateClientMetricsWithHandler:
-    (GDTCORMetricsMetadata *_Nullable (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
-                                          NSError *_Nullable fetchError))handler {
+- (FBLPromise<NSNull *> *)fetchAndUpdateMetricsWithHandler:
+    (GDTCORMetricsMetadata * (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
+                                 NSError *_Nullable fetchError))handler {
   // TODO(ncooke3): Implement.
   return [FBLPromise resolvedWith:nil];
 }
