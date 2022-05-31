@@ -20,17 +20,6 @@
 
 static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterByMappingID";
 
-typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
-
-@interface GDTCOREventMetricsCounter ()
-
-/// A dictionary of log sources that map to counters that reflect the number of events dropped for a
-/// given set of reasons (``GDTCOREventDropReason``).
-@property(nonatomic)
-    NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByMappingID;
-
-@end
-
 @implementation GDTCOREventMetricsCounter
 
 + (instancetype)counter {

@@ -14,23 +14,9 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORStorageMetadata.h"
-
-@interface GDTCORMetrics ()
-
-/// The end of the time window over which the metrics were collected.
-@property(nonatomic, readonly) NSDate *collectionEndDate;
-/// The number of bytes the event cache was consuming in storage.
-@property(nonatomic, readonly) GDTCORStorageSizeBytes currentCacheSize;
-/// The maximum number of bytes that the event cache is allowed to grow.
-@property(nonatomic, readonly) GDTCORStorageSizeBytes maxCacheSize;
-/// The bundle ID associated with the metrics being collected.
-@property(nonatomic, readonly) NSString *bundleID;
-
-@end
 
 @implementation GDTCORMetrics
 
@@ -65,11 +51,6 @@
                                            currentCacheSize:storageMetadata.currentCacheSize
                                                maxCacheSize:storageMetadata.maxCacheSize
                                                    bundleID:bundleID];
-}
-
-- (nonnull NSData *)transportBytes {
-  // TODO(ncooke3): Implement.
-  return [NSData data];
 }
 
 @end

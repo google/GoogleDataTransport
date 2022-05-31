@@ -47,7 +47,7 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
   /** Backing ivar for targetToStorage property. */
   NSMutableDictionary<NSNumber *, id<GDTCORStorageProtocol>> *_targetToStorage;
 
-  // TODO(ncooke3): Document.
+  /** Backing ivar for targetToMetricsController property. */
   NSMutableDictionary<NSNumber *, id<GDTCORMetricsControllerProtocol>> *_targetToMetricsController;
 }
 
