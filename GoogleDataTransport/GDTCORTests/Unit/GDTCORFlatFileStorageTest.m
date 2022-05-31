@@ -319,6 +319,7 @@
         XCTAssertNotNil(fetchedMetadata);
         XCTAssertNil(fetchError);
         XCTAssertEqualObjects(fetchedMetadata, metricsMetadata);
+        return metricsMetadata;
       }];
 
   // Then
@@ -335,6 +336,7 @@
         XCTAssertNil(fetchedMetadata);
         XCTAssertNotNil(fetchError);
         XCTAssertEqualObjects(fetchError.localizedFailureReason, @"The file doesn’t exist.");
+        return fetchedMetadata;
       }];
 
   // Then
@@ -362,7 +364,7 @@
           GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
         XCTAssertNotNil(fetchedMetadata);
         XCTAssertNil(fetchError);
-        return nil;
+        return fetchedMetadata;
       }];
 
   // Then
@@ -372,6 +374,7 @@
         XCTAssertNotNil(fetchedMetadata);
         XCTAssertNil(fetchError);
         XCTAssertEqualObjects(fetchedMetadata, metricsMetadata);
+        return fetchedMetadata;
       }];
 
   FBLWaitForPromisesWithTimeout(0.5);
