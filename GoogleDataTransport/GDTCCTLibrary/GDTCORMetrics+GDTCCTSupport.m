@@ -98,7 +98,7 @@ gdt_client_metrics_LogSourceMetrics *GDTCCTConstructLogSourceMetrics(
         logSourceMetrics.log_source = GDTCCTEncodeString(mappingID);
         logSourceMetrics.log_event_dropped_count = (pb_size_t)eventCounterForMappingID.count;
         logSourceMetrics.log_event_dropped =
-            calloc(eventCounterForMappingID.count, sizeof(gdt_client_metrics_LogSourceMetrics));
+            calloc(eventCounterForMappingID.count, sizeof(gdt_client_metrics_LogEventDropped));
 
         // Each dropped event counter counts the number of events dropped for
         // each drop reason. Enumerate over all of these counters to populate
