@@ -184,6 +184,7 @@ gdt_client_metrics_LogEventDropped_Reason GDTCCTConvertEventDropReasonToProtoRea
     case GDTCOREventDropReasonMaxRetriesReached:
       return gdt_client_metrics_LogEventDropped_Reason_MAX_RETRIES_REACHED;
     case GDTCOREventDropReasonInvalidPayload:
+      // The below typo (`PAYLOD`) is currently checked in to g3.
       return gdt_client_metrics_LogEventDropped_Reason_INVALID_PAYLOD;
     case GDTCOREventDropReasonServerError:
       return gdt_client_metrics_LogEventDropped_Reason_SERVER_ERROR;
