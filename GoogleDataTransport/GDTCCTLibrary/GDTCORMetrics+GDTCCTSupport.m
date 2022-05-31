@@ -37,6 +37,8 @@
       GDTCCTConstructTimeWindow(self.collectionStartDate, self.collectionEndDate);
 
   clientMetricsProto.log_source_metrics = GDTCCTConstructLogSourceMetrics(self.droppedEventCounter);
+  clientMetricsProto.log_source_metrics_count =
+      GDTCCTGetLogSourceMetricsCount(self.droppedEventCounter);
 
   clientMetricsProto.global_metrics =
       GDTCCTConstructGlobalMetrics(self.currentCacheSize, self.maxCacheSize);
@@ -79,7 +81,6 @@ gdt_client_metrics_LogSourceMetrics *GDTCCTConstructLogSourceMetrics(
   NSUInteger logMetricsCount = [droppedEventCounter.droppedEventCounterByMappingID count];
   gdt_client_metrics_LogSourceMetrics *repeatedLogSourceMetrics =
       calloc(logMetricsCount, sizeof(gdt_client_metrics_LogSourceMetrics));
-  repeatedLogSourceMetrics->log_event_dropped_count = (pb_size_t)logMetricsCount;
 
   // Each log source (mapping ID) has a corresponding dropped event counter.
   // Enumerate over the dictionary of mapping IDs and, for each mappingID,
@@ -126,6 +127,12 @@ gdt_client_metrics_LogSourceMetrics *GDTCCTConstructLogSourceMetrics(
       }];
 
   return repeatedLogSourceMetrics;
+}
+
+/// Returns the count of log sources that have event drop metrics.
+/// @param droppedEventCounter The given dropped event counter.
+pb_size_t GDTCCTGetLogSourceMetricsCount(GDTCOREventMetricsCounter *droppedEventCounter) {
+  return (pb_size_t)droppedEventCounter.droppedEventCounterByMappingID.count;
 }
 
 /// Constructs and returns a ``gdt_client_metrics_TimeWindow`` proto from the given parameters.
