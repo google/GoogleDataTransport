@@ -53,4 +53,48 @@
                                                    bundleID:bundleID];
 }
 
+#pragma mark - Equality
+
+- (BOOL)isEqualToMetrics:(GDTCORMetrics *)otherMetrics {
+  return [self.collectionStartDate isEqualToDate:otherMetrics.collectionStartDate] &&
+         [self.collectionEndDate isEqualToDate:otherMetrics.collectionEndDate] &&
+         [self.droppedEventCounter isEqualToDroppedEventCounter:otherMetrics.droppedEventCounter] &&
+         [self.bundleID isEqualToString:otherMetrics.bundleID] &&
+         self.currentCacheSize == otherMetrics.currentCacheSize &&
+         self.maxCacheSize == otherMetrics.maxCacheSize;
+}
+
+- (BOOL)isEqual:(nullable id)object {
+  if (object == nil) {
+    return NO;
+  }
+
+  if (self == object) {
+    return YES;
+  }
+
+  if (![object isKindOfClass:[self class]]) {
+    return NO;
+  }
+
+  return [self isEqualToMetrics:(GDTCORMetrics *)object];
+}
+
+- (NSUInteger)hash {
+  return [self.collectionStartDate hash] ^ [self.collectionEndDate hash] ^
+         [self.droppedEventCounter hash] ^ [self.bundleID hash] ^ [@(self.currentCacheSize) hash] ^
+         [@(self.maxCacheSize) hash];
+}
+
+#pragma mark - Description
+
+- (NSString *)description {
+  return [NSString
+      stringWithFormat:
+          @"%@ {\n\tcollectionStartDate: %@,\n\tcollectionEndDate: %@,\n\tcurrentCacheSize: "
+          @"%llu,\n\tmaxCacheSize: %llu,\n\tbundleID: %@,\n\tdroppedEventCounter: %@}\n",
+          [super description], self.collectionStartDate, self.collectionEndDate,
+          self.currentCacheSize, self.maxCacheSize, self.bundleID, self.droppedEventCounter];
+}
+
 @end

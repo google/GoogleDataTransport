@@ -20,11 +20,9 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
-typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
-
 @interface GDTCOREventMetricsCounter (Internal)
 
-/// Designated initializer exposed for testing.
+/// Initializer exposed for testing.
 - (instancetype)initWithDroppedEventCounterByMappingID:
     (NSDictionary<NSString *, GDTCORDroppedEventCounter *> *)droppedEventCounterByMappingID;
 

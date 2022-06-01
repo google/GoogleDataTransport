@@ -53,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)metricsWithMetricsMetadata:(GDTCORMetricsMetadata *)metricsMetadata
                            storageMetadata:(GDTCORStorageMetadata *)storageMetadata;
 
+/// Returns a Boolean value that indicates whether the receiving metrics is equal to the given
+/// metrics.
+/// @param otherMetrics The metrics with which to compare the receiving metrics.
+- (BOOL)isEqualToMetrics:(GDTCORMetrics *)otherMetrics;
+
 @end
 
 NS_ASSUME_NONNULL_END
