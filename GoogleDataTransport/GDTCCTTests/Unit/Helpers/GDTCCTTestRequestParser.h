@@ -28,16 +28,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param data The given data to parse.
 /// @param outError If the return value is `nil`, an ``NSError`` indicating why the parsing
 /// operation failed.
-/// @return An instance of ``gdt_cct_BatchedLogRequest``. This instance will contain events if
-/// parsed successfully.
+/// @return An instance of ``gdt_cct_BatchedLogRequest``.
 + (gdt_cct_BatchedLogRequest)requestWithData:(NSData *)data error:(NSError **)outError;
 
-/// Tries to parse `gdt_client_metrics_ClientMetrics` from an event data.
-/// @param data The event data. It should be protobuf encoded `gdt_client_metrics_ClientMetrics`.
+/// Parses the client metrics proto from the provided data.
+/// @param data The given data to parse.
 /// @param outError If the return value is `nil`, an ``NSError`` indicating why the parsing
 /// operation failed.
-/// @return An instance of ``gdt_client_metrics_ClientMetrics`` in case of success. The instance
-/// will have default values in the case of an error (check `outError`).
+/// @return An instance of ``gdt_client_metrics_ClientMetrics``. The instance will have default
+/// values in the case of an error (check `outError`).
 + (gdt_client_metrics_ClientMetrics)metricsProtoWithData:(NSData *)data error:(NSError **)outError;
 
 /// Parses the ``GDTCOREvent``s used in the given batch log request proto.
