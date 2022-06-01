@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A test utlitily class that provides helpers when working with ``GDTCORMetrics`` instances.
+/// A test utility class that provides helpers when working with ``GDTCORMetrics`` instances.
 @interface GDTCORMetricsTestHelpers : NSObject
 
 /// Creates and returns ``GDTCORMetrics`` instance with randomly generated dropped event counters
