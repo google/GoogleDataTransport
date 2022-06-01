@@ -158,4 +158,11 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
   [coder encodeObject:self.droppedEventCounterByMappingID forKey:kDroppedEventCounterByMappingID];
 }
 
+#pragma mark - Description
+
+- (NSString *)description {
+  return [NSString
+      stringWithFormat:@"%@ %@", [super description], self.droppedEventCounterByMappingID];
+}
+
 @end
