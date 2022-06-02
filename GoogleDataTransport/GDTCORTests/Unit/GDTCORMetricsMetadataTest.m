@@ -108,4 +108,36 @@
   XCTAssertEqualObjects(decodedMetricsMetadata, metricsMetadata);
 }
 
+- (void)testSecureCoding_WhenEncodingIsCorrupted {
+  // Given
+  // - Create an invalid instance and write its encoding to a file. When
+  //   decoding, the invalid encoding should be treated as a corrupt encoding.
+  GDTCORMetricsMetadata *corruptedMetadata =
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:@"date"
+                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+#pragma clang diagnostic pop
+
+  NSError *encodeError;
+  NSData *encodedMetricsMetadata = GDTCOREncodeArchive(corruptedMetadata, nil, &encodeError);
+  XCTAssertNil(encodeError);
+  XCTAssertNotNil(encodedMetricsMetadata);
+
+  NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"metadata.dat"];
+  NSError *writeError;
+  BOOL writeResult = GDTCORWriteDataToFile(encodedMetricsMetadata, filePath, &writeError);
+  XCTAssertNil(writeError);
+  XCTAssertTrue(writeResult);
+
+  // When
+  NSError *decodeError;
+  GDTCORMetricsMetadata *decodedMetricsMetadata =
+      (GDTCORMetricsMetadata *)GDTCORDecodeArchiveAtPath(GDTCORMetricsMetadata.class, filePath,
+                                                         &decodeError);
+  // Then
+  XCTAssertNotNil(decodeError);
+  XCTAssertNil(decodedMetricsMetadata);
+}
+
 @end

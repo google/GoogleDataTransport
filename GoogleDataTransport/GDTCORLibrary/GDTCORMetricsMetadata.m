@@ -73,13 +73,19 @@ static NSString *const kDroppedEventCounter = @"droppedEventCounter";
 }
 
 - (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
-  self = [super init];
-  if (self) {
-    _collectionStartDate = [coder decodeObjectOfClass:[NSDate class] forKey:kCollectionStartDate];
-    _droppedEventCounter = [coder decodeObjectOfClass:[GDTCOREventMetricsCounter class]
-                                               forKey:kDroppedEventCounter];
+  NSDate *collectionStartDate = [coder decodeObjectOfClass:[NSDate class]
+                                                    forKey:kCollectionStartDate];
+  GDTCOREventMetricsCounter *droppedEventCounter =
+      [coder decodeObjectOfClass:[GDTCOREventMetricsCounter class] forKey:kDroppedEventCounter];
+
+  if (!collectionStartDate || !droppedEventCounter ||
+      ![collectionStartDate isKindOfClass:[NSDate class]] ||
+      ![droppedEventCounter isKindOfClass:[GDTCOREventMetricsCounter class]]) {
+    // If any of the fields are corrupted, the initializer should fail.
+    return nil;
   }
-  return self;
+
+  return [self initWithCollectionStartDate:collectionStartDate counter:droppedEventCounter];
 }
 
 - (void)encodeWithCoder:(nonnull NSCoder *)coder {

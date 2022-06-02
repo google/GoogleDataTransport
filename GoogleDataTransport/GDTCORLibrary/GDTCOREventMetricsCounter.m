@@ -144,14 +144,18 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
 }
 
 - (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
-  self = [super init];
-  if (self) {
-    _droppedEventCounterByMappingID =
-        [coder decodeObjectOfClasses:
-                   [NSSet setWithArray:@[ NSDictionary.class, NSString.class, NSNumber.class ]]
-                              forKey:kDroppedEventCounterByMappingID];
+  NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByMappingID =
+      [coder decodeObjectOfClasses:
+                 [NSSet setWithArray:@[ NSDictionary.class, NSString.class, NSNumber.class ]]
+                            forKey:kDroppedEventCounterByMappingID];
+
+  if (!droppedEventCounterByMappingID ||
+      ![droppedEventCounterByMappingID isKindOfClass:[NSDictionary class]]) {
+    // If any of the fields are corrupted, the initializer should fail.
+    return nil;
   }
-  return self;
+
+  return [self initWithDroppedEventCounterByMappingID:droppedEventCounterByMappingID];
 }
 
 - (void)encodeWithCoder:(nonnull NSCoder *)coder {
