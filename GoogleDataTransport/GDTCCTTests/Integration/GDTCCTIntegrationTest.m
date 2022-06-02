@@ -34,10 +34,10 @@
 
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
 
-/// The mapping ID that represents the `LogSource` for Firelog Client Analytics.
+/// The mapping ID that represents the `LogSource` for GDT testing.
 static NSString *const kTestEventMappingID = @"1018";
 
-/// The mapping ID that represents the `LogSource` for Firelog Client Analytics.
+/// The mapping ID that represents the `LogSource` for GDT metrics.
 static NSString *const kMetricEventMappingID = @"1710";
 
 @interface GDTCCTIntegrationTest : XCTestCase
