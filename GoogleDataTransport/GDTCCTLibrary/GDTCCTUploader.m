@@ -42,6 +42,9 @@ static NSURL *_testServerURL = nil;
 
 + (void)load {
   GDTCCTUploader *uploader = [GDTCCTUploader sharedInstance];
+#if !NDEBUG
+  [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetTest];
+#endif  // !NDEBUG
   [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetCCT];
   [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetFLL];
   [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetCSH];

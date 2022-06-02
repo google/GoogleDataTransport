@@ -24,13 +24,21 @@
 #import <SystemConfiguration/SCNetworkReachability.h>
 
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTUploader.h"
-#import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
-#import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
+#import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
+
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsController.h"
 
 #import "GoogleDataTransport/GDTCCTTests/Unit/Helpers/GDTCCTTestRequestParser.h"
 #import "GoogleDataTransport/GDTCCTTests/Unit/Helpers/NSData+GDTCOREventDataObject.h"
+#import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
 
-#import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
+#import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
+
+/// The mapping ID that represents the `LogSource` for Firelog Client Analytics.
+static NSString *const kTestEventMappingID = @"1018";
+
+/// The mapping ID that represents the `LogSource` for Firelog Client Analytics.
+static NSString *const kMetricEventMappingID = @"1710";
 
 @interface GDTCCTIntegrationTest : XCTestCase
 /** If YES, allow the recursive generating of events. */
@@ -75,10 +83,6 @@
 
   GDTCCTUploader.testServerURL =
       [self.testServer.serverURL URLByAppendingPathComponent:@"logBatch"];
-
-  self.transport = [[GDTCORTransport alloc] initWithMappingID:@"1018"
-                                                 transformers:nil
-                                                       target:kGDTCORTargetCCT];
 }
 
 - (void)tearDown {
@@ -88,6 +92,64 @@
 
 /** Tests sending data to CCT with a high priority event if network conditions are good. */
 - (void)testSendingDataToCCT {
+  [self assertUploadToTarget:kGDTCORTargetCCT expectingMetrics:NO];
+}
+
+- (void)testRunsWithoutCrashingToCCT {
+  self.transport = [[GDTCORTransport alloc] initWithMappingID:kTestEventMappingID
+                                                 transformers:nil
+                                                       target:kGDTCORTargetCCT];
+  // Just run for a minute whilst generating events.
+  NSInteger secondsToRun = 65;
+  self.generateEvents = YES;
+
+  XCTestExpectation *eventsUploaded = [self expectationForEventsToUpload];
+  eventsUploaded.expectedFulfillmentCount = 2;
+
+  [self recursivelyGenerateEvent];
+
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(secondsToRun * NSEC_PER_SEC)),
+                 dispatch_get_main_queue(), ^{
+                   self.generateEvents = NO;
+
+                   // Send a high priority event to flush other events.
+                   [self generateEventWithQoSTier:GDTCOREventQoSFast];
+                 });
+
+  // Wait for events to be uploaded.
+  [self waitForExpectations:@[ eventsUploaded ] timeout:secondsToRun + 5];
+
+  // Validate sent events content.
+  [self assertAllScheduledEventsWereReceivedWhenExpectingMetrics:NO];
+}
+
+- (void)testSendingData_WhenTargetSupportsMetrics_AndThereAreMetricsToUpload {
+  [self assertUploadToTarget:kGDTCORTargetTest expectingMetrics:YES];
+}
+
+- (void)testSendingData_WhenTargetSupportsMetrics_AndThereAreNoMetricsToUpload {
+  [self assertUploadToTarget:kGDTCORTargetTest expectingMetrics:NO];
+}
+
+#pragma mark - Helpers
+
+/// Asserts that uploading a batch of events to the given target performs as expected.
+/// @param target The target to upload the events to.
+/// @param expectingMetrics Whether or not a metrics event should be uploaded to the target.
+- (void)assertUploadToTarget:(GDTCORTarget)target expectingMetrics:(BOOL)expectingMetrics {
+  self.transport = [[GDTCORTransport alloc] initWithMappingID:kTestEventMappingID
+                                                 transformers:nil
+                                                       target:target];
+
+  if (expectingMetrics) {
+    [[GDTCORMetricsController sharedInstance]
+        logEventsDroppedForReason:GDTCOREventDropReasonStorageFull
+                           events:[NSSet setWithArray:@[
+                             [self.transport eventForTransport], [self.transport eventForTransport],
+                             [self.transport eventForTransport]
+                           ]]];
+  }
+
   // Send a number of events across multiple queues in order to ensure the threading is working as
   // expected.
   dispatch_queue_t queue1 = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
@@ -116,37 +178,10 @@
   [self waitForExpectations:@[ eventsUploaded ] timeout:60.0];
 
   // Validate sent events content.
-  [self assertAllScheduledEventsWereReceived];
+  [self assertAllScheduledEventsWereReceivedWhenExpectingMetrics:expectingMetrics];
 }
 
-- (void)testRunsWithoutCrashing {
-  // Just run for a minute whilst generating events.
-  NSInteger secondsToRun = 65;
-  self.generateEvents = YES;
-
-  XCTestExpectation *eventsUploaded = [self expectationForEventsToUpload];
-  eventsUploaded.expectedFulfillmentCount = 2;
-
-  [self recursivelyGenerateEvent];
-
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(secondsToRun * NSEC_PER_SEC)),
-                 dispatch_get_main_queue(), ^{
-                   self.generateEvents = NO;
-
-                   // Send a high priority event to flush other events.
-                   [self generateEventWithQoSTier:GDTCOREventQoSFast];
-                 });
-
-  // Wait for events to be uploaded.
-  [self waitForExpectations:@[ eventsUploaded ] timeout:secondsToRun + 5];
-
-  // Validate sent events content.
-  [self assertAllScheduledEventsWereReceived];
-}
-
-#pragma mark - Helpers
-
-/** Generates an event and sends it through the transport infrastructure. */
+/// Generates an event and sends it through the transport infrastructure.
 - (void)generateEventWithQoSTier:(GDTCOREventQoS)qosTier {
   GDTCOREvent *event = [self.transport eventForTransport];
   event.dataObject = [[[NSUUID UUID] UUIDString] dataUsingEncoding:NSUTF8StringEncoding];
@@ -161,7 +196,7 @@
   });
 }
 
-/** Generates events recursively at random intervals between 0 and 5 seconds. */
+/// Generates events recursively at random intervals between 0 and 5 seconds.
 - (void)recursivelyGenerateEvent {
   if (self.generateEvents) {
     [self generateEventWithQoSTier:GDTCOREventQosDefault];
@@ -207,7 +242,25 @@
   return responseSentExpectation;
 }
 
-- (void)assertAllScheduledEventsWereReceived {
+- (void)assertAllScheduledEventsWereReceivedWhenExpectingMetrics:(BOOL)expectingMetrics {
+  // Assert that a metrics event was sent only if it was expected.
+  NSInteger metricsEventCount = 0;
+  for (GDTCOREvent *receivedEvent in [self.serverReceivedEvents copy]) {
+    if (/* Event is a metrics event. */ [receivedEvent.mappingID
+        isEqualToString:kMetricEventMappingID]) {
+      metricsEventCount += 1;
+      NSError *decodeError = nil;
+      gdt_client_metrics_ClientMetrics __unused decodedMetrics =
+          [GDTCCTTestRequestParser metricsProtoWithData:receivedEvent.serializedDataObjectBytes
+                                                  error:&decodeError];
+      XCTAssertNil(decodeError);
+      if (expectingMetrics) {
+        [self.scheduledEvents addObject:receivedEvent];
+      }
+    }
+  }
+  XCTAssertEqual(metricsEventCount, @(expectingMetrics).integerValue);
+
   // Assume unique payload.
   __auto_type scheduledEventsByPayload =
       [self eventsByPayloadWithEvents:[self.scheduledEvents copy]];

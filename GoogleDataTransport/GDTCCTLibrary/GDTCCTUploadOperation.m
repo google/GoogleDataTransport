@@ -38,7 +38,7 @@
 #import <GoogleUtilities/NSURLSession+GULPromises.h>
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTCompressionHelper.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
-#import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCORMetrics+GDTCCTSupport.h"
+#import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCOREvent+GDTMetricsSupport.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
@@ -525,15 +525,10 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   return [self.metricsController getAndResetMetrics]
       .thenOn(self.uploaderQueue,
               ^GDTCORUploadBatch *(GDTCORMetrics *metrics) {
-                // TODO(ncooke3): Define kMetricEventMappingID.
-                GDTCOREvent *metricsEvent =
-                    [[GDTCOREvent alloc] initWithMappingID:@"kMetricEventMappingID" target:target];
-
-                [metricsEvent setDataObject:metrics];
-
                 // Save the metrics so they can be reset later upon successful upload.
                 [self setCurrentMetrics:metrics];
 
+                GDTCOREvent *metricsEvent = [GDTCOREvent eventWithMetrics:metrics forTarget:target];
                 GDTCORUploadBatch *batchWithMetricEvent = [[GDTCORUploadBatch alloc]
                     initWithBatchID:batch.batchID
                              events:[batch.events setByAddingObject:metricsEvent]];

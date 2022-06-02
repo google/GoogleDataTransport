@@ -18,13 +18,15 @@
 #import <nanopb/pb_decode.h>
 #import <nanopb/pb_encode.h>
 
-#import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
-#import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/client_metrics.nanopb.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
+
+#import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
-#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
+
+#import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/client_metrics.nanopb.h"
 
 @implementation GDTCORMetrics (GDTCCTSupport)
 
