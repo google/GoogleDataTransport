@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GDTCORMetricsController : NSObject <GDTCORMetricsControllerProtocol>
 
-/// Returns the event metricss controller singleton.
+/// Returns the event metrics controller singleton.
 + (instancetype)sharedInstance;
 
 /// Designated initializer.

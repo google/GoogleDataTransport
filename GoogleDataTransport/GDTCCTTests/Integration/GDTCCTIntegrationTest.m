@@ -246,8 +246,8 @@ static NSString *const kMetricEventMappingID = @"1710";
   // Assert that a metrics event was sent only if it was expected.
   NSInteger metricsEventCount = 0;
   for (GDTCOREvent *receivedEvent in [self.serverReceivedEvents copy]) {
-    if (/* Event is a metrics event. */ [receivedEvent.mappingID
-        isEqualToString:kMetricEventMappingID]) {
+    if ([receivedEvent.mappingID isEqualToString:kMetricEventMappingID]) {
+      // The event is a metrics event.
       metricsEventCount += 1;
       NSError *decodeError = nil;
       gdt_client_metrics_ClientMetrics __unused decodedMetrics =
