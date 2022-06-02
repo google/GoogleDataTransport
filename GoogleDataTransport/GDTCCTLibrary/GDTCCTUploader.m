@@ -42,9 +42,9 @@ static NSURL *_testServerURL = nil;
 
 + (void)load {
   GDTCCTUploader *uploader = [GDTCCTUploader sharedInstance];
-#if !NDEBUG
+#if GDT_DEV
   [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetTest];
-#endif  // !NDEBUG
+#endif  // GDT_DEV
   [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetCCT];
   [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetFLL];
   [[GDTCORRegistrar sharedInstance] registerUploader:uploader target:kGDTCORTargetCSH];
@@ -141,11 +141,11 @@ static NSURL *_testServerURL = nil;
 }
 
 + (nullable NSURL *)serverURLForTarget:(GDTCORTarget)target {
-#if !NDEBUG
+#if GDT_DEV
   if (_testServerURL) {
     return _testServerURL;
   }
-#endif  // !NDEBUG
+#endif  // GDT_DEV
 
   return [GDTCOREndpoints uploadURLForTarget:target];
 }
@@ -193,7 +193,7 @@ static NSURL *_testServerURL = nil;
   return nil;
 }
 
-#if !NDEBUG
+#if GDT_DEV
 
 - (BOOL)waitForUploadFinishedWithTimeout:(NSTimeInterval)timeout {
   NSDate *expirationDate = [NSDate dateWithTimeIntervalSinceNow:timeout];
@@ -210,7 +210,7 @@ static NSURL *_testServerURL = nil;
   return NO;
 }
 
-#endif  // !NDEBUG
+#endif  // GDT_DEV
 
 @end
 

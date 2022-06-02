@@ -63,6 +63,10 @@ Shared library for iOS SDK data transport needs.
      'GoogleDataTransport/GDTCCTTests/Unit/Helpers/**/*.{h,m}'
    ]
 
+   test_spec_config = {
+     'GCC_PREPROCESSOR_DEFINITIONS' => 'GDT_DEV=1'
+   }.merge(header_search_paths)
+
   # Test app specs
   if ENV['GDT_DEV'] && ENV['GDT_DEV'] == '1' then
     s.app_spec 'TestApp' do |app_spec|
@@ -97,7 +101,7 @@ Shared library for iOS SDK data transport needs.
     test_spec.platforms = {:ios => ios_deployment_target, :osx => osx_deployment_target, :tvos => tvos_deployment_target}
     test_spec.requires_app_host = false
     test_spec.source_files = ['GoogleDataTransport/GDTCORTests/Unit/**/*.{h,m}'] + common_test_sources + common_cct_test_sources
-    test_spec.pod_target_xcconfig = header_search_paths
+    test_spec.pod_target_xcconfig = test_spec_config
   end
 
   s.test_spec 'Tests-Lifecycle' do |test_spec|
@@ -105,7 +109,7 @@ Shared library for iOS SDK data transport needs.
     test_spec.platforms = {:ios => ios_deployment_target, :osx => osx_deployment_target, :tvos => tvos_deployment_target}
     test_spec.requires_app_host = false
     test_spec.source_files = ['GoogleDataTransport/GDTCORTests/Lifecycle/**/*.{h,m}'] + common_test_sources
-    test_spec.pod_target_xcconfig = header_search_paths
+    test_spec.pod_target_xcconfig = test_spec_config
   end
 
   # Integration test specs
@@ -114,7 +118,7 @@ Shared library for iOS SDK data transport needs.
     test_spec.platforms = {:ios => ios_deployment_target, :osx => osx_deployment_target, :tvos => tvos_deployment_target}
     test_spec.requires_app_host = false
     test_spec.source_files = ['GoogleDataTransport/GDTCORTests/Integration/**/*.{h,m}'] + common_test_sources
-    test_spec.pod_target_xcconfig = header_search_paths
+    test_spec.pod_target_xcconfig = test_spec_config
     test_spec.dependency 'GCDWebServer'
   end
 
@@ -157,7 +161,7 @@ Shared library for iOS SDK data transport needs.
     test_spec.requires_app_host = false
     test_spec.source_files = ['GoogleDataTransport/GDTCCTTests/Unit/**/*.{h,m}'] + common_cct_test_sources + common_test_sources
     test_spec.resources = ['GoogleDataTransport/GDTCCTTests/Data/**/*']
-    test_spec.pod_target_xcconfig = header_search_paths
+    test_spec.pod_target_xcconfig = test_spec_config
     test_spec.dependency 'GCDWebServer'
   end
 
@@ -171,7 +175,7 @@ Shared library for iOS SDK data transport needs.
       'GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.{h,m}'
       ] + common_cct_test_sources
     test_spec.resources = ['GoogleDataTransport/GDTCCTTests/Data/**/*']
-    test_spec.pod_target_xcconfig = header_search_paths
+    test_spec.pod_target_xcconfig = test_spec_config
     test_spec.dependency 'GCDWebServer'
   end
 
