@@ -275,6 +275,37 @@
   XCTAssertEqualObjects(decodedCounter, eventMetricsCounter);
 }
 
+- (void)testSecureCoding_WhenEncodingIsCorrupted {
+  // Given
+  // - Create an invalid instance and write its encoding to a file. When
+  //   decoding, the invalid encoding should be treated as a corrupt encoding.
+  GDTCOREventMetricsCounter *corruptedMetricsCounter =
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
+      [[GDTCOREventMetricsCounter alloc] initWithDroppedEventCounterByMappingID:@"corrupted"];
+#pragma clang diagnostic pop
+
+  NSError *encodeError;
+  NSData *encodedMetricsCounter = GDTCOREncodeArchive(corruptedMetricsCounter, nil, &encodeError);
+  XCTAssertNil(encodeError);
+  XCTAssertNotNil(encodedMetricsCounter);
+
+  NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"metadata.dat"];
+  NSError *writeError;
+  BOOL writeResult = GDTCORWriteDataToFile(encodedMetricsCounter, filePath, &writeError);
+  XCTAssertNil(writeError);
+  XCTAssertTrue(writeResult);
+
+  // When
+  NSError *decodeError;
+  GDTCOREventMetricsCounter *decodedMetricsCounter =
+      (GDTCOREventMetricsCounter *)GDTCORDecodeArchiveAtPath(GDTCOREventMetricsCounter.class,
+                                                             filePath, &decodeError);
+  // Then
+  XCTAssertNotNil(decodeError);
+  XCTAssertNil(decodedMetricsCounter);
+}
+
 - (void)assertMergedCounterFromCounter1:(GDTCOREventMetricsCounter *)counter1
                                counter2:(GDTCOREventMetricsCounter *)counter2 {
   // There are three ways to merge the given counters, and all three ways
