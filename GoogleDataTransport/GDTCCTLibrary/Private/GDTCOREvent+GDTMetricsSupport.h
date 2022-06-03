@@ -14,23 +14,20 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORMetricsControllerProtocol.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
-@protocol GDTCORStoragePromiseProtocol;
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
+
+@class GDTCORMetrics;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GDTCORMetricsController : NSObject <GDTCORMetricsControllerProtocol>
+@interface GDTCOREvent (GDTMetricsSupport)
 
-/// Returns the event metrics controller singleton.
-+ (instancetype)sharedInstance;
-
-/// Designated initializer.
-/// @param storage The storage object to read and write metrics data from.
-- (instancetype)initWithStorage:(id<GDTCORStoragePromiseProtocol>)storage NS_DESIGNATED_INITIALIZER;
-
-/// This API is unavailable.
-- (instancetype)init NS_UNAVAILABLE;
+/// Creates and returns an event for the given target with the given metrics.
+/// @param metrics The metrics to set at the event's data.
+/// @param target The backend target that the event corresponds to.
++ (GDTCOREvent *)eventWithMetrics:(GDTCORMetrics *)metrics forTarget:(GDTCORTarget)target;
 
 @end
 
