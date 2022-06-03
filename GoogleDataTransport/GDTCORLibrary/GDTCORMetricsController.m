@@ -43,10 +43,10 @@
 @implementation GDTCORMetricsController
 
 + (void)load {
-#if GDT_DEV
+#if GDT_TEST
   [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
                                                        target:kGDTCORTargetTest];
-#endif  // GDT_DEV
+#endif  // GDT_TEST
   [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
                                                        target:kGDTCORTargetCSH];
   [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]

@@ -9,6 +9,8 @@ on:
 
 env:
   METRICS_SERVICE_SECRET: ${{ secrets.GHASecretsGPGPassphrase1 }}
+  # Used to compile test-specific code in the SDK.
+  GDT_TEST: 1
 
 jobs:
   pod_lib_lint:
