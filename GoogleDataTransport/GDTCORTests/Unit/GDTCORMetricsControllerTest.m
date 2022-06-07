@@ -350,33 +350,4 @@
   XCTAssertEqualObjects([metricsPromise.value droppedEventCounter], expectedCombinedCounter);
 }
 
-- (void)testIsMetricsCollectionSupportedForTarget {
-  // Given
-  GDTCORMetricsController *metricsController =
-      [[GDTCORMetricsController alloc] initWithStorage:[GDTCORStorageFake storageFake]];
-  NSDictionary *targetSupportMatrix = @{
-    @(kGDTCORTargetTest) : @YES,
-    @(kGDTCORTargetFLL) : @YES,
-    @(kGDTCORTargetCSH) : @YES,
-    @(kGDTCORTargetCCT) : @NO,
-    @(kGDTCORTargetINT) : @NO
-  };
-
-  for (NSNumber *target in targetSupportMatrix) {
-    // When
-    BOOL isSupported = [metricsController isMetricsCollectionSupportedForTarget:target.intValue];
-    // Then
-    BOOL expectedIsSupported = [(NSNumber *)targetSupportMatrix[target] boolValue];
-    XCTAssertEqual(isSupported, expectedIsSupported, @"Failed for GDTCORTarget: %@", target);
-  }
-}
-
-- (void)DISABLED_testGDTCORMetricsControllerInstanceForTarget {
-  // Metrics controller registration is done at `GDTCORMetricsController +load` time.
-  // Assert that it is registered for the FLL and CSH targets, but not for CCT.
-  XCTAssertNotNil(GDTCORMetricsControllerInstanceForTarget(kGDTCORTargetFLL));
-  XCTAssertNotNil(GDTCORMetricsControllerInstanceForTarget(kGDTCORTargetCSH));
-  XCTAssertNil(GDTCORMetricsControllerInstanceForTarget(kGDTCORTargetCCT));
-}
-
 @end

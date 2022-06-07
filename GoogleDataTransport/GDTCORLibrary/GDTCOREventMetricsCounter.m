@@ -61,7 +61,7 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
     (NSDictionary<NSString *, GDTCORDroppedEventCounter *> *)droppedEventCounterByMappingID {
   self = [super init];
   if (self) {
-    _droppedEventCounterByMappingID = droppedEventCounterByMappingID;
+    _droppedEventCounterByMappingID = [droppedEventCounterByMappingID copy];
   }
   return self;
 }

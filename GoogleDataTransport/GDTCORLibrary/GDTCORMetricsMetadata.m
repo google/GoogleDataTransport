@@ -32,7 +32,7 @@ static NSString *const kDroppedEventCounter = @"droppedEventCounter";
                                     counter:(GDTCOREventMetricsCounter *)counter {
   self = [super init];
   if (self) {
-    _collectionStartDate = collectionStartDate;
+    _collectionStartDate = [collectionStartDate copy];
     _droppedEventCounter = counter;
   }
   return self;

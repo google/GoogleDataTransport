@@ -28,12 +28,12 @@
                                    bundleID:(NSString *)bundleID {
   self = [super init];
   if (self) {
-    _collectionStartDate = collectionStartDate;
-    _collectionEndDate = collectionEndDate;
+    _collectionStartDate = [collectionStartDate copy];
+    _collectionEndDate = [collectionEndDate copy];
     _droppedEventCounter = droppedEventCounter;
     _currentCacheSize = currentCacheSize;
     _maxCacheSize = maxCacheSize;
-    _bundleID = bundleID;
+    _bundleID = [bundleID copy];
   }
   return self;
 }

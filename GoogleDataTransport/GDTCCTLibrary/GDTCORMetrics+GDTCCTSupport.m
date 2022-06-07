@@ -94,7 +94,7 @@ gdt_client_metrics_LogSourceMetrics *GDTCCTConstructLogSourceMetrics(
                                           GDTCORDroppedEventCounter *eventCounterForMappingID,
                                           BOOL *__unused _) {
         // Create the log source proto for the given mapping ID. It contains a
-        // repeating field to encapuslate the number of events dropped for each
+        // repeating field to encapsulate the number of events dropped for each
         // given drop reason.
         __block gdt_client_metrics_LogSourceMetrics logSourceMetrics =
             gdt_client_metrics_LogSourceMetrics_init_zero;

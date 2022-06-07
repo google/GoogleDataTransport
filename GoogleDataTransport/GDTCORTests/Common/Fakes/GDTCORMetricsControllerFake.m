@@ -42,21 +42,12 @@
 }
 
 - (FBLPromise<NSNull *> *)offerMetrics:(GDTCORMetrics *)metrics {
-  if (self.onConfirmMetricsHandler) {
-    self.onConfirmMetricsHandler(metrics);
+  if (self.onOfferMetricsHandler) {
+    self.onOfferMetricsHandler(metrics);
   } else {
     [self doesNotRecognizeSelector:_cmd];
   }
   return [FBLPromise resolvedWith:nil];
-}
-
-- (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
-  if (self.onTargetSupportsMetricsCollectionHandler) {
-    return self.onTargetSupportsMetricsCollectionHandler(target);
-  } else {
-    [self doesNotRecognizeSelector:_cmd];
-    return NO;
-  }
 }
 
 - (void)storage:(id<GDTCORStoragePromiseProtocol>)storage didDropEvent:(GDTCOREvent *)event {

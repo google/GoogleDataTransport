@@ -47,6 +47,7 @@
   [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
                                                        target:kGDTCORTargetTest];
 #endif  // GDT_TEST
+  // Only the Firelog backend supports metrics collection.
   [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
                                                        target:kGDTCORTargetCSH];
   [[GDTCORRegistrar sharedInstance] registerMetricsController:[self sharedInstance]
@@ -183,25 +184,6 @@
   };
 
   return [_storage fetchAndUpdateMetricsWithHandler:handler];
-}
-
-- (BOOL)isMetricsCollectionSupportedForTarget:(GDTCORTarget)target {
-  switch (target) {
-    // Only the Firelog backend supports metrics collection.
-    case kGDTCORTargetFLL:
-    case kGDTCORTargetCSH:
-    case kGDTCORTargetTest:
-      return YES;
-
-    case kGDTCORTargetCCT:
-    case kGDTCORTargetINT:
-      return NO;
-  }
-
-  GDTCORLogDebug(@"This code path shouldn't be reached."
-                 @"Invalid target %ld does not support metrics collection",
-                 (long)target);
-  return NO;
 }
 
 #pragma mark - GDTCORStorageDelegate

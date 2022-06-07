@@ -43,17 +43,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
-/** The designated initializer.
- *  @param target The events target to upload.
- *  @param conditions A set of upload conditions. The conditions affect the set of events to be
- * uploaded, e.g. events with some QoS are not uploaded on a cellular network, etc.
- *  @param uploadURL The backend URL to upload the events.
- *  @param queue A queue to dispatch async upload steps.
- *  @param storage A storage object to fetch events for upload.
- *  @param metadataProvider An object to retrieve/update data shared between different upload
- * operations.
- *  @return An instance of GDTCCTUploadOperation ready to be added to an NSOperationQueue.
- */
+/// Designated initializer.
+/// @param target The events target to upload.
+/// @param conditions A set of upload conditions. The conditions affect the set of events to be
+/// uploaded, e.g. events with some QoS are not uploaded on a cellular network, etc.
+/// @param uploadURL The backend URL to upload the events.
+/// @param queue A queue to dispatch async upload steps.
+/// @param storage A storage object to fetch events for upload.
+/// @param metadataProvider An object to retrieve/update data shared between upload operations.
+/// @param metricsController The metrics controller corresponding to the given target. If the given
+/// target does not support metrics controller, `nil` should be passed.
+/// @return An individual operation that can be added to an operation queue.
 - (instancetype)initWithTarget:(GDTCORTarget)target
                     conditions:(GDTCORUploadConditions)conditions
                      uploadURL:(NSURL *)uploadURL

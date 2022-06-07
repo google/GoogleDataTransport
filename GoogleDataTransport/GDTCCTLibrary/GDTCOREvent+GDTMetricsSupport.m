@@ -17,7 +17,7 @@
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCORMetrics+GDTCCTSupport.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 
-/// The mapping ID that represents the `LogSource` for Firelog Client Analytics.
+/// The mapping ID that represents the `LogSource` for GDT metrics.
 static NSString *const kMetricEventMappingID = @"1710";
 
 @implementation GDTCOREvent (GDTMetricsSupport)

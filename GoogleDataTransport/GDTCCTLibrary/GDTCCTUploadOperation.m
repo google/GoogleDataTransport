@@ -78,7 +78,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 /// The metrics being uploaded by the operation. These metrics are fetched and included as an event
 /// in the upload batch as part of the upload process.
 ///
-/// Metrics being uploaded are retained so they can be reset when upload is successful.
+/// Metrics being uploaded are retained so they can be re-stored if upload is not successful.
 @property(nonatomic, nullable) GDTCORMetrics *currentMetrics;
 
 /// NSOperation state properties implementation.
@@ -182,8 +182,9 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
               })
       .thenOn(self.uploaderQueue,
               ^FBLPromise<GDTCORUploadBatch *> *(GDTCORUploadBatch *batch) {
-                // 7. Add metrics to batch if metrics collection is supported.
-                if (![self.metricsController isMetricsCollectionSupportedForTarget:target]) {
+                // 7. Add metrics to the batch if the target has a
+                // corresponding metrics controller.
+                if (!self.metricsController) {
                   return [FBLPromise resolvedWith:batch];
                 }
 
@@ -231,6 +232,11 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       .recoverOn(self.uploaderQueue, ^id(NSError *error) {
         // If a network error occurred, move the events back to the main
         // storage so they can attempt to be uploaded in the next attempt.
+        // Additionally, if metrics were added to the batch, place them back
+        // in storage.
+        if (self.currentMetrics) {
+          [self.metricsController offerMetrics:self.currentMetrics];
+        }
         return [storage removeBatchWithID:batch.batchID deleteEvents:NO];
       });
 }
@@ -525,7 +531,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   return [self.metricsController getAndResetMetrics]
       .thenOn(self.uploaderQueue,
               ^GDTCORUploadBatch *(GDTCORMetrics *metrics) {
-                // Save the metrics so they can be reset later upon successful upload.
+                // Save the metrics so they can be re-stored if upload fails.
                 [self setCurrentMetrics:metrics];
 
                 GDTCOREvent *metricsEvent = [GDTCOREvent eventWithMetrics:metrics forTarget:target];
