@@ -158,6 +158,7 @@ typedef void (^GDTCORStorageBatchBlock)(NSNumber *_Nullable newBatchID,
     (GDTCORMetricsMetadata * (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
                                  NSError *_Nullable fetchError))handler;
 
+/// Fetches and returns storage metadata.
 - (FBLPromise<GDTCORStorageMetadata *> *)fetchStorageMetadata;
 
 /** See `hasEventsForTarget:onComplete:`.

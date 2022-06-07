@@ -414,33 +414,29 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
                                                        target:kGDTCORTargetTest];
 
-  XCTestExpectation *targetSupportsMetricsCollectionExpectation =
-      [self expectationWithDescription:@"targetSupportsMetricsCollectionExpectation"];
-  metricsControllerFake.onTargetSupportsMetricsCollectionHandler = ^BOOL(GDTCORTarget _) {
-    [targetSupportsMetricsCollectionExpectation fulfill];
-    return YES;
-  };
-
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
-  XCTestExpectation *fetchMetricsExpectation =
-      [self expectationWithDescription:@"fetchMetricsExpectation"];
+  XCTestExpectation *getAndResetMetricsExpectation =
+      [self expectationWithDescription:@"getAndResetMetricsExpectation"];
   metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
-    [fetchMetricsExpectation fulfill];
+    // This should not be fulfilled.
+    [getAndResetMetricsExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
-  XCTestExpectation *metricsConfirmationExpectation =
-      [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsConfirmationExpectation.inverted = YES;
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
-    [metricsConfirmationExpectation fulfill];
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
   };
 
   XCTestExpectation *droppedEventsAreLoggedExpectation =
       [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
   droppedEventsAreLoggedExpectation.inverted = YES;
   metricsControllerFake.onLogEventsDroppedHandler =
-      ^(GDTCOREventDropReason _, NSSet<GDTCOREvent *> *__) {
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
         [droppedEventsAreLoggedExpectation fulfill];
       };
 
@@ -454,9 +450,9 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [self waitForExpectations:@[
     self.testStorage.batchIDsForTargetExpectation,
     self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
-    self.testStorage.batchWithEventSelectorExpectation, targetSupportsMetricsCollectionExpectation,
-    fetchMetricsExpectation, responseSentExpectation, metricsConfirmationExpectation,
-    droppedEventsAreLoggedExpectation, self.testStorage.removeBatchAndDeleteEventsExpectation
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetMetricsExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
                     timeout:1
                enforceOrder:YES];
@@ -477,36 +473,36 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 
   // - Set metrics controller expectations.
   GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
-  [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
-                                                       target:kGDTCORTargetTest];
+  // The `kGDTCORTargetTest` target is registered at +load time. De-registering
+  // it here will simulate the scenario where an upload target does not have a
+  // corresponding metrics controller (and therefore does not support metrics
+  // collection).
+  [[[GDTCORRegistrar sharedInstance] targetToMetricsController]
+      removeObjectForKey:@(kGDTCORTargetTest)];
 
-  XCTestExpectation *targetSupportsMetricsCollectionExpectation =
-      [self expectationWithDescription:@"targetSupportsMetricsCollectionExpectation"];
-  metricsControllerFake.onTargetSupportsMetricsCollectionHandler = ^BOOL(GDTCORTarget _) {
-    [targetSupportsMetricsCollectionExpectation fulfill];
-    return NO;
-  };
-
-  XCTestExpectation *fetchMetricsExpectation =
-      [self expectationWithDescription:@"fetchMetricsExpectation"];
-  fetchMetricsExpectation.inverted = YES;
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
+  getAndResetExpectation.inverted = YES;
   metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
-    [fetchMetricsExpectation fulfill];
+    // This should not be fulfilled.
+    [getAndResetExpectation fulfill];
     return [FBLPromise resolvedWith:nil];
   };
 
-  XCTestExpectation *metricsConfirmationExpectation =
-      [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsConfirmationExpectation.inverted = YES;
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *_) {
-    [metricsConfirmationExpectation fulfill];
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
   };
 
   XCTestExpectation *droppedEventsAreLoggedExpectation =
       [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
   droppedEventsAreLoggedExpectation.inverted = YES;
   metricsControllerFake.onLogEventsDroppedHandler =
-      ^(GDTCOREventDropReason _, NSSet<GDTCOREvent *> *__) {
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
         [droppedEventsAreLoggedExpectation fulfill];
       };
 
@@ -520,9 +516,9 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [self waitForExpectations:@[
     self.testStorage.batchIDsForTargetExpectation,
     self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
-    self.testStorage.batchWithEventSelectorExpectation, targetSupportsMetricsCollectionExpectation,
-    fetchMetricsExpectation, responseSentExpectation, metricsConfirmationExpectation,
-    droppedEventsAreLoggedExpectation, self.testStorage.removeBatchAndDeleteEventsExpectation
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
                     timeout:1
                enforceOrder:YES];
@@ -546,34 +542,28 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
                                                        target:kGDTCORTargetTest];
 
-  XCTestExpectation *targetSupportsMetricsCollectionExpectation =
-      [self expectationWithDescription:@"targetSupportsMetricsCollectionExpectation"];
-  metricsControllerFake.onTargetSupportsMetricsCollectionHandler = ^BOOL(GDTCORTarget _) {
-    [targetSupportsMetricsCollectionExpectation fulfill];
-    return YES;
-  };
-
   NSError *error = [NSError errorWithDomain:@"metrics controller error" code:1 userInfo:nil];
-  XCTestExpectation *fetchMetricsExpectation =
-      [self expectationWithDescription:@"fetchMetricsExpectation"];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
   metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
-    [fetchMetricsExpectation fulfill];
-
+    [getAndResetExpectation fulfill];
     return [FBLPromise resolvedWith:error];
   };
 
-  XCTestExpectation *metricsConfirmationExpectation =
-      [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsConfirmationExpectation.inverted = YES;
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
-    [metricsConfirmationExpectation fulfill];
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
   };
 
   XCTestExpectation *droppedEventsAreLoggedExpectation =
       [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
   droppedEventsAreLoggedExpectation.inverted = YES;
   metricsControllerFake.onLogEventsDroppedHandler =
-      ^(GDTCOREventDropReason _, NSSet<GDTCOREvent *> *__) {
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
         [droppedEventsAreLoggedExpectation fulfill];
       };
 
@@ -587,16 +577,16 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [self waitForExpectations:@[
     self.testStorage.batchIDsForTargetExpectation,
     self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
-    self.testStorage.batchWithEventSelectorExpectation, targetSupportsMetricsCollectionExpectation,
-    fetchMetricsExpectation, responseSentExpectation, metricsConfirmationExpectation,
-    droppedEventsAreLoggedExpectation, self.testStorage.removeBatchAndDeleteEventsExpectation
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
                     timeout:1
                enforceOrder:YES];
   [self waitForUploadOperationsToFinish:self.uploader];
 }
 
-- (void)testUploadTarget_WhenBatchWithMetricsAreUploaded_ThenMetricsAreConfirmedWithSuccess {
+- (void)testUploadTarget_WhenBatchWithMetricsAreUploaded {
   // Given
   // - Generate and batch a test event.
   [self.generator generateEvent:GDTCOREventQoSFast];
@@ -613,33 +603,28 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
                                                        target:kGDTCORTargetTest];
 
-  XCTestExpectation *targetSupportsMetricsCollectionExpectation =
-      [self expectationWithDescription:@"targetSupportsMetricsCollectionExpectation"];
-  metricsControllerFake.onTargetSupportsMetricsCollectionHandler = ^BOOL(GDTCORTarget _) {
-    [targetSupportsMetricsCollectionExpectation fulfill];
-    return YES;
-  };
-
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
-  XCTestExpectation *fetchMetricsExpectation =
-      [self expectationWithDescription:@"fetchMetricsExpectation"];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
   metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
-    [fetchMetricsExpectation fulfill];
+    [getAndResetExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
-  XCTestExpectation *metricsConfirmationExpectation =
-      [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsConfirmationExpectation.inverted = YES;
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
-    [metricsConfirmationExpectation fulfill];
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
   };
 
   XCTestExpectation *droppedEventsAreLoggedExpectation =
       [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
   droppedEventsAreLoggedExpectation.inverted = YES;
   metricsControllerFake.onLogEventsDroppedHandler =
-      ^(GDTCOREventDropReason _, NSSet<GDTCOREvent *> *__) {
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
         [droppedEventsAreLoggedExpectation fulfill];
       };
 
@@ -653,9 +638,9 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [self waitForExpectations:@[
     self.testStorage.batchIDsForTargetExpectation,
     self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
-    self.testStorage.batchWithEventSelectorExpectation, targetSupportsMetricsCollectionExpectation,
-    fetchMetricsExpectation, responseSentExpectation, metricsConfirmationExpectation,
-    droppedEventsAreLoggedExpectation, self.testStorage.removeBatchAndDeleteEventsExpectation
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
                     timeout:1
                enforceOrder:YES];
@@ -663,7 +648,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 }
 
 - (void)
-    testUploadTarget_WhenBatchWithMetricsAreNotUploadedDueToTransientError_ThenMetricsAreConfirmedWithFailure {
+    testUploadTarget_WhenBatchWithMetricsAreNotUploadedDueToTransientError_ThenMetricsAreReStored {
   // Given
   // - Generate a test event.
   [self.generator generateEvent:GDTCOREventQoSFast];
@@ -682,25 +667,18 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
                                                        target:kGDTCORTargetTest];
 
-  XCTestExpectation *targetSupportsMetricsCollectionExpectation =
-      [self expectationWithDescription:@"targetSupportsMetricsCollectionExpectation"];
-  metricsControllerFake.onTargetSupportsMetricsCollectionHandler = ^BOOL(GDTCORTarget _) {
-    [targetSupportsMetricsCollectionExpectation fulfill];
-    return YES;
-  };
-
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
-  XCTestExpectation *fetchMetricsExpectation =
-      [self expectationWithDescription:@"fetchMetricsExpectation"];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
   metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
-    [fetchMetricsExpectation fulfill];
+    [getAndResetExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
-  XCTestExpectation *metricsConfirmationExpectation =
-      [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
-    [metricsConfirmationExpectation fulfill];
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *metrics) {
+    [offerMetricsExpectation fulfill];
     XCTAssertEqualObjects(metrics, dummyMetrics);
   };
 
@@ -708,7 +686,8 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
       [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
   droppedEventsAreLoggedExpectation.inverted = YES;
   metricsControllerFake.onLogEventsDroppedHandler =
-      ^(GDTCOREventDropReason _, NSSet<GDTCOREvent *> *__) {
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
         [droppedEventsAreLoggedExpectation fulfill];
       };
 
@@ -722,9 +701,9 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   // Then
   [self waitForExpectations:@[
     self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation,
-    self.testStorage.batchWithEventSelectorExpectation, targetSupportsMetricsCollectionExpectation,
-    fetchMetricsExpectation, responseFailedExpectation, metricsConfirmationExpectation,
-    droppedEventsAreLoggedExpectation, self.testStorage.removeBatchWithoutDeletingEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseFailedExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
                     timeout:1
@@ -733,7 +712,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 }
 
 - (void)
-    testUploadTarget_WhenBatchWithMetricsAreNotUploadedDueToNonTransientError_ThenMetricsAreConfirmedWithFailureAndDroppedBatchEventAreLogged {
+    testUploadTarget_WhenBatchWithMetricsAreNotUploadedDueToNonTransientError_ThenMetricsAreReStoredAndDroppedBatchEventAreLogged {
   // Given
   // - Generate a test event.
   [self.generator generateEvent:GDTCOREventQoSFast];
@@ -752,25 +731,18 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
                                                        target:kGDTCORTargetTest];
 
-  XCTestExpectation *targetSupportsMetricsCollectionExpectation =
-      [self expectationWithDescription:@"targetSupportsMetricsCollectionExpectation"];
-  metricsControllerFake.onTargetSupportsMetricsCollectionHandler = ^BOOL(GDTCORTarget _) {
-    [targetSupportsMetricsCollectionExpectation fulfill];
-    return YES;
-  };
-
   GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
-  XCTestExpectation *fetchMetricsExpectation =
-      [self expectationWithDescription:@"fetchMetricsExpectation"];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
   metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
-    [fetchMetricsExpectation fulfill];
+    [getAndResetExpectation fulfill];
     return [FBLPromise resolvedWith:dummyMetrics];
   };
 
-  XCTestExpectation *metricsConfirmationExpectation =
-      [self expectationWithDescription:@"metricsConfirmationExpectation"];
-  metricsControllerFake.onConfirmMetricsHandler = ^(GDTCORMetrics *metrics) {
-    [metricsConfirmationExpectation fulfill];
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *metrics) {
+    [offerMetricsExpectation fulfill];
     XCTAssertEqualObjects(metrics, dummyMetrics);
   };
 
@@ -793,9 +765,9 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   // Then
   [self waitForExpectations:@[
     self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation,
-    self.testStorage.batchWithEventSelectorExpectation, targetSupportsMetricsCollectionExpectation,
-    fetchMetricsExpectation, responseFailedExpectation, metricsConfirmationExpectation,
-    droppedEventsAreLoggedExpectation, self.testStorage.removeBatchWithoutDeletingEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseFailedExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
     self.testStorage.removeBatchAndDeleteEventsExpectation
   ]
                     timeout:1

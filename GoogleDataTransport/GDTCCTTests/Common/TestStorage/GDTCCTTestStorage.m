@@ -212,12 +212,12 @@
 - (FBLPromise<NSNull *> *)fetchAndUpdateMetricsWithHandler:
     (GDTCORMetricsMetadata * (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
                                  NSError *_Nullable fetchError))handler {
-  // TODO(ncooke3): Implement.
+  NSAssert(NO, @"This API should be implemented if this fake is used in tests.");
   return [FBLPromise resolvedWith:nil];
 }
 
 - (FBLPromise<GDTCORStorageMetadata *> *)fetchStorageMetadata {
-  // TODO(ncooke3): Implement.
+  NSAssert(NO, @"This API should be implemented if this fake is used in tests.");
   return [FBLPromise resolvedWith:nil];
 }
 

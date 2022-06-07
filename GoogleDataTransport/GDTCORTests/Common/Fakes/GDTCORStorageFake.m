@@ -107,6 +107,7 @@
 }
 
 - (nonnull FBLPromise<NSSet<NSNumber *> *> *)batchIDsForTarget:(GDTCORTarget)target {
+  NSAssert(NO, @"This API should be implemented if this fake is used in tests.");
   return [FBLPromise resolvedWith:nil];
 }
 
