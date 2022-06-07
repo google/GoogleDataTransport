@@ -14,21 +14,32 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
-static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterByMappingID";
+static NSString *const kDroppedEventCounterByLogSource = @"droppedEventCounterByLogSource";
 
-@implementation GDTCOREventMetricsCounter
+typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
 
-+ (instancetype)counter {
-  return [[self alloc] initWithDroppedEventCounterByMappingID:@{}];
+@interface GDTCORLogSourceMetrics ()
+
+/// A dictionary of log sources that map to counters that reflect the number of events dropped for a
+/// given set of reasons (``GDTCOREventDropReason``).
+@property(nonatomic, readonly)
+    NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByLogSource;
+
+@end
+
+@implementation GDTCORLogSourceMetrics
+
++ (instancetype)metrics {
+  return [[self alloc] initWithDroppedEventCounterByLogSource:@{}];
 }
 
-+ (instancetype)counterWithEvents:(NSArray<GDTCOREvent *> *)events
++ (instancetype)metricsWithEvents:(NSArray<GDTCOREvent *> *)events
                  droppedForReason:(GDTCOREventDropReason)reason {
-  NSMutableDictionary<NSString *, GDTCORDroppedEventCounter *> *eventCounterByMappingID =
+  NSMutableDictionary<NSString *, GDTCORDroppedEventCounter *> *eventCounterByLogSource =
       [NSMutableDictionary dictionary];
 
   for (GDTCOREvent *event in [events copy]) {
@@ -41,9 +52,9 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
     // If the dropped event counter for this event's mapping ID is `nil`,
     // an empty mutable counter is returned.
     NSMutableDictionary<NSNumber *, NSNumber *> *eventCounter =
-        [NSMutableDictionary dictionaryWithDictionary:eventCounterByMappingID[event.mappingID]];
+        [NSMutableDictionary dictionaryWithDictionary:eventCounterByLogSource[event.mappingID]];
 
-    // Increment the dropped event counter for the given reason.
+    // Increment the log source metrics for the given reason.
     NSInteger currentEventCountForReason = [eventCounter[@(reason)] integerValue];
     NSInteger updatedEventCountForReason = currentEventCountForReason + 1;
 
@@ -51,26 +62,27 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
 
     // Update the mapping ID's (log source's) event counter with an immutable
     // copy of the updated counter.
-    eventCounterByMappingID[event.mappingID] = [eventCounter copy];
+    eventCounterByLogSource[event.mappingID] = [eventCounter copy];
   }
 
-  return [[self alloc] initWithDroppedEventCounterByMappingID:[eventCounterByMappingID copy]];
+  return [[self alloc] initWithDroppedEventCounterByLogSource:[eventCounterByLogSource copy]];
 }
 
-- (instancetype)initWithDroppedEventCounterByMappingID:
-    (NSDictionary<NSString *, GDTCORDroppedEventCounter *> *)droppedEventCounterByMappingID {
+- (instancetype)initWithDroppedEventCounterByLogSource:
+    (NSDictionary<NSString *, GDTCORDroppedEventCounter *> *)droppedEventCounterByLogSource {
   self = [super init];
   if (self) {
-    _droppedEventCounterByMappingID = [droppedEventCounterByMappingID copy];
+    _droppedEventCounterByLogSource = [droppedEventCounterByLogSource copy];
   }
   return self;
 }
 
-- (GDTCOREventMetricsCounter *)counterByMergingWithCounter:(GDTCOREventMetricsCounter *)counter {
-  // Create a new counter by merging the current counter with the given counter.
-  NSDictionary<NSString *, GDTCORDroppedEventCounter *> *mergedEventCounterByMappingID = [[self
-      class] dictionaryByMergingDictionary:self.droppedEventCounterByMappingID
-                       withOtherDictionary:counter.droppedEventCounterByMappingID
+- (GDTCORLogSourceMetrics *)logSourceMetricsByMergingWithLogSourceMetrics:
+    (GDTCORLogSourceMetrics *)metrics {
+  // Create new log source metrics by merging the current metrics with the given metrics.
+  NSDictionary<NSString *, GDTCORDroppedEventCounter *> *mergedEventCounterByLogSource = [[self
+      class] dictionaryByMergingDictionary:self.droppedEventCounterByLogSource
+                       withOtherDictionary:metrics.droppedEventCounterByLogSource
                      uniquingKeysWithBlock:^NSDictionary *(NSDictionary *eventCounter1,
                                                            NSDictionary *eventCounter2) {
                        return [[self class]
@@ -83,7 +95,7 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
                      }];
 
   return
-      [[[self class] alloc] initWithDroppedEventCounterByMappingID:mergedEventCounterByMappingID];
+      [[[self class] alloc] initWithDroppedEventCounterByLogSource:mergedEventCounterByLogSource];
 }
 
 /// Creates a new dictionary by merging together two given dictionaries.
@@ -112,9 +124,9 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
 
 #pragma mark - Equality
 
-- (BOOL)isEqualToDroppedEventCounter:(GDTCOREventMetricsCounter *)otherDroppedEventCounter {
-  return [_droppedEventCounterByMappingID
-      isEqualToDictionary:otherDroppedEventCounter.droppedEventCounterByMappingID];
+- (BOOL)isEqualToLogSourceMetrics:(GDTCORLogSourceMetrics *)otherMetrics {
+  return [_droppedEventCounterByLogSource
+      isEqualToDictionary:otherMetrics.droppedEventCounterByLogSource];
 }
 
 - (BOOL)isEqual:(nullable id)object {
@@ -130,11 +142,11 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
     return NO;
   }
 
-  return [self isEqualToDroppedEventCounter:(GDTCOREventMetricsCounter *)object];
+  return [self isEqualToLogSourceMetrics:(GDTCORLogSourceMetrics *)object];
 }
 
 - (NSUInteger)hash {
-  return [_droppedEventCounterByMappingID hash];
+  return [_droppedEventCounterByLogSource hash];
 }
 
 #pragma mark - NSSecureCoding
@@ -144,29 +156,29 @@ static NSString *const kDroppedEventCounterByMappingID = @"droppedEventCounterBy
 }
 
 - (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
-  NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByMappingID =
+  NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByLogSource =
       [coder decodeObjectOfClasses:
                  [NSSet setWithArray:@[ NSDictionary.class, NSString.class, NSNumber.class ]]
-                            forKey:kDroppedEventCounterByMappingID];
+                            forKey:kDroppedEventCounterByLogSource];
 
-  if (!droppedEventCounterByMappingID ||
-      ![droppedEventCounterByMappingID isKindOfClass:[NSDictionary class]]) {
+  if (!droppedEventCounterByLogSource ||
+      ![droppedEventCounterByLogSource isKindOfClass:[NSDictionary class]]) {
     // If any of the fields are corrupted, the initializer should fail.
     return nil;
   }
 
-  return [self initWithDroppedEventCounterByMappingID:droppedEventCounterByMappingID];
+  return [self initWithDroppedEventCounterByLogSource:droppedEventCounterByLogSource];
 }
 
 - (void)encodeWithCoder:(nonnull NSCoder *)coder {
-  [coder encodeObject:self.droppedEventCounterByMappingID forKey:kDroppedEventCounterByMappingID];
+  [coder encodeObject:self.droppedEventCounterByLogSource forKey:kDroppedEventCounterByLogSource];
 }
 
 #pragma mark - Description
 
 - (NSString *)description {
   return [NSString
-      stringWithFormat:@"%@ %@", [super description], self.droppedEventCounterByMappingID];
+      stringWithFormat:@"%@ %@", [super description], self.droppedEventCounterByLogSource];
 }
 
 @end

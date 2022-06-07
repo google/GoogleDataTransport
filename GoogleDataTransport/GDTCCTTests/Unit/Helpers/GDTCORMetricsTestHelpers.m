@@ -14,18 +14,20 @@
 
 #import "GoogleDataTransport/GDTCCTTests/Unit/Helpers/GDTCORMetricsTestHelpers.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORStorageMetadata.h"
 
-#pragma mark - GDTCOREventMetricsCounter + Internal
+#pragma mark - GDTCORLogSourceMetrics + Internal
 
-@interface GDTCOREventMetricsCounter (Internal)
+typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
+
+@interface GDTCORLogSourceMetrics (Internal)
 
 /// Initializer exposed for testing.
-- (instancetype)initWithDroppedEventCounterByMappingID:
-    (NSDictionary<NSString *, GDTCORDroppedEventCounter *> *)droppedEventCounterByMappingID;
+- (instancetype)initWithDroppedEventCounterByLogSource:
+    (NSDictionary<NSString *, GDTCORDroppedEventCounter *> *)droppedEventCounterByLogSource;
 
 @end
 
@@ -36,7 +38,7 @@
 /// Initializer exposed for testing.
 - (instancetype)initWithCollectionStartDate:(NSDate *)collectionStartDate
                           collectionEndDate:(NSDate *)collectionEndDate
-                        droppedEventCounter:(GDTCOREventMetricsCounter *)droppedEventCounter
+                           logSourceMetrics:(GDTCORLogSourceMetrics *)logSourceMetrics
                            currentCacheSize:(GDTCORStorageSizeBytes)currentCacheSize
                                maxCacheSize:(GDTCORStorageSizeBytes)maxCacheSize
                                    bundleID:(NSString *)bundleID;
@@ -48,8 +50,8 @@
 
 + (GDTCORMetrics *)metricsWithGeneratedDroppedEventCounters {
   // The below counter's structure was arbitrarily defined.
-  GDTCOREventMetricsCounter *droppedEventCounter =
-      [[GDTCOREventMetricsCounter alloc] initWithDroppedEventCounterByMappingID:@{
+  GDTCORLogSourceMetrics *logSourceMetrics =
+      [[GDTCORLogSourceMetrics alloc] initWithDroppedEventCounterByLogSource:@{
         @"log_src_1" : @{@(GDTCOREventDropReasonUnknown) : @(arc4random_uniform(5))},
         @"log_src_2" : @{
           @(GDTCOREventDropReasonStorageFull) : @(arc4random_uniform(100)),
@@ -68,7 +70,7 @@
 
   return [[GDTCORMetrics alloc] initWithCollectionStartDate:[NSDate distantPast]
                                           collectionEndDate:[NSDate distantFuture]
-                                        droppedEventCounter:droppedEventCounter
+                                           logSourceMetrics:logSourceMetrics
                                            currentCacheSize:arc4random_uniform(20 * 1000 * 1000)
                                                maxCacheSize:arc4random_uniform(20 * 1000 * 1000)
                                                    bundleID:@"com.test.bundle"];
@@ -77,7 +79,7 @@
 + (GDTCORMetrics *)metricsWithEmptyDroppedEventCounters {
   return [[GDTCORMetrics alloc] initWithCollectionStartDate:[NSDate distantPast]
                                           collectionEndDate:[NSDate distantFuture]
-                                        droppedEventCounter:[GDTCOREventMetricsCounter counter]
+                                           logSourceMetrics:[GDTCORLogSourceMetrics metrics]
                                            currentCacheSize:arc4random_uniform(20 * 1000 * 1000)
                                                maxCacheSize:arc4random_uniform(20 * 1000 * 1000)
                                                    bundleID:@"com.test.bundle"];
@@ -98,33 +100,33 @@ GDTCORMetrics *GDTCCTConvertMetricsProtoToGDTCORMetrics(
   NSDate *collectionEndDate =
       [[NSDate alloc] initWithTimeIntervalSince1970:metricsProto.window.end_ms / 1000];
 
-  // Reconstruct dropped event counter.
-  GDTCOREventMetricsCounter *droppedEventCounter = [GDTCOREventMetricsCounter counter];
+  // Reconstruct log source metrics.
+  GDTCORLogSourceMetrics *logSourceMetrics = [GDTCORLogSourceMetrics metrics];
 
   for (int logSourceIndex = 0; logSourceIndex < metricsProto.log_source_metrics_count;
        logSourceIndex++) {
-    gdt_client_metrics_LogSourceMetrics logSourceMetrics =
+    gdt_client_metrics_LogSourceMetrics logSourceMetricsProto =
         metricsProto.log_source_metrics[logSourceIndex];
 
-    NSString *mappingID = [[NSString alloc] initWithBytes:logSourceMetrics.log_source->bytes
-                                                   length:logSourceMetrics.log_source->size
+    NSString *logSource = [[NSString alloc] initWithBytes:logSourceMetricsProto.log_source->bytes
+                                                   length:logSourceMetricsProto.log_source->size
                                                  encoding:NSUTF8StringEncoding];
 
-    for (int logEventIndex = 0; logEventIndex < logSourceMetrics.log_event_dropped_count;
+    for (int logEventIndex = 0; logEventIndex < logSourceMetricsProto.log_event_dropped_count;
          logEventIndex++) {
       gdt_client_metrics_LogEventDropped logEventDropped =
-          logSourceMetrics.log_event_dropped[logEventIndex];
+          logSourceMetricsProto.log_event_dropped[logEventIndex];
 
-      GDTCOREventMetricsCounter *logSourceDroppedEventCounter =
-          [[GDTCOREventMetricsCounter alloc] initWithDroppedEventCounterByMappingID:@{
-            mappingID : @{
+      GDTCORLogSourceMetrics *logSourceDroppedEventCounter =
+          [[GDTCORLogSourceMetrics alloc] initWithDroppedEventCounterByLogSource:@{
+            logSource : @{
               @(GDTCCTConvertProtoReasonToEventDropReason(logEventDropped.reason)) :
                   @(logEventDropped.events_dropped_count),
             },
           }];
 
-      droppedEventCounter =
-          [droppedEventCounter counterByMergingWithCounter:logSourceDroppedEventCounter];
+      logSourceMetrics = [logSourceMetrics
+          logSourceMetricsByMergingWithLogSourceMetrics:logSourceDroppedEventCounter];
     }
   }
 
@@ -142,7 +144,7 @@ GDTCORMetrics *GDTCCTConvertMetricsProtoToGDTCORMetrics(
 
   return [[GDTCORMetrics alloc] initWithCollectionStartDate:collectionStartDate
                                           collectionEndDate:collectionEndDate
-                                        droppedEventCounter:droppedEventCounter
+                                           logSourceMetrics:logSourceMetrics
                                            currentCacheSize:currentCacheSize
                                                maxCacheSize:maxCacheSize
                                                    bundleID:bundleID];

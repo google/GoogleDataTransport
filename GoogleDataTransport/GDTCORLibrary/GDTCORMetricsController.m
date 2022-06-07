@@ -28,8 +28,8 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage+Promises.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORStorageMetadata.h"
@@ -80,21 +80,21 @@
 
   __auto_type handler = ^GDTCORMetricsMetadata *(GDTCORMetricsMetadata *_Nullable metricsMetadata,
                                                  NSError *_Nullable fetchError) {
-    GDTCOREventMetricsCounter *metricsCounter =
-        [GDTCOREventMetricsCounter counterWithEvents:[events allObjects] droppedForReason:reason];
+    GDTCORLogSourceMetrics *logSourceMetrics =
+        [GDTCORLogSourceMetrics metricsWithEvents:[events allObjects] droppedForReason:reason];
 
     if (metricsMetadata) {
-      GDTCOREventMetricsCounter *droppedEventCounter =
-          [metricsMetadata.droppedEventCounter counterByMergingWithCounter:metricsCounter];
+      GDTCORLogSourceMetrics *updatedLogSourceMetrics = [metricsMetadata.logSourceMetrics
+          logSourceMetricsByMergingWithLogSourceMetrics:logSourceMetrics];
 
       return [GDTCORMetricsMetadata
           metadataWithCollectionStartDate:[metricsMetadata collectionStartDate]
-                      eventMetricsCounter:droppedEventCounter];
+                         logSourceMetrics:updatedLogSourceMetrics];
     } else {
       // There was an error (e.g. empty storage); `metricsMetadata` is nil.
       GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
       return [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
-                                                eventMetricsCounter:metricsCounter];
+                                                   logSourceMetrics:logSourceMetrics];
     }
   };
 
@@ -111,9 +111,8 @@
     } else {
       GDTCORLogDebug(@"Error fetching metrics metadata: %@", fetchError);
     }
-    return
-        [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
-                                           eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+    return [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                                 logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
   };
 
   return [_storage fetchAndUpdateMetricsWithHandler:handler]
@@ -150,9 +149,9 @@
         // incorporates the data from the given metrics.
         return [GDTCORMetricsMetadata
             metadataWithCollectionStartDate:[metrics collectionStartDate]
-                        eventMetricsCounter:
-                            [metricsMetadata.droppedEventCounter
-                                counterByMergingWithCounter:metrics.droppedEventCounter]];
+                           logSourceMetrics:[metricsMetadata.logSourceMetrics
+                                                logSourceMetricsByMergingWithLogSourceMetrics:
+                                                    metrics.logSourceMetrics]];
       } else {
         // This catches an edge case where the given metrics to append are
         // newer than metrics represented by the currently stored metrics
@@ -171,14 +170,14 @@
         // be offered if they were successfully uploaded so their
         // corresponding metadata can be safely placed back in storage.
         return [GDTCORMetricsMetadata metadataWithCollectionStartDate:metrics.collectionStartDate
-                                                  eventMetricsCounter:metrics.droppedEventCounter];
+                                                     logSourceMetrics:metrics.logSourceMetrics];
       } else {
         // This catches an edge case where the given metrics are from the
         // future. If this occurs, ignore them and store an empty metadata
         // object intended to track metrics metadata from this time forward.
         return [GDTCORMetricsMetadata
             metadataWithCollectionStartDate:[NSDate date]
-                        eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+                           logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
       }
     }
   };

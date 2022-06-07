@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// A storage delegate that can perform metrics related tasks.
 @protocol GDTCORMetricsControllerProtocol <GDTCORStorageDelegate>
 
-/// Updates the corresponding dropped event counters for the given events dropped for a given
+/// Updates the corresponding log source metricss for the given events dropped for a given
 /// reason.
 /// @param reason The reason why the events are being dropped.
 /// @param events The events that being dropped.

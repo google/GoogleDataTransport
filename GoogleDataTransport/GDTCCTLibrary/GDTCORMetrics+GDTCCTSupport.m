@@ -24,9 +24,20 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/client_metrics.nanopb.h"
+
+typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
+
+@interface GDTCORLogSourceMetrics (Internal)
+
+/// A dictionary of log sources that map to counters that reflect the number of events dropped for a
+/// given set of reasons (``GDTCOREventDropReason``).
+@property(nonatomic, readonly)
+    NSDictionary<NSString *, GDTCORDroppedEventCounter *> *droppedEventCounterByLogSource;
+
+@end
 
 @implementation GDTCORMetrics (GDTCCTSupport)
 
@@ -38,9 +49,9 @@
   clientMetricsProto.window =
       GDTCCTConstructTimeWindow(self.collectionStartDate, self.collectionEndDate);
 
-  clientMetricsProto.log_source_metrics = GDTCCTConstructLogSourceMetrics(self.droppedEventCounter);
+  clientMetricsProto.log_source_metrics = GDTCCTConstructLogSourceMetrics(self.logSourceMetrics);
   clientMetricsProto.log_source_metrics_count =
-      GDTCCTGetLogSourceMetricsCount(self.droppedEventCounter);
+      GDTCCTGetLogSourceMetricsCount(self.logSourceMetrics);
 
   clientMetricsProto.global_metrics =
       GDTCCTConstructGlobalMetrics(self.currentCacheSize, self.maxCacheSize);
@@ -73,41 +84,41 @@
   return CFBridgingRelease(dataRef);
 }
 
-/// Constructs and returns a ``gdt_client_metrics_LogSourceMetrics`` from the given dropped event
-/// counter.
-/// @param droppedEventCounter The given dropped event counter.
+/// Constructs and returns a ``gdt_client_metrics_LogSourceMetrics`` from the given log source
+/// metrics.
+/// @param logSourceMetrics The given log source metrics.
 gdt_client_metrics_LogSourceMetrics *GDTCCTConstructLogSourceMetrics(
-    GDTCOREventMetricsCounter *droppedEventCounter) {
+    GDTCORLogSourceMetrics *logSourceMetrics) {
   // The metrics proto is a repeating field where each element represents the
   // dropped event data for a log source (mapping ID).
-  NSUInteger logMetricsCount = [droppedEventCounter.droppedEventCounterByMappingID count];
+  NSUInteger logMetricsCount = logSourceMetrics.droppedEventCounterByLogSource.count;
   gdt_client_metrics_LogSourceMetrics *repeatedLogSourceMetrics =
       calloc(logMetricsCount, sizeof(gdt_client_metrics_LogSourceMetrics));
 
   // Each log source (mapping ID) has a corresponding dropped event counter.
-  // Enumerate over the dictionary of mapping IDs and, for each mappingID,
-  // create a proto representation of the number of events dropped for each
-  // given reason.
+  // Enumerate over the dictionary of log source and, for each log source,
+  // (mapping ID) create a proto representation of the number of events dropped
+  // for each given reason.
   __block NSUInteger logSourceIndex = 0;
-  [droppedEventCounter.droppedEventCounterByMappingID
-      enumerateKeysAndObjectsUsingBlock:^(NSString *mappingID,
-                                          GDTCORDroppedEventCounter *eventCounterForMappingID,
+  [logSourceMetrics.droppedEventCounterByLogSource
+      enumerateKeysAndObjectsUsingBlock:^(NSString *logSource,
+                                          GDTCORDroppedEventCounter *eventCounterForLogSource,
                                           BOOL *__unused _) {
         // Create the log source proto for the given mapping ID. It contains a
         // repeating field to encapsulate the number of events dropped for each
         // given drop reason.
         __block gdt_client_metrics_LogSourceMetrics logSourceMetrics =
             gdt_client_metrics_LogSourceMetrics_init_zero;
-        logSourceMetrics.log_source = GDTCCTEncodeString(mappingID);
-        logSourceMetrics.log_event_dropped_count = (pb_size_t)eventCounterForMappingID.count;
+        logSourceMetrics.log_source = GDTCCTEncodeString(logSource);
+        logSourceMetrics.log_event_dropped_count = (pb_size_t)eventCounterForLogSource.count;
         logSourceMetrics.log_event_dropped =
-            calloc(eventCounterForMappingID.count, sizeof(gdt_client_metrics_LogEventDropped));
+            calloc(eventCounterForLogSource.count, sizeof(gdt_client_metrics_LogEventDropped));
 
         // Each dropped event counter counts the number of events dropped for
         // each drop reason. Enumerate over all of these counters to populate
         // the log source proto's repeating field of event drop data.
         __block NSUInteger eventCounterIndex = 0;
-        [eventCounterForMappingID
+        [eventCounterForLogSource
             enumerateKeysAndObjectsUsingBlock:^(NSNumber *eventDropReason,
                                                 NSNumber *droppedEventCount, BOOL *__unused _) {
               gdt_client_metrics_LogEventDropped droppedEvents =
@@ -132,9 +143,9 @@ gdt_client_metrics_LogSourceMetrics *GDTCCTConstructLogSourceMetrics(
 }
 
 /// Returns the count of log sources that have event drop metrics.
-/// @param droppedEventCounter The given dropped event counter.
-pb_size_t GDTCCTGetLogSourceMetricsCount(GDTCOREventMetricsCounter *droppedEventCounter) {
-  return (pb_size_t)droppedEventCounter.droppedEventCounterByMappingID.count;
+/// @param logSourceMetrics The given log source metrics.
+pb_size_t GDTCCTGetLogSourceMetricsCount(GDTCORLogSourceMetrics *logSourceMetrics) {
+  return (pb_size_t)logSourceMetrics.droppedEventCounterByLogSource.count;
 }
 
 /// Constructs and returns a ``gdt_client_metrics_TimeWindow`` proto from the given parameters.
