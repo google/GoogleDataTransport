@@ -18,9 +18,9 @@
 
 #import "FBLPromise+Testing.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage+Promises.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORRegistrar_Private.h"
 
@@ -302,7 +302,7 @@
   // Given
   GDTCORMetricsMetadata *metricsMetadata =
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
-                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+                                            logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
 
   __auto_type fetchAndUpdatePromise1 = [GDTCORFlatFileStorage.sharedInstance
       fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
@@ -348,7 +348,7 @@
   // Given
   GDTCORMetricsMetadata *metricsMetadata =
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
-                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+                                            logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
 
   __auto_type fetchAndUpdatePromise1 = [GDTCORFlatFileStorage.sharedInstance
       fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(

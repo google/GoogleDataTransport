@@ -18,7 +18,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h"
 
-@class GDTCOREventMetricsCounter;
+@class GDTCORLogSourceMetrics;
 @class GDTCORMetricsMetadata;
 @class GDTCORStorageMetadata;
 
@@ -30,8 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// The start of the time window over which the metrics were collected.
 @property(nonatomic, readonly) NSDate *collectionStartDate;
 
-/// The dropped event counter associated with the metrics.
-@property(nonatomic, readonly) GDTCOREventMetricsCounter *droppedEventCounter;
+/// The log source metrics associated with the metrics.
+@property(nonatomic, readonly) GDTCORLogSourceMetrics *logSourceMetrics;
 
 /// The end of the time window over which the metrics were collected.
 @property(nonatomic, readonly) NSDate *collectionEndDate;

@@ -16,24 +16,25 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 
 static NSString *const kCollectionStartDate = @"collectionStartDate";
-static NSString *const kDroppedEventCounter = @"droppedEventCounter";
+static NSString *const kLogSourceMetrics = @"logSourceMetrics";
 
 @implementation GDTCORMetricsMetadata
 
 + (instancetype)metadataWithCollectionStartDate:(NSDate *)collectedSinceDate
-                            eventMetricsCounter:(GDTCOREventMetricsCounter *)eventMetricsCounter {
-  return [[self alloc] initWithCollectionStartDate:collectedSinceDate counter:eventMetricsCounter];
+                               logSourceMetrics:(GDTCORLogSourceMetrics *)logSourceMetrics {
+  return [[self alloc] initWithCollectionStartDate:collectedSinceDate
+                                  logSourceMetrics:logSourceMetrics];
 }
 
 - (instancetype)initWithCollectionStartDate:(NSDate *)collectionStartDate
-                                    counter:(GDTCOREventMetricsCounter *)counter {
+                           logSourceMetrics:(GDTCORLogSourceMetrics *)logSourceMetrics {
   self = [super init];
   if (self) {
     _collectionStartDate = [collectionStartDate copy];
-    _droppedEventCounter = counter;
+    _logSourceMetrics = logSourceMetrics;
   }
   return self;
 }
@@ -42,8 +43,7 @@ static NSString *const kDroppedEventCounter = @"droppedEventCounter";
 
 - (BOOL)isEqualToMetricsMetadata:(GDTCORMetricsMetadata *)otherMetricsMetadata {
   return [self.collectionStartDate isEqualToDate:otherMetricsMetadata.collectionStartDate] &&
-         [self.droppedEventCounter
-             isEqualToDroppedEventCounter:otherMetricsMetadata.droppedEventCounter];
+         [self.logSourceMetrics isEqualToLogSourceMetrics:otherMetricsMetadata.logSourceMetrics];
 }
 
 - (BOOL)isEqual:(nullable id)object {
@@ -63,7 +63,7 @@ static NSString *const kDroppedEventCounter = @"droppedEventCounter";
 }
 
 - (NSUInteger)hash {
-  return [self.collectionStartDate hash] ^ [self.droppedEventCounter hash];
+  return [self.collectionStartDate hash] ^ [self.logSourceMetrics hash];
 }
 
 #pragma mark - NSSecureCoding
@@ -75,22 +75,22 @@ static NSString *const kDroppedEventCounter = @"droppedEventCounter";
 - (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
   NSDate *collectionStartDate = [coder decodeObjectOfClass:[NSDate class]
                                                     forKey:kCollectionStartDate];
-  GDTCOREventMetricsCounter *droppedEventCounter =
-      [coder decodeObjectOfClass:[GDTCOREventMetricsCounter class] forKey:kDroppedEventCounter];
+  GDTCORLogSourceMetrics *logSourceMetrics =
+      [coder decodeObjectOfClass:[GDTCORLogSourceMetrics class] forKey:kLogSourceMetrics];
 
-  if (!collectionStartDate || !droppedEventCounter ||
+  if (!collectionStartDate || !logSourceMetrics ||
       ![collectionStartDate isKindOfClass:[NSDate class]] ||
-      ![droppedEventCounter isKindOfClass:[GDTCOREventMetricsCounter class]]) {
+      ![logSourceMetrics isKindOfClass:[GDTCORLogSourceMetrics class]]) {
     // If any of the fields are corrupted, the initializer should fail.
     return nil;
   }
 
-  return [self initWithCollectionStartDate:collectionStartDate counter:droppedEventCounter];
+  return [self initWithCollectionStartDate:collectionStartDate logSourceMetrics:logSourceMetrics];
 }
 
 - (void)encodeWithCoder:(nonnull NSCoder *)coder {
   [coder encodeObject:self.collectionStartDate forKey:kCollectionStartDate];
-  [coder encodeObject:self.droppedEventCounter forKey:kDroppedEventCounter];
+  [coder encodeObject:self.logSourceMetrics forKey:kLogSourceMetrics];
 }
 
 @end

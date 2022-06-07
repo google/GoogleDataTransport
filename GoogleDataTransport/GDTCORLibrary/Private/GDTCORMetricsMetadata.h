@@ -16,7 +16,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
 
-@class GDTCOREventMetricsCounter;
+@class GDTCORLogSourceMetrics;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,14 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// The start of the time window over which the metrics were collected.
 @property(nonatomic, copy, readonly) NSDate *collectionStartDate;
 
-/// The dropped event counter associated with the metrics.
-@property(nonatomic, copy, readonly) GDTCOREventMetricsCounter *droppedEventCounter;
+/// The log source metrics associated with the metrics.
+@property(nonatomic, copy, readonly) GDTCORLogSourceMetrics *logSourceMetrics;
 
 /// Creates a metrics metadata object with the provided information.
 /// @param collectedSinceDate The start of the time window over which the metrics were collected.
-/// @param eventMetricsCounter The dropped event counter associated with the metrics.
+/// @param logSourceMetrics The metrics object that tracks metrics for each  log source.
 + (instancetype)metadataWithCollectionStartDate:(NSDate *)collectedSinceDate
-                            eventMetricsCounter:(GDTCOREventMetricsCounter *)eventMetricsCounter;
+                               logSourceMetrics:(GDTCORLogSourceMetrics *)logSourceMetrics;
 
 /// This API is unavailable.
 - (instancetype)init NS_UNAVAILABLE;

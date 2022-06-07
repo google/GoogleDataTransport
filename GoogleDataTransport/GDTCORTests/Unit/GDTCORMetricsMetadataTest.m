@@ -18,7 +18,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
 
 @interface GDTCORMetricsMetadataTest : XCTestCase
@@ -30,7 +30,7 @@
 - (void)testEqualityEdgeCases {
   GDTCORMetricsMetadata *metricsMetadata1 =
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantPast]
-                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+                                            logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
   GDTCORMetricsMetadata *metricsMetadata2 = metricsMetadata1;
   XCTAssert([metricsMetadata1 isEqual:metricsMetadata2]);
   XCTAssertFalse([metricsMetadata1 isEqual:@"some string"]);
@@ -45,21 +45,21 @@
     [[GDTCOREvent alloc] initWithMappingID:@"log_src_2" target:kGDTCORTargetTest],
   ];
 
-  GDTCOREventMetricsCounter *eventMetricsCounter =
-      [GDTCOREventMetricsCounter counterWithEvents:events
-                                  droppedForReason:GDTCOREventDropReasonStorageFull];
+  GDTCORLogSourceMetrics *logSourceMetrics =
+      [GDTCORLogSourceMetrics metricsWithEvents:events
+                               droppedForReason:GDTCOREventDropReasonStorageFull];
 
   GDTCORMetricsMetadata *metricsMetadata1 =
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantPast]
-                                         eventMetricsCounter:eventMetricsCounter];
+                                            logSourceMetrics:logSourceMetrics];
 
   GDTCORMetricsMetadata *metricsMetadata2 =
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantPast]
-                                         eventMetricsCounter:eventMetricsCounter];
+                                            logSourceMetrics:logSourceMetrics];
 
   GDTCORMetricsMetadata *metricsMetadata3 =
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate distantFuture]
-                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+                                            logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
   // Then
   XCTAssertEqualObjects(metricsMetadata1, metricsMetadata2);
   XCTAssertEqual(metricsMetadata1.hash, metricsMetadata2.hash);
@@ -75,13 +75,13 @@
     [[GDTCOREvent alloc] initWithMappingID:@"log_src_2" target:kGDTCORTargetTest],
   ];
 
-  GDTCOREventMetricsCounter *eventMetricsCounter =
-      [GDTCOREventMetricsCounter counterWithEvents:events
-                                  droppedForReason:GDTCOREventDropReasonStorageFull];
+  GDTCORLogSourceMetrics *logSourceMetrics =
+      [GDTCORLogSourceMetrics metricsWithEvents:events
+                               droppedForReason:GDTCOREventDropReasonStorageFull];
 
   GDTCORMetricsMetadata *metricsMetadata =
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
-                                         eventMetricsCounter:eventMetricsCounter];
+                                            logSourceMetrics:logSourceMetrics];
 
   // When
   // - Encode the metrics metadata.
@@ -116,7 +116,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wincompatible-pointer-types"
       [GDTCORMetricsMetadata metadataWithCollectionStartDate:@"date"
-                                         eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+                                            logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
 #pragma clang diagnostic pop
 
   NSError *encodeError;

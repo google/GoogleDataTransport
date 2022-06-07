@@ -14,7 +14,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 
-#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCOREventMetricsCounter.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORStorageMetadata.h"
 
@@ -22,7 +22,7 @@
 
 - (instancetype)initWithCollectionStartDate:(NSDate *)collectionStartDate
                           collectionEndDate:(NSDate *)collectionEndDate
-                        droppedEventCounter:(GDTCOREventMetricsCounter *)droppedEventCounter
+                           logSourceMetrics:(GDTCORLogSourceMetrics *)logSourceMetrics
                            currentCacheSize:(GDTCORStorageSizeBytes)currentCacheSize
                                maxCacheSize:(GDTCORStorageSizeBytes)maxCacheSize
                                    bundleID:(NSString *)bundleID {
@@ -30,7 +30,7 @@
   if (self) {
     _collectionStartDate = [collectionStartDate copy];
     _collectionEndDate = [collectionEndDate copy];
-    _droppedEventCounter = droppedEventCounter;
+    _logSourceMetrics = logSourceMetrics;
     _currentCacheSize = currentCacheSize;
     _maxCacheSize = maxCacheSize;
     _bundleID = [bundleID copy];
@@ -47,7 +47,7 @@
 
   return [[GDTCORMetrics alloc] initWithCollectionStartDate:metricsMetadata.collectionStartDate
                                           collectionEndDate:collectionEndDate
-                                        droppedEventCounter:metricsMetadata.droppedEventCounter
+                                           logSourceMetrics:metricsMetadata.logSourceMetrics
                                            currentCacheSize:storageMetadata.currentCacheSize
                                                maxCacheSize:storageMetadata.maxCacheSize
                                                    bundleID:bundleID];
@@ -58,7 +58,7 @@
 - (BOOL)isEqualToMetrics:(GDTCORMetrics *)otherMetrics {
   return [self.collectionStartDate isEqualToDate:otherMetrics.collectionStartDate] &&
          [self.collectionEndDate isEqualToDate:otherMetrics.collectionEndDate] &&
-         [self.droppedEventCounter isEqualToDroppedEventCounter:otherMetrics.droppedEventCounter] &&
+         [self.logSourceMetrics isEqualToLogSourceMetrics:otherMetrics.logSourceMetrics] &&
          [self.bundleID isEqualToString:otherMetrics.bundleID] &&
          self.currentCacheSize == otherMetrics.currentCacheSize &&
          self.maxCacheSize == otherMetrics.maxCacheSize;
@@ -82,7 +82,7 @@
 
 - (NSUInteger)hash {
   return [self.collectionStartDate hash] ^ [self.collectionEndDate hash] ^
-         [self.droppedEventCounter hash] ^ [self.bundleID hash] ^ [@(self.currentCacheSize) hash] ^
+         [self.logSourceMetrics hash] ^ [self.bundleID hash] ^ [@(self.currentCacheSize) hash] ^
          [@(self.maxCacheSize) hash];
 }
 
@@ -92,9 +92,9 @@
   return [NSString
       stringWithFormat:
           @"%@ {\n\tcollectionStartDate: %@,\n\tcollectionEndDate: %@,\n\tcurrentCacheSize: "
-          @"%llu,\n\tmaxCacheSize: %llu,\n\tbundleID: %@,\n\tdroppedEventCounter: %@}\n",
+          @"%llu,\n\tmaxCacheSize: %llu,\n\tbundleID: %@,\n\tlogSourceMetrics: %@}\n",
           [super description], self.collectionStartDate, self.collectionEndDate,
-          self.currentCacheSize, self.maxCacheSize, self.bundleID, self.droppedEventCounter];
+          self.currentCacheSize, self.maxCacheSize, self.bundleID, self.logSourceMetrics];
 }
 
 @end
