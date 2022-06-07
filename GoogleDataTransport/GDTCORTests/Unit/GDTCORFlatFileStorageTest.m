@@ -418,7 +418,7 @@
         XCTAssertNotNil(fetchError);
         return [GDTCORMetricsMetadata
             metadataWithCollectionStartDate:[NSDate date]
-                        eventMetricsCounter:[GDTCOREventMetricsCounter counter]];
+                           logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
       }];
 
   // Then
