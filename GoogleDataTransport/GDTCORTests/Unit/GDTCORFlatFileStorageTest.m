@@ -400,6 +400,38 @@
   XCTAssert(fetchAndUpdatePromise.isRejected);
 }
 
+- (void)testMetricsStorageLocationRegressions {
+  // Given
+  // - Initially, there should be no library data stored.
+  NSString *metricsMetadataPath = [GDTCORFlatFileStorage.libraryDataStoragePath
+      stringByAppendingPathComponent:@"metrics_metadata"];
+  NSError *error;
+  XCTAssertNil([[NSFileManager defaultManager] contentsOfDirectoryAtPath:metricsMetadataPath
+                                                                   error:&error]);
+  XCTAssertNotNil(error);
+
+  // When
+  __auto_type fetchAndUpdatePromise = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        return [GDTCORMetricsMetadata
+            metadataWithCollectionStartDate:[NSDate date]
+                           logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise.isFulfilled);
+  // - Finally, there should be only one new file.
+  NSArray *contentsPaths = [[NSFileManager defaultManager]
+      contentsOfDirectoryAtPath:[GDTCORFlatFileStorage libraryDataStoragePath]
+                          error:&error];
+  XCTAssertEqual(contentsPaths.count, 1);
+  XCTAssertTrue([NSFileManager.defaultManager fileExistsAtPath:metricsMetadataPath]);
+}
+
 - (void)testSaveAndLoadLibraryData {
   __weak NSData *weakData;
   NSString *dataKey = NSStringFromSelector(_cmd);
