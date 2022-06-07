@@ -91,7 +91,7 @@ gdt_client_metrics_LogSourceMetrics *GDTCCTConstructLogSourceMetrics(
     GDTCORLogSourceMetrics *logSourceMetrics) {
   // The metrics proto is a repeating field where each element represents the
   // dropped event data for a log source (mapping ID).
-  NSUInteger logMetricsCount = [logSourceMetrics.droppedEventCounterByLogSource count];
+  NSUInteger logMetricsCount = logSourceMetrics.droppedEventCounterByLogSource.count;
   gdt_client_metrics_LogSourceMetrics *repeatedLogSourceMetrics =
       calloc(logMetricsCount, sizeof(gdt_client_metrics_LogSourceMetrics));
 
