@@ -1450,6 +1450,10 @@
           [eventStoredExpectation fulfill];
         }];
 
+    dispatch_sync([GDTCORFlatFileStorage sharedInstance].storageQueue, ^{
+                      // Drain queue to allow event to be stored before proceeding.
+                  });
+
     [self waitForExpectations:@[ eventStoredExpectation ] timeout:1];
 
     [generatedEvents addObject:generatedEvent];
