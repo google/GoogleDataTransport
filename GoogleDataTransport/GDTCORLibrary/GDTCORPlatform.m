@@ -182,6 +182,8 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
                                       NSError *_Nullable *error) {
   BOOL result = NO;
   if (filePath.length > 0) {
+    // TODO(ncooke3): For future cleanup– this API shouldn't touch the file
+    // system unless it successfully encoded the given object.
     result = [[NSFileManager defaultManager]
               createDirectoryAtPath:[filePath stringByDeletingLastPathComponent]
         withIntermediateDirectories:YES
@@ -238,25 +240,31 @@ NSData *_Nullable GDTCOREncodeArchive(id<NSSecureCoding> obj,
   return resultData;
 }
 
+id<NSSecureCoding> _Nullable GDTCORDecodeArchiveAtPath(Class archiveClass,
+                                                       NSString *_Nonnull archivePath,
+                                                       NSError **_Nonnull error) {
+  NSData *data = [NSData dataWithContentsOfFile:archivePath options:0 error:error];
+  if (data == nil) {
+    // Reading the file failed and `error` will be populated.
+    return nil;
+  }
+
+  return GDTCORDecodeArchive(archiveClass, data, error);
+}
+
 id<NSSecureCoding> _Nullable GDTCORDecodeArchive(Class archiveClass,
-                                                 NSString *_Nullable archivePath,
-                                                 NSData *_Nullable archiveData,
-                                                 NSError *_Nullable *error) {
+                                                 NSData *_Nonnull archiveData,
+                                                 NSError **_Nonnull error) {
   id<NSSecureCoding> unarchivedObject = nil;
   if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4, *)) {
-    NSData *data = archiveData ? archiveData : [NSData dataWithContentsOfFile:archivePath];
-    if (data) {
-      unarchivedObject = [NSKeyedUnarchiver unarchivedObjectOfClass:archiveClass
-                                                           fromData:data
-                                                              error:error];
-    }
+    unarchivedObject = [NSKeyedUnarchiver unarchivedObjectOfClass:archiveClass
+                                                         fromData:archiveData
+                                                            error:error];
   } else {
     @try {
-      NSData *archivedData =
-          archiveData ? archiveData : [NSData dataWithContentsOfFile:archivePath];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-      unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+      unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithData:archiveData];
 #pragma clang diagnostic pop
     } @catch (NSException *exception) {
       NSString *errorString =

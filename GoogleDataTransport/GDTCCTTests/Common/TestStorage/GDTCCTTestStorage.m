@@ -33,6 +33,8 @@
   NSMutableDictionary<NSNumber *, NSSet<GDTCOREvent *> *> *_batches;
 }
 
+@synthesize delegate = _delegate;
+
 - (instancetype)init {
   self = [super init];
   if (self) {
@@ -205,6 +207,18 @@
                             }
                           }];
       }];
+}
+
+- (FBLPromise<NSNull *> *)fetchAndUpdateMetricsWithHandler:
+    (GDTCORMetricsMetadata * (^)(GDTCORMetricsMetadata *_Nullable fetchedMetadata,
+                                 NSError *_Nullable fetchError))handler {
+  NSAssert(NO, @"This API should be implemented if this fake is used in tests.");
+  return [FBLPromise resolvedWith:nil];
+}
+
+- (FBLPromise<GDTCORStorageMetadata *> *)fetchStorageMetadata {
+  NSAssert(NO, @"This API should be implemented if this fake is used in tests.");
+  return [FBLPromise resolvedWith:nil];
 }
 
 - (NSError *)genericRejectedPromiseErrorWithReason:(NSString *)reason {

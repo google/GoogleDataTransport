@@ -59,7 +59,7 @@
 
   error = nil;
   GDTCORClock *unarchivedClock =
-      (GDTCORClock *)GDTCORDecodeArchive([GDTCORClock class], nil, clockData, &error);
+      (GDTCORClock *)GDTCORDecodeArchive([GDTCORClock class], clockData, &error);
   XCTAssertNil(error);
   XCTAssertNotNil(unarchivedClock);
   XCTAssertEqual([clock hash], [unarchivedClock hash]);

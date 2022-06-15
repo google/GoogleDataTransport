@@ -24,6 +24,7 @@
   // These calls occur on the queue.
   [self.targetToUploader removeAllObjects];
   [self.targetToStorage removeAllObjects];
+  [self.targetToMetricsController removeAllObjects];
   dispatch_sync(self.registrarQueue, ^{
                 });
 }

@@ -16,7 +16,12 @@
 
 #import "GoogleDataTransport/GDTCORTests/Unit/GDTCORTestCase.h"
 
+#import "FBLPromise+Testing.h"
+
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage+Promises.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetricsMetadata.h"
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORRegistrar_Private.h"
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
@@ -28,6 +33,7 @@
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCOREventGenerator.h"
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORTestUploader.h"
 
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORMetricsControllerFake.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORUploadCoordinatorFake.h"
 
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORFlatFileStorage+Testing.h"
@@ -290,6 +296,140 @@
                       object:nil];
   }
   self.continueAfterFailure = originalValueOfContinueAfterFailure;
+}
+
+- (void)testFetchAndUpdateMetrics {
+  // Given
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                            logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
+
+  __auto_type fetchAndUpdatePromise1 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        return metricsMetadata;
+      }];
+
+  // When
+  __auto_type fetchAndUpdatePromise2 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNotNil(fetchedMetadata);
+        XCTAssertNil(fetchError);
+        XCTAssertEqualObjects(fetchedMetadata, metricsMetadata);
+        return metricsMetadata;
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise1.isFulfilled);
+  XCTAssert(fetchAndUpdatePromise2.isFulfilled);
+}
+
+- (void)testFetchAndUpdateMetrics_WhenDecodeError {
+  // When
+  __auto_type fetchAndUpdatePromise = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        XCTAssertEqualObjects(fetchError.localizedFailureReason, @"The file doesn’t exist.");
+        return fetchedMetadata;
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise.isFulfilled);
+}
+
+- (void)testFetchAndUpdateMetrics_WhenUpdatedMetadataIsUnexpected_DoesNothing {
+  // Given
+  GDTCORMetricsMetadata *metricsMetadata =
+      [GDTCORMetricsMetadata metadataWithCollectionStartDate:[NSDate date]
+                                            logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
+
+  __auto_type fetchAndUpdatePromise1 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        return metricsMetadata;
+      }];
+
+  // When
+  __auto_type fetchAndUpdatePromise2 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNotNil(fetchedMetadata);
+        XCTAssertNil(fetchError);
+        return fetchedMetadata;
+      }];
+
+  // Then
+  __auto_type fetchAndUpdatePromise3 = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNotNil(fetchedMetadata);
+        XCTAssertNil(fetchError);
+        XCTAssertEqualObjects(fetchedMetadata, metricsMetadata);
+        return fetchedMetadata;
+      }];
+
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise1.isFulfilled);
+  XCTAssert(fetchAndUpdatePromise2.isFulfilled);
+  XCTAssert(fetchAndUpdatePromise3.isFulfilled);
+}
+
+- (void)testFetchAndUpdateMetrics_WhenUpdateFails_RejectsPromise {
+  // When
+  __auto_type fetchAndUpdatePromise = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        // Return an object that doesn't conform to `NSCoding` so the update
+        // will fail because the "GDTCORMetricsMetadata" cannot be encoded.
+        return (GDTCORMetricsMetadata *)[[NSObject alloc] init];
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise.isRejected);
+}
+
+- (void)testMetricsStorageLocationRegressions {
+  // Given
+  // - Initially, there should be no library data stored.
+  NSString *metricsMetadataPath = [GDTCORFlatFileStorage.libraryDataStoragePath
+      stringByAppendingPathComponent:@"metrics_metadata"];
+  NSError *error;
+  XCTAssertNil([[NSFileManager defaultManager] contentsOfDirectoryAtPath:metricsMetadataPath
+                                                                   error:&error]);
+  XCTAssertNotNil(error);
+
+  // When
+  __auto_type fetchAndUpdatePromise = [GDTCORFlatFileStorage.sharedInstance
+      fetchAndUpdateMetricsWithHandler:^GDTCORMetricsMetadata *_Nonnull(
+          GDTCORMetricsMetadata *_Nullable fetchedMetadata, NSError *_Nullable fetchError) {
+        XCTAssertNil(fetchedMetadata);
+        XCTAssertNotNil(fetchError);
+        return [GDTCORMetricsMetadata
+            metadataWithCollectionStartDate:[NSDate date]
+                           logSourceMetrics:[GDTCORLogSourceMetrics metrics]];
+      }];
+
+  // Then
+  FBLWaitForPromisesWithTimeout(0.5);
+  XCTAssert(fetchAndUpdatePromise.isFulfilled);
+  // - Finally, there should be only one new file.
+  NSArray *contentsPaths = [[NSFileManager defaultManager]
+      contentsOfDirectoryAtPath:[GDTCORFlatFileStorage libraryDataStoragePath]
+                          error:&error];
+  XCTAssertEqual(contentsPaths.count, 1);
+  XCTAssertTrue([NSFileManager.defaultManager fileExistsAtPath:metricsMetadataPath]);
 }
 
 - (void)testSaveAndLoadLibraryData {
@@ -759,13 +899,23 @@
   [self waitForExpectations:@[ expectation ] timeout:10];
   [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:delay]];
   [[GDTCORFlatFileStorage sharedInstance] checkForExpirations];
+
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  [GDTCORFlatFileStorage sharedInstance].delegate = metricsController;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsController.onStorageDidRemoveExpiredEvents = ^(NSSet<GDTCOREvent *> *events) {
+    XCTAssertTrue(events.count > 0);
+    [metricsControllerExpectation fulfill];
+  };
+
   expectation = [self expectationWithDescription:@"hasEvent completion called"];
   [[GDTCORFlatFileStorage sharedInstance] hasEventsForTarget:kGDTCORTargetTest
                                                   onComplete:^(BOOL hasEvents) {
                                                     XCTAssertFalse(hasEvents);
                                                     [expectation fulfill];
                                                   }];
-  [self waitForExpectations:@[ expectation ] timeout:10];
+  [self waitForExpectations:@[ metricsControllerExpectation, expectation ] timeout:10];
 }
 
 - (void)testCheckForExpirations_WhenBatchWithNotExpiredEventsExpires {
@@ -777,6 +927,17 @@
   NSSet<GDTCOREvent *> *generatedEvents = generatedBatch[generatedBatchID];
   // 0.2. Wait for batch expiration.
   [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:batchExpiresIn]];
+
+  // 0.3. Expect that the storage delegate will not be invoked because no
+  //      events will expire in this test.
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  [GDTCORFlatFileStorage sharedInstance].delegate = metricsController;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsControllerExpectation.inverted = YES;
+  metricsController.onStorageDidRemoveExpiredEvents = ^(NSSet<GDTCOREvent *> *events) {
+    [metricsControllerExpectation fulfill];
+  };
 
   // 1. Check for expiration.
   [[GDTCORFlatFileStorage sharedInstance] checkForExpirations];
@@ -808,7 +969,10 @@
                     XCTAssertEqualObjects(batchEventsIDs, generatedEventsIDs);
                   }];
 
-  [self waitForExpectations:@[ getBatchesExpectation, getEventsExpectation ] timeout:0.5];
+  [self waitForExpectations:@[
+    metricsControllerExpectation, getBatchesExpectation, getEventsExpectation
+  ]
+                    timeout:0.5];
 }
 
 - (void)testCheckForExpirations_WhenBatchWithExpiredEventsExpires {
@@ -819,6 +983,17 @@
                                                                batchExpiringIn:batchExpiresIn];
   // 0.2. Wait for batch expiration.
   [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:batchExpiresIn]];
+
+  // 0.3. Expect that the storage delegate will be invoked because events will
+  //      expire in this test.
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  [GDTCORFlatFileStorage sharedInstance].delegate = metricsController;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsController.onStorageDidRemoveExpiredEvents = ^(NSSet<GDTCOREvent *> *events) {
+    XCTAssertTrue(events.count > 0);
+    [metricsControllerExpectation fulfill];
+  };
 
   // 1. Check for expiration.
   [[GDTCORFlatFileStorage sharedInstance] checkForExpirations];
@@ -847,7 +1022,10 @@
                     XCTAssertEqual(batchEvents.count, 0);
                   }];
 
-  [self waitForExpectations:@[ getBatchesExpectation, getEventsExpectation ] timeout:0.5];
+  [self waitForExpectations:@[
+    metricsControllerExpectation, getBatchesExpectation, getEventsExpectation
+  ]
+                    timeout:0.5];
 }
 
 #pragma mark - Remove Batch tests
@@ -1136,6 +1314,15 @@
                                                           mappingID:nil];
   event.expirationDate = [NSDate dateWithTimeIntervalSinceNow:1000];
 
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  storage.delegate = metricsControllerFake;
+  XCTestExpectation *metricsControllerExpectation =
+      [self expectationWithDescription:@"metricsControllerExpectation"];
+  metricsControllerFake.onStorageDidDropEvent = ^(GDTCOREvent *droppedEvent) {
+    XCTAssertEqual(droppedEvent, event);
+    [metricsControllerExpectation fulfill];
+  };
+
   XCTestExpectation *storeExpectation1 = [self expectationWithDescription:@"storeExpectation1"];
   [storage storeEvent:event
            onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
@@ -1145,7 +1332,7 @@
              XCTAssertEqual(error.code, GDTCORFlatFileStorageErrorSizeLimitReached);
              [storeExpectation1 fulfill];
            }];
-  [self waitForExpectations:@[ storeExpectation1 ] timeout:5];
+  [self waitForExpectations:@[ metricsControllerExpectation, storeExpectation1 ] timeout:5];
 
   // 4. Check the storage size didn't change.
   XCTAssertEqual([self storageSize], storageSize);
@@ -1262,6 +1449,10 @@
           XCTAssertNil(error);
           [eventStoredExpectation fulfill];
         }];
+
+    dispatch_sync([GDTCORFlatFileStorage sharedInstance].storageQueue, ^{
+                      // Drain queue to allow event to be stored before proceeding.
+                  });
 
     [self waitForExpectations:@[ eventStoredExpectation ] timeout:1];
 

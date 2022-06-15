@@ -1,5 +1,6 @@
-# Unreleased
+# v9.2.0
 - Add and integrate `MacClientInfo` proto message. (#57)
+- Add metrics component to measure SDK performance. (#77)
 
 # v9.1.4
 - Rollback logging level changes from v9.1.3. (#60)

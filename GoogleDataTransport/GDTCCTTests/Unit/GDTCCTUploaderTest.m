@@ -16,13 +16,17 @@
 
 #import <XCTest/XCTest.h>
 
+#import "FBLPromise+Testing.h"
+
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Categories/GDTCORRegistrar+Testing.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTUploader.h"
+#import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h"
 
 #import "GoogleDataTransport/GDTCCTTests/Common/TestStorage/GDTCCTTestStorage.h"
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORMetricsControllerFake.h"
 
 #import "GoogleDataTransport/GDTCCTTests/Unit/Helpers/GDTCCTEventGenerator.h"
 #import "GoogleDataTransport/GDTCCTTests/Unit/TestServer/GDTCCTTestServer.h"
@@ -390,6 +394,384 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
                enforceOrder:YES];
 
   // 2.4. Wait for upload operation to finish.
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)testUploadTarget_WhenTargetSupportsMetricsCollection_ThenMetricsAreAddedToUploadBatch {
+  // Given
+  // - Generate and batch a test event.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+  [self batchEvents];
+
+  // - Set storage expectations.
+  [self setUpStorageExpectations];
+
+  XCTestExpectation *hasEventsExpectation = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
+                                                                           result:YES];
+
+  // - Set metrics controller expectations.
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
+                                                       target:kGDTCORTargetTest];
+
+  GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
+  XCTestExpectation *getAndResetMetricsExpectation =
+      [self expectationWithDescription:@"getAndResetMetricsExpectation"];
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+    // This should not be fulfilled.
+    [getAndResetMetricsExpectation fulfill];
+    return [FBLPromise resolvedWith:dummyMetrics];
+  };
+
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
+  };
+
+  XCTestExpectation *droppedEventsAreLoggedExpectation =
+      [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
+  droppedEventsAreLoggedExpectation.inverted = YES;
+  metricsControllerFake.onLogEventsDroppedHandler =
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
+        [droppedEventsAreLoggedExpectation fulfill];
+      };
+
+  // - Set response expectations.
+  XCTestExpectation *responseSentExpectation = [self expectationTestServerSuccessRequestResponse];
+
+  // When
+  [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
+
+  // Then
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetMetricsExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
+  ]
+                    timeout:1
+               enforceOrder:YES];
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)testUploadTarget_WhenTargetDoesNotSupportMetricsCollection_ThenNoMetricsAreSentOrLogged {
+  // Given
+  // - Generate and batch a test event.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+  [self batchEvents];
+
+  // - Set storage expectations.
+  [self setUpStorageExpectations];
+
+  XCTestExpectation *hasEventsExpectation = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
+                                                                           result:YES];
+
+  // - Set metrics controller expectations.
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  // The `kGDTCORTargetTest` target is registered at +load time. De-registering
+  // it here will simulate the scenario where an upload target does not have a
+  // corresponding metrics controller (and therefore does not support metrics
+  // collection).
+  [[[GDTCORRegistrar sharedInstance] targetToMetricsController]
+      removeObjectForKey:@(kGDTCORTargetTest)];
+
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
+  getAndResetExpectation.inverted = YES;
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+    // This should not be fulfilled.
+    [getAndResetExpectation fulfill];
+    return [FBLPromise resolvedWith:nil];
+  };
+
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
+  };
+
+  XCTestExpectation *droppedEventsAreLoggedExpectation =
+      [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
+  droppedEventsAreLoggedExpectation.inverted = YES;
+  metricsControllerFake.onLogEventsDroppedHandler =
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
+        [droppedEventsAreLoggedExpectation fulfill];
+      };
+
+  // - Set response expectations.
+  XCTestExpectation *responseSentExpectation = [self expectationTestServerSuccessRequestResponse];
+
+  // When
+  [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
+
+  // Then
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
+  ]
+                    timeout:1
+               enforceOrder:YES];
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)testUploadTarget_WhenFailureToAddMetricsToBatch_DoesNotImpedeBatchUpload {
+  // Given
+  // - Generate and batch a test event.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+  [self batchEvents];
+
+  // - Set storage expectations.
+  [self setUpStorageExpectations];
+
+  XCTestExpectation *hasEventsExpectation = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
+                                                                           result:YES];
+
+  // - Set metrics controller expectations.
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
+                                                       target:kGDTCORTargetTest];
+
+  NSError *error = [NSError errorWithDomain:@"metrics controller error" code:1 userInfo:nil];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+    [getAndResetExpectation fulfill];
+    return [FBLPromise resolvedWith:error];
+  };
+
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
+  };
+
+  XCTestExpectation *droppedEventsAreLoggedExpectation =
+      [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
+  droppedEventsAreLoggedExpectation.inverted = YES;
+  metricsControllerFake.onLogEventsDroppedHandler =
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
+        [droppedEventsAreLoggedExpectation fulfill];
+      };
+
+  // - Set response expectations.
+  XCTestExpectation *responseSentExpectation = [self expectationTestServerSuccessRequestResponse];
+
+  // When
+  [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
+
+  // Then
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
+  ]
+                    timeout:1
+               enforceOrder:YES];
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)testUploadTarget_WhenBatchWithMetricsAreUploaded {
+  // Given
+  // - Generate and batch a test event.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+  [self batchEvents];
+
+  // - Set storage expectations.
+  [self setUpStorageExpectations];
+
+  XCTestExpectation *hasEventsExpectation = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
+                                                                           result:YES];
+
+  // - Set metrics controller expectations.
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
+                                                       target:kGDTCORTargetTest];
+
+  GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+    [getAndResetExpectation fulfill];
+    return [FBLPromise resolvedWith:dummyMetrics];
+  };
+
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  offerMetricsExpectation.inverted = YES;
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *__unused _) {
+    // This should not be fulfilled.
+    [offerMetricsExpectation fulfill];
+  };
+
+  XCTestExpectation *droppedEventsAreLoggedExpectation =
+      [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
+  droppedEventsAreLoggedExpectation.inverted = YES;
+  metricsControllerFake.onLogEventsDroppedHandler =
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
+        [droppedEventsAreLoggedExpectation fulfill];
+      };
+
+  // - Set response expectations.
+  XCTestExpectation *responseSentExpectation = [self expectationTestServerSuccessRequestResponse];
+
+  // When
+  [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
+
+  // Then
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseSentExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
+  ]
+                    timeout:1
+               enforceOrder:YES];
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)
+    testUploadTarget_WhenBatchWithMetricsAreNotUploadedDueToTransientError_ThenMetricsAreReStored {
+  // Given
+  // - Generate a test event.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+
+  // - Set storage expectations.
+  [self setUpStorageExpectations];
+
+  self.testStorage.removeBatchAndDeleteEventsExpectation.inverted = YES;
+  self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = NO;
+
+  XCTestExpectation *hasEventsExpectation = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
+                                                                           result:YES];
+
+  // - Set metrics controller expectations.
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
+                                                       target:kGDTCORTargetTest];
+
+  GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+    [getAndResetExpectation fulfill];
+    return [FBLPromise resolvedWith:dummyMetrics];
+  };
+
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *metrics) {
+    [offerMetricsExpectation fulfill];
+    XCTAssertEqualObjects(metrics, dummyMetrics);
+  };
+
+  XCTestExpectation *droppedEventsAreLoggedExpectation =
+      [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
+  droppedEventsAreLoggedExpectation.inverted = YES;
+  metricsControllerFake.onLogEventsDroppedHandler =
+      ^(GDTCOREventDropReason __unused _, NSSet<GDTCOREvent *> *__unused __) {
+        // This should not be fulfilled.
+        [droppedEventsAreLoggedExpectation fulfill];
+      };
+
+  // - Set response expectations.
+  XCTestExpectation *responseFailedExpectation = [self expectationTestServerResponseWithCode:500
+                                                                                     headers:nil];
+
+  // When
+  [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
+
+  // Then
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseFailedExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
+  ]
+                    timeout:1
+               enforceOrder:YES];
+  [self waitForUploadOperationsToFinish:self.uploader];
+}
+
+- (void)
+    testUploadTarget_WhenBatchWithMetricsAreNotUploadedDueToNonTransientError_ThenMetricsAreReStoredAndDroppedBatchEventAreLogged {
+  // Given
+  // - Generate a test event.
+  [self.generator generateEvent:GDTCOREventQoSFast];
+
+  // - Set storage expectations.
+  [self setUpStorageExpectations];
+
+  self.testStorage.removeBatchAndDeleteEventsExpectation.inverted = NO;
+  self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = YES;
+
+  XCTestExpectation *hasEventsExpectation = [self expectStorageHasEventsForTarget:kGDTCORTargetTest
+                                                                           result:YES];
+
+  // - Set metrics controller expectations.
+  GDTCORMetricsControllerFake *metricsControllerFake = [[GDTCORMetricsControllerFake alloc] init];
+  [[GDTCORRegistrar sharedInstance] registerMetricsController:metricsControllerFake
+                                                       target:kGDTCORTargetTest];
+
+  GDTCORMetrics *dummyMetrics = [[GDTCORMetrics alloc] init];
+  XCTestExpectation *getAndResetExpectation =
+      [self expectationWithDescription:@"getAndResetExpectation"];
+  metricsControllerFake.onGetAndResetMetricsHandler = ^FBLPromise<GDTCORMetrics *> * {
+    [getAndResetExpectation fulfill];
+    return [FBLPromise resolvedWith:dummyMetrics];
+  };
+
+  XCTestExpectation *offerMetricsExpectation =
+      [self expectationWithDescription:@"offerMetricsExpectation"];
+  metricsControllerFake.onOfferMetricsHandler = ^(GDTCORMetrics *metrics) {
+    [offerMetricsExpectation fulfill];
+    XCTAssertEqualObjects(metrics, dummyMetrics);
+  };
+
+  XCTestExpectation *droppedEventsAreLoggedExpectation =
+      [self expectationWithDescription:@"droppedEventsAreLoggedExpectation"];
+  metricsControllerFake.onLogEventsDroppedHandler =
+      ^(GDTCOREventDropReason reason, NSSet<GDTCOREvent *> *droppedEvents) {
+        [droppedEventsAreLoggedExpectation fulfill];
+        XCTAssertEqual(reason, GDTCOREventDropReasonInvalidPayload);
+        XCTAssertEqual([droppedEvents count], 2);
+      };
+
+  // - Set response expectations.
+  XCTestExpectation *responseFailedExpectation = [self expectationTestServerResponseWithCode:400
+                                                                                     headers:nil];
+
+  // When
+  [self.uploader uploadTarget:kGDTCORTargetTest withConditions:GDTCORUploadConditionWifiData];
+
+  // Then
+  [self waitForExpectations:@[
+    self.testStorage.batchIDsForTargetExpectation, hasEventsExpectation,
+    self.testStorage.batchWithEventSelectorExpectation, getAndResetExpectation,
+    responseFailedExpectation, offerMetricsExpectation, droppedEventsAreLoggedExpectation,
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
+    self.testStorage.removeBatchAndDeleteEventsExpectation
+  ]
+                    timeout:1
+               enforceOrder:YES];
   [self waitForUploadOperationsToFinish:self.uploader];
 }
 

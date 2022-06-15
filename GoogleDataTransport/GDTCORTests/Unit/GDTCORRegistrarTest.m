@@ -19,6 +19,8 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
 
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORRegistrar_Private.h"
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORMetricsControllerFake.h"
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORStorageFake.h"
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORTestUploader.h"
 
 @interface GDTCORRegistrarTest : GDTCORTestCase
@@ -47,6 +49,58 @@
   XCTAssertEqual(uploader, registrar.targetToUploader[@(_target)]);
 }
 
-// TODO(mikehaney24): Add test for registering a storage.
+/** Test registering a storage. */
+- (void)testRegisterStorage {
+  GDTCORRegistrar *registrar = [GDTCORRegistrar sharedInstance];
+  GDTCORStorageFake *storage = [[GDTCORStorageFake alloc] init];
+  XCTAssertNoThrow([registrar registerStorage:storage target:self.target]);
+  XCTAssertEqual(storage, registrar.targetToStorage[@(_target)]);
+}
+
+/** Test registering a metrics controller. */
+- (void)testRegisterMetricsController {
+  GDTCORRegistrar *registrar = [GDTCORRegistrar sharedInstance];
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  XCTAssertNoThrow([registrar registerMetricsController:metricsController target:self.target]);
+  XCTAssertEqual(metricsController, registrar.targetToMetricsController[@(_target)]);
+}
+
+/** Tests that the metrics controller is set as the storage delegate when the storage object is
+ * registered first. Since objects are registered at `+ load` time, the order in which the storage
+ * and metrics controller objects are registered is non-deterministic.
+ */
+- (void)testMetricsControllerIsSetAsStorageDelegate_WhenStorageIsRegisteredFirst {
+  // Given
+  GDTCORRegistrar *registrar = [GDTCORRegistrar sharedInstance];
+  // When
+  GDTCORStorageFake *storage = [[GDTCORStorageFake alloc] init];
+  XCTAssertNoThrow([registrar registerStorage:storage target:self.target]);
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  XCTAssertNoThrow([registrar registerMetricsController:metricsController target:self.target]);
+  // Then
+  dispatch_sync(registrar.registrarQueue, ^{
+                    // Drain queue.
+                });
+  XCTAssertEqual(storage.delegate, metricsController);
+}
+
+/** Tests that the metrics controller is set as the storage delegate when the metrics controller
+ * object is registered first. Since objects are registered at `+ load` time, the order in which the
+ * storage and metrics controller objects are registered is non-deterministic.
+ */
+- (void)testMetricsControllerIsSetAsStorageDelegate_WhenMetricsControllerIsRegisteredFirst {
+  // Given
+  GDTCORRegistrar *registrar = [GDTCORRegistrar sharedInstance];
+  // When
+  GDTCORMetricsControllerFake *metricsController = [[GDTCORMetricsControllerFake alloc] init];
+  XCTAssertNoThrow([registrar registerMetricsController:metricsController target:self.target]);
+  GDTCORStorageFake *storage = [[GDTCORStorageFake alloc] init];
+  XCTAssertNoThrow([registrar registerStorage:storage target:self.target]);
+  // Then
+  dispatch_sync(registrar.registrarQueue, ^{
+                    // Drain queue.
+                });
+  XCTAssertEqual(storage.delegate, metricsController);
+}
 
 @end

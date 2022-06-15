@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'GoogleDataTransport'
-  s.version          = '9.1.4'
+  s.version          = '9.2.0'
   s.summary          = 'Google iOS SDK data transport.'
 
   s.description      = <<-DESC
@@ -47,18 +47,28 @@ Shared library for iOS SDK data transport needs.
     'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/"'
   }
 
+  # The nanopb pod sets these defs, so we must too. (We *do* require 16bit
+  # (or larger) fields, so we'd have to set at least PB_FIELD_16BIT
+  # anyways.)
+  preprocessor_definitions =
+      'PB_FIELD_32BIT=1 PB_NO_PACKED_STRUCTS=1 PB_ENABLE_MALLOC=1'\
+      'GDTCOR_VERSION=' + s.version.to_s
+
+  if ENV['GDT_TEST'] && ENV['GDT_TEST'] == '1' then
+    preprocessor_definitions += ' GDT_TEST=1'
+  end
+
   s.pod_target_xcconfig = {
     'GCC_C_LANGUAGE_STANDARD' => 'c99',
     'CLANG_UNDEFINED_BEHAVIOR_SANITIZER_NULLABILITY' => 'YES',
-    'GCC_PREPROCESSOR_DEFINITIONS' =>
-      # The nanopb pod sets these defs, so we must too. (We *do* require 16bit
-      # (or larger) fields, so we'd have to set at least PB_FIELD_16BIT
-      # anyways.)
-      'PB_FIELD_32BIT=1 PB_NO_PACKED_STRUCTS=1 PB_ENABLE_MALLOC=1 GDTCOR_VERSION=' + s.version.to_s,
+    'GCC_PREPROCESSOR_DEFINITIONS' => preprocessor_definitions
   }.merge(header_search_paths)
 
   common_test_sources = ['GoogleDataTransport/GDTCORTests/Common/**/*.{h,m}']
-  common_cct_test_sources = ['GoogleDataTransport/GDTCCTTests/Common/**/*.{h,m}']
+  common_cct_test_sources = [
+     'GoogleDataTransport/GDTCCTTests/Common/**/*.{h,m}',
+     'GoogleDataTransport/GDTCCTTests/Unit/Helpers/**/*.{h,m}'
+   ]
 
   # Test app specs
   if ENV['GDT_DEV'] && ENV['GDT_DEV'] == '1' then
