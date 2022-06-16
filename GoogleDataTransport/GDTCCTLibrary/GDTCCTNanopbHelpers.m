@@ -171,7 +171,8 @@ gdt_cct_ClientInfo GDTCCTConstructClientInfo() {
   clientInfo.ios_client_info = GDTCCTConstructiOSClientInfo();
   clientInfo.has_ios_client_info = 1;
 #elif TARGET_OS_OSX
-  // TODO(mikehaney24): Expand the proto to include macOS client info.
+  clientInfo.mac_client_info = GDTCCTConstructMacClientInfo();
+  clientInfo.has_mac_client_info = 1;
 #endif
   return clientInfo;
 }
@@ -200,6 +201,34 @@ gdt_cct_IosClientInfo GDTCCTConstructiOSClientInfo() {
   iOSClientInfo.application_bundle_id = GDTCCTEncodeString(bundle.bundleIdentifier);
 #endif
   return iOSClientInfo;
+}
+
+gdt_cct_MacClientInfo GDTCCTConstructMacClientInfo() {
+  gdt_cct_MacClientInfo macOSClientInfo = gdt_cct_MacClientInfo_init_default;
+
+  NSOperatingSystemVersion osVersion = [NSProcessInfo processInfo].operatingSystemVersion;
+  NSString *majorVersion = [@(osVersion.majorVersion) stringValue];
+  NSString *minorVersion = [@(osVersion.minorVersion) stringValue];
+  NSString *majorAndMinorString = [NSString stringWithFormat:@"%@.%@", majorVersion, minorVersion];
+  macOSClientInfo.os_major_version = GDTCCTEncodeString(majorAndMinorString);
+
+  NSString *patchVersion = [@(osVersion.patchVersion) stringValue];
+  NSString *majorMinorPatchString =
+      [NSString stringWithFormat:@"%@.%@", majorAndMinorString, patchVersion];
+  macOSClientInfo.os_full_version = GDTCCTEncodeString(majorMinorPatchString);
+
+  NSBundle *bundle = [NSBundle mainBundle];
+  NSString *version = [bundle objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+  if (version) {
+    macOSClientInfo.application_build = GDTCCTEncodeString(version);
+  }
+
+  NSString *bundleID = bundle.bundleIdentifier;
+  if (bundleID) {
+    macOSClientInfo.application_bundle_id = GDTCCTEncodeString(bundleID);
+  }
+
+  return macOSClientInfo;
 }
 
 NSData *GDTCCTConstructNetworkConnectionInfoData() {

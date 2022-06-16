@@ -73,6 +73,26 @@
   pb_release(gdt_cct_BatchedLogRequest_fields, &batch);
 }
 
+/** Tests batched log requests include platform-specific client info. */
+- (void)testBatchedLogRequestsIncludePlatformSpecificClientInfo {
+  // Given
+  gdt_cct_BatchedLogRequest batch = gdt_cct_BatchedLogRequest_init_default;
+  NSSet<GDTCOREvent *> *events =
+      [NSSet setWithArray:[self.generator generateTheFiveConsistentEvents]];
+  // When
+  XCTAssertNoThrow(batch = GDTCCTConstructBatchedLogRequest(@{@"1018" : events}));
+  // Then
+  XCTAssertTrue(batch.log_request->has_client_info);
+#if TARGET_OS_IOS || TARGET_OS_TV
+  XCTAssertTrue(batch.log_request->client_info.has_ios_client_info);
+  XCTAssertFalse(batch.log_request->client_info.has_mac_client_info);
+#elif TARGET_OS_OSX
+  XCTAssertTrue(batch.log_request->client_info.has_mac_client_info);
+  XCTAssertFalse(batch.log_request->client_info.has_ios_client_info);
+#endif
+  pb_release(gdt_cct_BatchedLogRequest_fields, &batch);
+}
+
 /** Tests encoding a batched log request generates bytes equivalent to canonical protobuf. */
 - (void)testEncodeBatchedLogRequest {
   NSBundle *testBundle = [NSBundle bundleForClass:[self class]];

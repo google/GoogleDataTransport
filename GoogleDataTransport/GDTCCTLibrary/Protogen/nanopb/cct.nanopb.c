@@ -46,6 +46,14 @@ const pb_field_t gdt_cct_NetworkConnectionInfo_fields[3] = {
     PB_LAST_FIELD
 };
 
+const pb_field_t gdt_cct_MacClientInfo_fields[5] = {
+    PB_FIELD(  1, BYTES   , OPTIONAL, POINTER , FIRST, gdt_cct_MacClientInfo, os_major_version, os_major_version, 0),
+    PB_FIELD(  2, BYTES   , OPTIONAL, POINTER , OTHER, gdt_cct_MacClientInfo, os_full_version, os_major_version, 0),
+    PB_FIELD(  3, BYTES   , OPTIONAL, POINTER , OTHER, gdt_cct_MacClientInfo, application_build, os_full_version, 0),
+    PB_FIELD(  7, BYTES   , OPTIONAL, POINTER , OTHER, gdt_cct_MacClientInfo, application_bundle_id, application_build, 0),
+    PB_LAST_FIELD
+};
+
 const pb_field_t gdt_cct_IosClientInfo_fields[8] = {
     PB_FIELD(  3, BYTES   , OPTIONAL, POINTER , FIRST, gdt_cct_IosClientInfo, os_major_version, os_major_version, 0),
     PB_FIELD(  4, BYTES   , OPTIONAL, POINTER , OTHER, gdt_cct_IosClientInfo, os_full_version, os_major_version, 0),
@@ -57,9 +65,10 @@ const pb_field_t gdt_cct_IosClientInfo_fields[8] = {
     PB_LAST_FIELD
 };
 
-const pb_field_t gdt_cct_ClientInfo_fields[3] = {
+const pb_field_t gdt_cct_ClientInfo_fields[4] = {
     PB_FIELD(  1, UENUM   , OPTIONAL, STATIC  , FIRST, gdt_cct_ClientInfo, client_type, client_type, 0),
     PB_FIELD(  4, MESSAGE , OPTIONAL, STATIC  , OTHER, gdt_cct_ClientInfo, ios_client_info, client_type, &gdt_cct_IosClientInfo_fields),
+    PB_FIELD( 13, MESSAGE , OPTIONAL, STATIC  , OTHER, gdt_cct_ClientInfo, mac_client_info, ios_client_info, &gdt_cct_MacClientInfo_fields),
     PB_LAST_FIELD
 };
 
@@ -110,7 +119,7 @@ const pb_field_t gdt_cct_LogResponse_fields[3] = {
  * numbers or field sizes that are larger than what can fit in 8 or 16 bit
  * field descriptors.
  */
-PB_STATIC_ASSERT((pb_membersize(gdt_cct_LogEvent, network_connection_info) < 65536 && pb_membersize(gdt_cct_ClientInfo, ios_client_info) < 65536 && pb_membersize(gdt_cct_LogRequest, client_info) < 65536 && pb_membersize(gdt_cct_LogResponse, qos_tier) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_gdt_cct_LogEvent_gdt_cct_NetworkConnectionInfo_gdt_cct_IosClientInfo_gdt_cct_ClientInfo_gdt_cct_BatchedLogRequest_gdt_cct_LogRequest_gdt_cct_QosTierConfiguration_gdt_cct_QosTiersOverride_gdt_cct_LogResponse)
+PB_STATIC_ASSERT((pb_membersize(gdt_cct_LogEvent, network_connection_info) < 65536 && pb_membersize(gdt_cct_ClientInfo, ios_client_info) < 65536 && pb_membersize(gdt_cct_ClientInfo, mac_client_info) < 65536 && pb_membersize(gdt_cct_LogRequest, client_info) < 65536 && pb_membersize(gdt_cct_LogResponse, qos_tier) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_gdt_cct_LogEvent_gdt_cct_NetworkConnectionInfo_gdt_cct_MacClientInfo_gdt_cct_IosClientInfo_gdt_cct_ClientInfo_gdt_cct_BatchedLogRequest_gdt_cct_LogRequest_gdt_cct_QosTierConfiguration_gdt_cct_QosTiersOverride_gdt_cct_LogResponse)
 #endif
 
 #if !defined(PB_FIELD_16BIT) && !defined(PB_FIELD_32BIT)
@@ -121,7 +130,7 @@ PB_STATIC_ASSERT((pb_membersize(gdt_cct_LogEvent, network_connection_info) < 655
  * numbers or field sizes that are larger than what can fit in the default
  * 8 bit descriptors.
  */
-PB_STATIC_ASSERT((pb_membersize(gdt_cct_LogEvent, network_connection_info) < 256 && pb_membersize(gdt_cct_ClientInfo, ios_client_info) < 256 && pb_membersize(gdt_cct_LogRequest, client_info) < 256 && pb_membersize(gdt_cct_LogResponse, qos_tier) < 256), YOU_MUST_DEFINE_PB_FIELD_16BIT_FOR_MESSAGES_gdt_cct_LogEvent_gdt_cct_NetworkConnectionInfo_gdt_cct_IosClientInfo_gdt_cct_ClientInfo_gdt_cct_BatchedLogRequest_gdt_cct_LogRequest_gdt_cct_QosTierConfiguration_gdt_cct_QosTiersOverride_gdt_cct_LogResponse)
+PB_STATIC_ASSERT((pb_membersize(gdt_cct_LogEvent, network_connection_info) < 256 && pb_membersize(gdt_cct_ClientInfo, ios_client_info) < 256 && pb_membersize(gdt_cct_ClientInfo, mac_client_info) < 256 && pb_membersize(gdt_cct_LogRequest, client_info) < 256 && pb_membersize(gdt_cct_LogResponse, qos_tier) < 256), YOU_MUST_DEFINE_PB_FIELD_16BIT_FOR_MESSAGES_gdt_cct_LogEvent_gdt_cct_NetworkConnectionInfo_gdt_cct_MacClientInfo_gdt_cct_IosClientInfo_gdt_cct_ClientInfo_gdt_cct_BatchedLogRequest_gdt_cct_LogRequest_gdt_cct_QosTierConfiguration_gdt_cct_QosTiersOverride_gdt_cct_LogResponse)
 #endif
 
 
