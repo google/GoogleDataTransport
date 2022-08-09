@@ -20,5 +20,3 @@ cd firebase-ios-sdk
 git checkout master -- scripts
 cd ..
 ln -s firebase-ios-sdk/scripts scripts
-
-gem install xcpretty
