@@ -18,6 +18,7 @@ jobs:
         target: [ios, tvos, macos, watchos]
     steps:
     - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
@@ -30,6 +31,7 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
@@ -38,11 +40,10 @@ jobs:
       run: scripts/third_party/travis/retry.sh scripts/test_catalyst.sh GoogleDataTransport build
 
   watchos-testapp:
-    runs-on: macOS-10.15
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v2
-    - name: Xcode 12
-      run: sudo xcode-select -s /Applications/Xcode_12.app/Contents/Developer
+    - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
@@ -64,6 +65,7 @@ jobs:
     needs: pod_lib_lint
     steps:
     - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
