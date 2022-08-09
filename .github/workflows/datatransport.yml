@@ -10,6 +10,10 @@ env:
   # Used to compile test-specific code in the SDK.
   GDT_TEST: 1
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pod_lib_lint:
     runs-on: macos-latest
