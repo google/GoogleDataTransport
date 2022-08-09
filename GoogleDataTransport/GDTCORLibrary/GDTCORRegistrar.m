@@ -38,18 +38,12 @@ id<GDTCORMetricsControllerProtocol> _Nullable GDTCORMetricsControllerInstanceFor
   return [GDTCORRegistrar sharedInstance].targetToMetricsController[@(target)];
 }
 
-@implementation GDTCORRegistrar {
-  // TODO(ncooke3): Replace ivar declarations with @synthesize attributes.
+@implementation GDTCORRegistrar
 
-  /** Backing ivar for targetToUploader property. */
-  NSMutableDictionary<NSNumber *, id<GDTCORUploader>> *_targetToUploader;
-
-  /** Backing ivar for targetToStorage property. */
-  NSMutableDictionary<NSNumber *, id<GDTCORStorageProtocol>> *_targetToStorage;
-
-  /** Backing ivar for targetToMetricsController property. */
-  NSMutableDictionary<NSNumber *, id<GDTCORMetricsControllerProtocol>> *_targetToMetricsController;
-}
+// Manaully synthesize properties declared in `GDTCORRegistrar_Private.h` category.
+@synthesize targetToUploader = _targetToUploader;
+@synthesize targetToStorage = _targetToStorage;
+@synthesize targetToMetricsController = _targetToMetricsController;
 
 + (instancetype)sharedInstance {
   static GDTCORRegistrar *sharedInstance;
