@@ -19,9 +19,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        target: [ios, tvos, macos, watchos]
+        target: [ios, tvos, macos]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
@@ -34,7 +34,7 @@ jobs:
   catalyst:
     runs-on: macOS-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
@@ -46,7 +46,7 @@ jobs:
   watchos-testapp:
     runs-on: macos-12
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
@@ -61,14 +61,14 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        target: [ios, tvos, macos, watchos]
+        target: [ios, tvos, macos]
         flags: [
           '--use-static-frameworks',
           '--use-libraries'
         ]
     needs: pod_lib_lint
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
