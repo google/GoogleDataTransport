@@ -40,6 +40,11 @@ jobs:
         brew install mint
         mint bootstrap
 
+    # TODO - debug why thre is a build of SwiftFormat in GDT, but not in firebase-ios-sdk.
+    # The build artifact causes clang-format to fail.
+    - name: Cleanup mint build
+      run: rm mint/packages/github.com_nicklockwood_SwiftFormat/build/0.49.2/SwiftFormat.build/SwiftFormat-Swift.h
+
     - name: Style
       run: scripts/style.sh test-only
 
