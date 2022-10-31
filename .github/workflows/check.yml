@@ -1,5 +1,7 @@
 name: check
 
+# Trigger workflow run.
+
 on:
   pull_request:
     paths:
