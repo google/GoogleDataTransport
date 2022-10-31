@@ -43,7 +43,9 @@ jobs:
         mint bootstrap
 
     - name: Style
-      run: scripts/style.sh test-only
+      run: |
+        ls
+        scripts/style.sh test-only
 
     - name: Whitespace
       run: scripts/check_whitespace.sh
