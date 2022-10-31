@@ -23,12 +23,12 @@ jobs:
       with:
         python-version: 3.6
 
-    - name: Cache Mint packages
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.MINT_PATH }}
-        key: ${{ runner.os }}-mint-${{ hashFiles('**/Mintfile') }}
-        restore-keys: ${{ runner.os }}-mint-
+    # - name: Cache Mint packages
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ${{ env.MINT_PATH }}
+    #     key: ${{ runner.os }}-mint-${{ hashFiles('**/Mintfile') }}
+    #     restore-keys: ${{ runner.os }}-mint-
 
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
