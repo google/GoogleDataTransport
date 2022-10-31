@@ -1,7 +1,5 @@
 name: check
 
-# Trigger workflow run.
-
 on:
   pull_request:
     paths:
@@ -44,9 +42,6 @@ jobs:
 
     - name: Style
       run: |
-        ls
-        # rm mint/packages/github.com_nicklockwood_SwiftFormat/build/0.49.2/SwiftFormat.build/SwiftFormat-Swift.h
-        # rm -f mint/packages/github.com_nicklockwood_SwiftFormat/build/0.49.2/SwiftFormat.build/SwiftFormat-Swift.h
         sed -i '' "s/\^Mint/\^mint/g" scripts/style.sh
         scripts/style.sh test-only
 
