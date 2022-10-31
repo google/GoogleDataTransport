@@ -1,79 +1,79 @@
-name: datatransport
+# name: datatransport
 
-on:
-  pull_request:
-  schedule:
-    # Run every day at 11pm (PST) - cron uses UTC times
-    - cron:  '0 7 * * *'
+# on:
+#   pull_request:
+#   schedule:
+#     # Run every day at 11pm (PST) - cron uses UTC times
+#     - cron:  '0 7 * * *'
 
-env:
-  # Used to compile test-specific code in the SDK.
-  GDT_TEST: 1
+# env:
+#   # Used to compile test-specific code in the SDK.
+#   GDT_TEST: 1
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+#   cancel-in-progress: true
 
-jobs:
-  pod_lib_lint:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        target: [ios, tvos, macos]
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
-    - name: Setup Scripts Directory
-      run: ./setup-scripts.sh
-    - name: Setup Bundler
-      run: ./scripts/setup_bundler.sh
-    - name: PodLibLint DataTransport
-      run: |
-        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }}
+# jobs:
+#   pod_lib_lint:
+#     runs-on: macos-latest
+#     strategy:
+#       matrix:
+#         target: [ios, tvos, macos]
+#     steps:
+#     - uses: actions/checkout@v3
+#     - uses: ruby/setup-ruby@v1
+#     - name: Setup Scripts Directory
+#       run: ./setup-scripts.sh
+#     - name: Setup Bundler
+#       run: ./scripts/setup_bundler.sh
+#     - name: PodLibLint DataTransport
+#       run: |
+#         scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }}
 
-  catalyst:
-    runs-on: macOS-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
-    - name: Setup Scripts Directory
-      run: ./setup-scripts.sh
-    - name: Setup Bundler
-      run: scripts/setup_bundler.sh
-    - name: Setup project and Test Catalyst
-      run: scripts/third_party/travis/retry.sh scripts/test_catalyst.sh GoogleDataTransport build
+#   catalyst:
+#     runs-on: macOS-latest
+#     steps:
+#     - uses: actions/checkout@v3
+#     - uses: ruby/setup-ruby@v1
+#     - name: Setup Scripts Directory
+#       run: ./setup-scripts.sh
+#     - name: Setup Bundler
+#       run: scripts/setup_bundler.sh
+#     - name: Setup project and Test Catalyst
+#       run: scripts/third_party/travis/retry.sh scripts/test_catalyst.sh GoogleDataTransport build
 
-  watchos-testapp:
-    runs-on: macos-12
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
-    - name: Setup Scripts Directory
-      run: ./setup-scripts.sh
-    - name: Setup Bundler
-      run: scripts/setup_bundler.sh
-    - name: Prereqs
-      run: scripts/install_prereqs.sh GoogleDataTransport watchOS xcodebuild
-    - name: Setup project and build watchOS test app
-      run: scripts/third_party/travis/retry.sh scripts/build.sh GoogleDataTransport watchOS xcodebuild
+#   watchos-testapp:
+#     runs-on: macos-12
+#     steps:
+#     - uses: actions/checkout@v3
+#     - uses: ruby/setup-ruby@v1
+#     - name: Setup Scripts Directory
+#       run: ./setup-scripts.sh
+#     - name: Setup Bundler
+#       run: scripts/setup_bundler.sh
+#     - name: Prereqs
+#       run: scripts/install_prereqs.sh GoogleDataTransport watchOS xcodebuild
+#     - name: Setup project and build watchOS test app
+#       run: scripts/third_party/travis/retry.sh scripts/build.sh GoogleDataTransport watchOS xcodebuild
 
-  datatransport-options-matrix:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        target: [ios, tvos, macos]
-        flags: [
-          '--use-static-frameworks',
-          '--use-libraries'
-        ]
-    needs: pod_lib_lint
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
-    - name: Setup Scripts Directory
-      run: ./setup-scripts.sh
-    - name: Setup Bundler
-      run: ./scripts/setup_bundler.sh
-    - name: PodLibLint DataTransport Cron
-      run: |
-        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }} ${{ matrix.flags }}
+#   datatransport-options-matrix:
+#     runs-on: macos-latest
+#     strategy:
+#       matrix:
+#         target: [ios, tvos, macos]
+#         flags: [
+#           '--use-static-frameworks',
+#           '--use-libraries'
+#         ]
+#     needs: pod_lib_lint
+#     steps:
+#     - uses: actions/checkout@v3
+#     - uses: ruby/setup-ruby@v1
+#     - name: Setup Scripts Directory
+#       run: ./setup-scripts.sh
+#     - name: Setup Bundler
+#       run: ./scripts/setup_bundler.sh
+#     - name: PodLibLint DataTransport Cron
+#       run: |
+#         scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }} ${{ matrix.flags }}
