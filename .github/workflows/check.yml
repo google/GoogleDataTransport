@@ -42,7 +42,7 @@ jobs:
 
     - name: Style
       run: |
-        sed -i '' "s/\^Mint/\^mint/g" scripts/style.sh
+        # sed -i '' "s/\^Mint/\^mint/g" scripts/style.sh
         scripts/style.sh test-only
 
     - name: Whitespace
