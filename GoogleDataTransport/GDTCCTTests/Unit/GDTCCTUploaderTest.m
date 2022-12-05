@@ -1237,7 +1237,7 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
   // fool github URL scanning bots.
   static NSURL *CCTServerURL;
   static NSString *const kINTServerURL =
-      @"https://dummyapiverylong-dummy.dummy.com/dummy/api/very/long";
+      @"https://dummyapiverylong-dummy.google.com/dummy/api/very/long";
   static dispatch_once_t CCTOnceToken;
   dispatch_once(&CCTOnceToken, ^{
     const char *p1 = "hts/frbslgiggolai.o/0clgbth";
