@@ -1,3 +1,6 @@
+# v9.2.1
+- Add `GDTCORTarget` documentation and use Google domain in testing URL. (#89)
+
 # v9.2.0
 - Add and integrate `MacClientInfo` proto message. (#57)
 - Add metrics component to measure SDK performance. (#77)
