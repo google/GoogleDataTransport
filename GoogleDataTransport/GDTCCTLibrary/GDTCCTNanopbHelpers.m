@@ -163,7 +163,7 @@ gdt_cct_LogEvent GDTCCTConstructLogEvent(GDTCOREvent *event) {
   return logEvent;
 }
 
-gdt_cct_ClientInfo GDTCCTConstructClientInfo() {
+gdt_cct_ClientInfo GDTCCTConstructClientInfo(void) {
   gdt_cct_ClientInfo clientInfo = gdt_cct_ClientInfo_init_default;
   clientInfo.client_type = gdt_cct_ClientInfo_ClientType_IOS_FIREBASE;
   clientInfo.has_client_type = 1;
@@ -177,7 +177,7 @@ gdt_cct_ClientInfo GDTCCTConstructClientInfo() {
   return clientInfo;
 }
 
-gdt_cct_IosClientInfo GDTCCTConstructiOSClientInfo() {
+gdt_cct_IosClientInfo GDTCCTConstructiOSClientInfo(void) {
   gdt_cct_IosClientInfo iOSClientInfo = gdt_cct_IosClientInfo_init_default;
 #if TARGET_OS_IOS || TARGET_OS_TV
   UIDevice *device = [UIDevice currentDevice];
@@ -203,7 +203,7 @@ gdt_cct_IosClientInfo GDTCCTConstructiOSClientInfo() {
   return iOSClientInfo;
 }
 
-gdt_cct_MacClientInfo GDTCCTConstructMacClientInfo() {
+gdt_cct_MacClientInfo GDTCCTConstructMacClientInfo(void) {
   gdt_cct_MacClientInfo macOSClientInfo = gdt_cct_MacClientInfo_init_default;
 
   NSOperatingSystemVersion osVersion = [NSProcessInfo processInfo].operatingSystemVersion;
@@ -231,7 +231,7 @@ gdt_cct_MacClientInfo GDTCCTConstructMacClientInfo() {
   return macOSClientInfo;
 }
 
-NSData *GDTCCTConstructNetworkConnectionInfoData() {
+NSData *GDTCCTConstructNetworkConnectionInfoData(void) {
   gdt_cct_NetworkConnectionInfo networkConnectionInfo = gdt_cct_NetworkConnectionInfo_init_default;
   NSInteger currentNetworkType = GDTCORNetworkTypeMessage();
   if (currentNetworkType) {
@@ -252,7 +252,7 @@ NSData *GDTCCTConstructNetworkConnectionInfoData() {
   return networkConnectionInfoData;
 }
 
-gdt_cct_NetworkConnectionInfo_MobileSubtype GDTCCTNetworkConnectionInfoNetworkMobileSubtype() {
+gdt_cct_NetworkConnectionInfo_MobileSubtype GDTCCTNetworkConnectionInfoNetworkMobileSubtype(void) {
   NSNumber *networkMobileSubtypeMessage = @(GDTCORNetworkMobileSubTypeMessage());
   if (!networkMobileSubtypeMessage.intValue) {
     return gdt_cct_NetworkConnectionInfo_MobileSubtype_UNKNOWN_MOBILE_SUBTYPE;

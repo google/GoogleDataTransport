@@ -84,7 +84,7 @@ BOOL GDTCORReachabilityFlagsContainWWAN(GDTCORNetworkReachabilityFlags flags) {
 #endif  // TARGET_OS_IOS
 }
 
-GDTCORNetworkType GDTCORNetworkTypeMessage() {
+GDTCORNetworkType GDTCORNetworkTypeMessage(void) {
 #if !TARGET_OS_WATCH
   SCNetworkReachabilityFlags reachabilityFlags = [GDTCORReachability currentFlags];
   if ((reachabilityFlags & kSCNetworkReachabilityFlagsReachable) ==
@@ -99,7 +99,7 @@ GDTCORNetworkType GDTCORNetworkTypeMessage() {
   return GDTCORNetworkTypeUNKNOWN;
 }
 
-GDTCORNetworkMobileSubtype GDTCORNetworkMobileSubTypeMessage() {
+GDTCORNetworkMobileSubtype GDTCORNetworkMobileSubTypeMessage(void) {
 #if TARGET_OS_IOS
   static NSDictionary<NSString *, NSNumber *> *CTRadioAccessTechnologyToNetworkSubTypeMessage;
   static CTTelephonyNetworkInfo *networkInfo;
@@ -154,7 +154,7 @@ GDTCORNetworkMobileSubtype GDTCORNetworkMobileSubTypeMessage() {
 #endif  // TARGET_OS_IOS
 }
 
-NSString *_Nonnull GDTCORDeviceModel() {
+NSString *_Nonnull GDTCORDeviceModel(void) {
   static NSString *deviceModel = @"Unknown";
 
 #if TARGET_OS_IOS || TARGET_OS_TV

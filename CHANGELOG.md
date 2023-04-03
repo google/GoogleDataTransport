@@ -1,3 +1,6 @@
+# v9.2.2
+- Fix new warnings shown by Xcode 14.3.
+
 # v9.2.1
 - Add `GDTCORTarget` documentation and use Google domain in testing URL. (#89)
 
