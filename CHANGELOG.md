@@ -1,3 +1,6 @@
+# v9.2.3
+- Fix analyzer issues shown by Xcode 14.3. ([firebase-ios-sdk/#11228](https://github.com/firebase/firebase-ios-sdk/issues/11228))
+
 # v9.2.2
 - Fix new warnings shown by Xcode 14.3.
 
