@@ -28,7 +28,7 @@
 #import <WatchKit/WatchKit.h>
 #endif  // TARGET_OS_IOS || TARGET_OS_TV
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_XR
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #endif
 

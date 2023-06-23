@@ -100,7 +100,7 @@ GDTCORNetworkType GDTCORNetworkTypeMessage(void) {
 }
 
 GDTCORNetworkMobileSubtype GDTCORNetworkMobileSubTypeMessage(void) {
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_XR
   static NSDictionary<NSString *, NSNumber *> *CTRadioAccessTechnologyToNetworkSubTypeMessage;
   static CTTelephonyNetworkInfo *networkInfo;
   static dispatch_once_t onceToken;
