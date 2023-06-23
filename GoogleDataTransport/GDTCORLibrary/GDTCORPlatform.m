@@ -149,9 +149,9 @@ GDTCORNetworkMobileSubtype GDTCORNetworkMobileSubTypeMessage(void) {
   } else {
     return GDTCORNetworkMobileSubtypeUNKNOWN;
   }
-#else   // TARGET_OS_IOS
+#else   // TARGET_OS_IOS && !TARGET_OS_XR
   return GDTCORNetworkMobileSubtypeUNKNOWN;
-#endif  // TARGET_OS_IOS
+#endif  // TARGET_OS_IOS && !TARGET_OS_XR
 }
 
 NSString *_Nonnull GDTCORDeviceModel(void) {
