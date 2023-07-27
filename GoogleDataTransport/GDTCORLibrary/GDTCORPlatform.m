@@ -101,8 +101,8 @@ GDTCORNetworkType GDTCORNetworkTypeMessage(void) {
 
 GDTCORNetworkMobileSubtype GDTCORNetworkMobileSubTypeMessage(void) {
 // TODO(Xcode 15): When Xcode 15 is the minimum supported Xcode version,
-// it will be unnecessary to check if `TARGET_OS_XR` is defined.
-#if TARGET_OS_IOS && (!defined(TARGET_OS_XR) || !TARGET_OS_XR)
+// it will be unnecessary to check if `TARGET_OS_VISION` is defined.
+#if TARGET_OS_IOS && (!defined(TARGET_OS_VISION) || !TARGET_OS_VISION)
   static NSDictionary<NSString *, NSNumber *> *CTRadioAccessTechnologyToNetworkSubTypeMessage;
   static CTTelephonyNetworkInfo *networkInfo;
   static dispatch_once_t onceToken;
@@ -151,9 +151,9 @@ GDTCORNetworkMobileSubtype GDTCORNetworkMobileSubTypeMessage(void) {
   } else {
     return GDTCORNetworkMobileSubtypeUNKNOWN;
   }
-#else   // TARGET_OS_IOS && (!defined(TARGET_OS_XR) || !TARGET_OS_XR)
+#else   // TARGET_OS_IOS && (!defined(TARGET_OS_VISION) || !TARGET_OS_VISION)
   return GDTCORNetworkMobileSubtypeUNKNOWN;
-#endif  // TARGET_OS_IOS && (!defined(TARGET_OS_XR) || !TARGET_OS_XR)
+#endif  // TARGET_OS_IOS && (!defined(TARGET_OS_VISION) || !TARGET_OS_VISION)
 }
 
 NSString *_Nonnull GDTCORDeviceModel(void) {
