@@ -1,3 +1,7 @@
+# v9.2.5
+- Replace 'TARGET_OS_XR' with 'TARGET_OS_VISION' for compatibility with
+  Xcode 15 Beta 5.
+
 # v9.2.4 (SwiftPM Only)
 - Fix build errors on the visionOS platform. (#97)
 
