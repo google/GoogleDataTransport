@@ -20,7 +20,8 @@ import GoogleDataTransport
 
 import os.signpost
 
-/// The test actions to run under the profiler to measure performance of `GDTCORFlatFileStorage.checkForExpirations()` method.
+/// The test actions to run under the profiler to measure performance of
+/// `GDTCORFlatFileStorage.checkForExpirations()` method.
 @available(iOS 12.0, *)
 enum EventCleanupPerfTest {
   static let log = OSLog(subsystem: "GoogleDataTransport-TestApp", category: "EventCleanupPerfTest")

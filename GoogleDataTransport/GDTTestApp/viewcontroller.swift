@@ -111,7 +111,7 @@ public extension ViewController {
           self.generateWifiOnlyEvent,
           self.generateDailyEvent,
         ]
-        let randomIndex: Int = Int.random(in: 0 ..< generationFunctions.count)
+        let randomIndex: Int = .random(in: 0 ..< generationFunctions.count)
         generationFunctions[randomIndex](self)
       }
       RunLoop.current.run(until: Date(timeIntervalSinceNow: Double.random(in: 0 ..< 1.5)))
