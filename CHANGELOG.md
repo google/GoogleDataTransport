@@ -1,3 +1,6 @@
+# Unreleased
+- Added new `GDTCOREvent` initializer to support attaching a product ID to an event.
+
 # v9.2.5
 - Replace 'TARGET_OS_XR' with 'TARGET_OS_VISION' for compatibility with
   Xcode 15 Beta 5.
