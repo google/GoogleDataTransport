@@ -18,6 +18,8 @@ syntax = "proto2";
 
 package gdt_cct;
 
+import "compliance.proto";
+
 message LogEvent {
   optional int64 event_time_ms = 1;
 
@@ -30,6 +32,8 @@ message LogEvent {
   optional sint64 timezone_offset_seconds = 15;
 
   optional NetworkConnectionInfo network_connection_info = 23;
+
+  optional ComplianceData compliance_data = 33;
 }
 
 message NetworkConnectionInfo {
