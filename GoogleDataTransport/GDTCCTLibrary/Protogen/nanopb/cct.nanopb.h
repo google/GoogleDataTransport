@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #define PB_GDT_CCT_CCT_NANOPB_H_INCLUDED
 #include <nanopb/pb.h>
 
-#include "compliance.nanopb.h"
+#include "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/compliance.nanopb.h"
 
 /* @@protoc_insertion_point(includes) */
 #if PB_PROTO_HEADER_VERSION != 30

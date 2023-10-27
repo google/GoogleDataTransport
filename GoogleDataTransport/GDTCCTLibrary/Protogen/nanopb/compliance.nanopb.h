@@ -21,7 +21,7 @@
 #define PB_GDT_CCT_COMPLIANCE_NANOPB_H_INCLUDED
 #include <nanopb/pb.h>
 
-#include "external_privacy_context.nanopb.h"
+#include "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/external_privacy_context.nanopb.h"
 
 /* @@protoc_insertion_point(includes) */
 #if PB_PROTO_HEADER_VERSION != 30
