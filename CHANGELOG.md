@@ -1,4 +1,4 @@
-# Unreleased
+# v9.3.0
 - Added new APIs for attaching product ID data to an event.
 
 # v9.2.5
