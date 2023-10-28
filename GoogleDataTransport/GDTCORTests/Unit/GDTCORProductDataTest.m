@@ -36,6 +36,18 @@ static int32_t kTestProductID = 123456;
   XCTAssertEqualObjects([productData copy], productData);
 }
 
+- (void)testIsEqualAndHash {
+  GDTCORProductData *productData1 = [[GDTCORProductData alloc] initWithProductID:0000];
+  GDTCORProductData *productData2 = [[GDTCORProductData alloc] initWithProductID:0000];
+  GDTCORProductData *productData3 = [[GDTCORProductData alloc] initWithProductID:1111];
+
+  XCTAssertEqualObjects(productData1, productData2);
+  XCTAssertNotEqualObjects(productData1, productData3);
+
+  XCTAssertEqual(productData1.hash, productData2.hash);
+  XCTAssertNotEqual(productData1.hash, productData3.hash);
+}
+
 - (void)testSecureCoding {
   // Given
   GDTCORProductData *productData = [[GDTCORProductData alloc] initWithProductID:kTestProductID];

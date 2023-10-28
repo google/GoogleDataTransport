@@ -1,5 +1,5 @@
 # v9.3.0
-- Added new `GDTCOREvent` initializer to support attaching a product ID to an event.
+- Added new APIs for attaching product ID data to an event.
 
 # v9.2.5
 - Replace 'TARGET_OS_XR' with 'TARGET_OS_VISION' for compatibility with
