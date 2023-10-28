@@ -1,4 +1,4 @@
-# Unreleased
+# v9.3.0
 - Added new `GDTCOREvent` initializer to support attaching a product ID to an event.
 
 # v9.2.5
