@@ -20,6 +20,7 @@
 #import "GDTCORTargets.h"
 
 @class GDTCORClock;
+@class GDTCORProductData;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -74,6 +75,9 @@ typedef NS_ENUM(NSInteger, GDTCOREventQoS) {
 /** Bytes that can be used by an uploader later on. */
 @property(nullable, nonatomic) NSData *customBytes;
 
+/** The product data that the event is associated with, if any.  */
+@property(nullable, readonly, nonatomic) GDTCORProductData *productData;
+
 /** Initializes an instance using the given mappingID.
  *
  * @param mappingID The mapping identifier.
@@ -81,6 +85,17 @@ typedef NS_ENUM(NSInteger, GDTCOREventQoS) {
  * @return An instance of this class.
  */
 - (nullable instancetype)initWithMappingID:(NSString *)mappingID target:(GDTCORTarget)target;
+
+/** Initializes an instance using the given mappingID.
+ *
+ * @param mappingID The mapping identifier.
+ * @param productData The product data to associate this event with.
+ * @param target The event's target identifier.
+ * @return An instance of this class.
+ */
+- (nullable instancetype)initWithMappingID:(NSString *)mappingID
+                               productData:(nullable GDTCORProductData *)productData
+                                    target:(GDTCORTarget)target;
 
 @end
 

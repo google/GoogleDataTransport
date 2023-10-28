@@ -139,6 +139,20 @@
   pb_release(gdt_cct_BatchedLogRequest_fields, &decodedBatch);
 }
 
+- (void)testLogEventsPopulateComplianceFieldWhenGDTEventHasProductData {
+  // Two of the generated events have product data.
+  NSSet<GDTCOREvent *> *storedEvents =
+      [NSSet setWithArray:[self.generator generateTheFiveConsistentEvents]];
+  gdt_cct_BatchedLogRequest batch = GDTCCTConstructBatchedLogRequest(@{@"1018" : storedEvents});
+  int eventsThatContainProductData = 0;
+  for (int i = 0; i < batch.log_request->log_event_count; i++) {
+    gdt_cct_LogEvent logEvent = batch.log_request->log_event[i];
+    eventsThatContainProductData += logEvent.has_compliance_data;
+  }
+  XCTAssertEqual(eventsThatContainProductData, 2,
+                 @"Only two of the five events should have compliance data.");
+}
+
 - (void)testDecodedEventTimestampMatchToBatchContent {
   GDTCOREvent *storedEvent = [self.generator generateEvent:GDTCOREventQoSDaily];
   NSSet<GDTCOREvent *> *storedEvents = [NSSet setWithObject:storedEvent];

@@ -27,6 +27,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORProductData.h"
 
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORAssertHelper.h"
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORDataObjectTesterClasses.h"
@@ -213,7 +214,10 @@
                             }]);
   [self waitForExpectations:@[ writtenExpectation ] timeout:10.0];
 
-  GDTCOREvent *event3 = [[GDTCOREvent alloc] initWithMappingID:@"404" target:kGDTCORTargetTest];
+  GDTCORProductData *productData = [[GDTCORProductData alloc] initWithProductID:98765];
+  GDTCOREvent *event3 = [[GDTCOREvent alloc] initWithMappingID:@"404"
+                                                   productData:productData
+                                                        target:kGDTCORTargetTest];
   event3.dataObject = [[GDTCORDataObjectTesterSimple alloc] initWithString:@"testString3"];
   writtenExpectation = [self expectationWithDescription:@"event written"];
   XCTAssertNoThrow([storage storeEvent:event3
@@ -232,6 +236,9 @@
                        onComplete:^(NSNumber *_Nullable batchID,
                                     NSSet<GDTCOREvent *> *_Nullable events) {
                          XCTAssertEqual(events.count, 3);
+                         XCTAssert([events containsObject:event1]);
+                         XCTAssert([events containsObject:event2]);
+                         XCTAssert([events containsObject:event3]);
                          [expectation fulfill];
                        }];
   [self waitForExpectations:@[ expectation ] timeout:10];

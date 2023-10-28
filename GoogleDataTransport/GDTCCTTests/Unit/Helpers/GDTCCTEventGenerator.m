@@ -20,6 +20,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h"
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageProtocol.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORProductData.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Public/GDTCOREvent+GDTCCTSupport.h"
@@ -110,10 +111,15 @@
   return [NSURL fileURLWithPath:filePath];
 }
 
+/// Consistently generates the same five events. The events slightly differ in their attributes. The
+/// first two out of the five events have non-`nil` `productData`.
 - (NSArray<GDTCOREvent *> *)generateTheFiveConsistentEvents {
   NSMutableArray<GDTCOREvent *> *events = [[NSMutableArray alloc] init];
   {
-    GDTCOREvent *event = [[GDTCOREvent alloc] initWithMappingID:@"1018" target:_target];
+    GDTCOREvent *event =
+        [[GDTCOREvent alloc] initWithMappingID:@"1018"
+                                   productData:[[GDTCORProductData alloc] initWithProductID:98765]
+                                        target:_target];
     event.clockSnapshot = [GDTCORClock snapshot];
     [event.clockSnapshot setValue:@(1111111111111) forKeyPath:@"timeMillis"];
     [event.clockSnapshot setValue:@(-25200) forKeyPath:@"timezoneOffsetSeconds"];
@@ -143,7 +149,10 @@
   }
 
   {
-    GDTCOREvent *event = [[GDTCOREvent alloc] initWithMappingID:@"1018" target:_target];
+    GDTCOREvent *event =
+        [[GDTCOREvent alloc] initWithMappingID:@"1018"
+                                   productData:[[GDTCORProductData alloc] initWithProductID:98765]
+                                        target:_target];
     event.clockSnapshot = [GDTCORClock snapshot];
     [event.clockSnapshot setValue:@(1111111111111) forKeyPath:@"timeMillis"];
     [event.clockSnapshot setValue:@(-25200) forKeyPath:@"timezoneOffsetSeconds"];
