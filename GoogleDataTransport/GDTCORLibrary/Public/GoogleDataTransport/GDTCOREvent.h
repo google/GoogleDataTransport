@@ -78,7 +78,7 @@ typedef NS_ENUM(NSInteger, GDTCOREventQoS) {
 /** The product data that the event is associated with, if any.  */
 @property(nullable, readonly, nonatomic) GDTCORProductData *productData;
 
-/** Initializes an instance using the given mappingID.
+/** Initializes an instance using the given mapping ID and target.
  *
  * @param mappingID The mapping identifier.
  * @param target The event's target identifier.
@@ -86,7 +86,7 @@ typedef NS_ENUM(NSInteger, GDTCOREventQoS) {
  */
 - (nullable instancetype)initWithMappingID:(NSString *)mappingID target:(GDTCORTarget)target;
 
-/** Initializes an instance using the given mappingID.
+/** Initializes an instance using the given mapping ID, product data, and target.
  *
  * @param mappingID The mapping identifier.
  * @param productData The product data to associate this event with.
