@@ -18,6 +18,7 @@
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORRegistrar.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORProductData.h"
 #import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTransport.h"
 
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORTransport_Private.h"
@@ -34,6 +35,8 @@
 @end
 
 @implementation GDTCORTransportTest
+
+static int32_t kTestProductID = 123456;
 
 - (void)setUp {
   [super setUp];
@@ -56,22 +59,61 @@
                                                    target:kGDTCORTargetTest]);
 }
 
+- (void)testEventForTransport {
+  // Given
+  NSString *mappingID = @"1";
+  GDTCORTarget target = kGDTCORTargetTest;
+
+  GDTCORTransport *transport = [[GDTCORTransport alloc] initWithMappingID:mappingID
+                                                             transformers:nil
+                                                                   target:target];
+  // When
+  GDTCOREvent *event = [transport eventForTransport];
+  // Then
+  XCTAssertEqualObjects(event.mappingID, mappingID);
+  XCTAssertEqual(event.target, target);
+}
+
+- (void)testEventForTransportWithProductData {
+  // Given
+  NSString *mappingID = @"1";
+  GDTCORTarget target = kGDTCORTargetTest;
+
+  GDTCORTransport *transport = [[GDTCORTransport alloc] initWithMappingID:mappingID
+                                                             transformers:nil
+                                                                   target:target];
+  GDTCORProductData *productData = [[GDTCORProductData alloc] initWithProductID:kTestProductID];
+  // When
+  GDTCOREvent *event = [transport eventForTransportWithProductData:productData];
+  // Then
+  XCTAssertEqualObjects(event.mappingID, mappingID);
+  XCTAssertEqualObjects(event.productData, productData);
+  XCTAssertEqual(event.target, target);
+}
+
 /** Tests sending a telemetry event. */
 - (void)testSendTelemetryEvent {
   GDTCORTransport *transport = [[GDTCORTransport alloc] initWithMappingID:@"1"
                                                              transformers:nil
                                                                    target:kGDTCORTargetTest];
   transport.transformerInstance = [[GDTCORTransformerFake alloc] init];
-  GDTCOREvent *event = [transport eventForTransport];
-  event.dataObject = [[GDTCORDataObjectTesterSimple alloc] init];
-  XCTestExpectation *writtenExpectation = [self expectationWithDescription:@"event written"];
-  XCTAssertNoThrow([transport sendTelemetryEvent:event
-                                      onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
-                                        XCTAssertTrue(wasWritten);
-                                        XCTAssertNil(error);
-                                        [writtenExpectation fulfill];
-                                      }]);
-  [self waitForExpectations:@[ writtenExpectation ] timeout:10.0];
+  NSArray<GDTCOREvent *> *events = @[
+    [transport eventForTransport],
+    [transport eventForTransportWithProductData:[[GDTCORProductData alloc]
+                                                    initWithProductID:kTestProductID]]
+  ];
+  for (GDTCOREvent *event in events) {
+    event.dataObject = [[GDTCORDataObjectTesterSimple alloc] init];
+
+    XCTestExpectation *writtenExpectation = [self expectationWithDescription:@"event written"];
+    XCTAssertNoThrow([transport sendTelemetryEvent:event
+                                        onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
+                                          XCTAssertTrue(wasWritten);
+                                          XCTAssertNil(error);
+                                          [writtenExpectation fulfill];
+                                        }]);
+    [self waitForExpectations:@[ writtenExpectation ] timeout:10.0];
+  }
 }
 
 /** Tests sending a data event. */
@@ -80,16 +122,23 @@
                                                              transformers:nil
                                                                    target:kGDTCORTargetTest];
   transport.transformerInstance = [[GDTCORTransformerFake alloc] init];
-  GDTCOREvent *event = [transport eventForTransport];
-  event.dataObject = [[GDTCORDataObjectTesterSimple alloc] init];
-  XCTestExpectation *writtenExpectation = [self expectationWithDescription:@"event written"];
-  XCTAssertNoThrow([transport sendDataEvent:event
-                                 onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
-                                   XCTAssertTrue(wasWritten);
-                                   XCTAssertNil(error);
-                                   [writtenExpectation fulfill];
-                                 }]);
-  [self waitForExpectations:@[ writtenExpectation ] timeout:10.0];
+  NSArray<GDTCOREvent *> *events = @[
+    [transport eventForTransport],
+    [transport eventForTransportWithProductData:[[GDTCORProductData alloc]
+                                                    initWithProductID:kTestProductID]]
+  ];
+  for (GDTCOREvent *event in events) {
+    event.dataObject = [[GDTCORDataObjectTesterSimple alloc] init];
+
+    XCTestExpectation *writtenExpectation = [self expectationWithDescription:@"event written"];
+    XCTAssertNoThrow([transport sendDataEvent:event
+                                   onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
+                                     XCTAssertTrue(wasWritten);
+                                     XCTAssertNil(error);
+                                     [writtenExpectation fulfill];
+                                   }]);
+    [self waitForExpectations:@[ writtenExpectation ] timeout:10.0];
+  }
 }
 
 @end
