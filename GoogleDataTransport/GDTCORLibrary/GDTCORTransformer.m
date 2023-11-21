@@ -100,12 +100,4 @@
   });
 }
 
-#pragma mark - GDTCORLifecycleProtocol
-
-- (void)appWillTerminate:(GDTCORApplication *)application {
-  // Flush the queue immediately.
-  dispatch_sync(_eventWritingQueue, ^{
-                });
-}
-
 @end
