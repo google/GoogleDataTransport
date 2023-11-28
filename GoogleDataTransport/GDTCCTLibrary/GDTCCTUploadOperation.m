@@ -141,6 +141,10 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
                     // End the background task.
                     backgroundTaskCompletion();
+                  } else {
+                    GDTCORLog(GDTCORMCDDebugLog, GDTCORLoggingLevelWarnings,
+                              @"Attempted to cancel invalid background task in "
+                              "GDTCCTUploadOperation.");
                   }
                 }];
 
