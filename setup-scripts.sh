@@ -17,7 +17,7 @@ git clone \
   https://github.com/firebase/firebase-ios-sdk.git \
 ;
 cd firebase-ios-sdk
-git checkout master -- scripts
+git checkout main -- scripts
 cd ..
 ln -s firebase-ios-sdk/scripts scripts
 
