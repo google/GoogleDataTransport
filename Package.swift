@@ -67,6 +67,7 @@ let package = Package(
         "GDTCORLibrary",
         "GDTCCTLibrary",
       ],
+      resources: [.process("Resources/PrivacyInfo.xcprivacy")],
       publicHeadersPath: "GDTCORLibrary/Public",
       cSettings: [
         .headerSearchPath("../"),
