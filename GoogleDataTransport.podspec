@@ -47,6 +47,10 @@ Shared library for iOS SDK data transport needs.
     'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/"'
   }
 
+  s.resource_bundles = {
+    "#{s.module_name}_Privacy" => 'GoogleDataTransport/Resources/PrivacyInfo.xcprivacy'
+  }
+
   # The nanopb pod sets these defs, so we must too. (We *do* require 16bit
   # (or larger) fields, so we'd have to set at least PB_FIELD_16BIT
   # anyways.)
