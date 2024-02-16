@@ -1,3 +1,6 @@
+# v9.4.0
+- Add privacy manifest. (#114)
+
 # v9.3.0
 - Added new APIs for attaching product ID data to an event.
 - Fix `0x8BADF00D` crashes and add diagnostics. ([firebase-ios-sdk/#9859](https://github.com/firebase/firebase-ios-sdk/issues/9859))
