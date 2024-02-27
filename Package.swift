@@ -30,7 +30,7 @@ let package = Package(
     .package(
       name: "nanopb",
       url: "https://github.com/firebase/nanopb.git",
-      "2.30908.0" ..< "2.30910.0"
+      "2.30908.0" ..< "2.30911.0"
     ),
     .package(
       name: "Promises",
