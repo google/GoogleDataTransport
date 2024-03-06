@@ -1,3 +1,7 @@
+# v9.4.1 (CocoaPods Only)
+- The v9.4.0 podspec did not include the intended dependency range for nanopb
+  ([firebase-ios-sdk/#12477](https://github.com/firebase/firebase-ios-sdk/issues/12477))
+
 # v9.4.0
 - Add privacy manifest. (#114)
 
