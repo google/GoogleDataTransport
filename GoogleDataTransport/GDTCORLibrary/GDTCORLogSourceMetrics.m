@@ -52,7 +52,7 @@ typedef NSDictionary<NSNumber *, NSNumber *> GDTCORDroppedEventCounter;
     // If the dropped event counter for this event's mapping ID is `nil`,
     // an empty mutable counter is returned.
     NSMutableDictionary<NSNumber *, NSNumber *> *eventCounter =
-        [NSMutableDictionary dictionaryWithDictionary:eventCounterByLogSource[event.mappingID]];
+        [NSMutableDictionary dictionaryWithDictionary:eventCounterByLogSource[event.mappingID] ?: @{}];
 
     // Increment the log source metrics for the given reason.
     NSInteger currentEventCountForReason = [eventCounter[@(reason)] integerValue];
