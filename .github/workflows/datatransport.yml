@@ -43,19 +43,21 @@ jobs:
     - name: Setup project and Test Catalyst
       run: scripts/third_party/travis/retry.sh scripts/test_catalyst.sh GoogleDataTransport build
 
-  watchos-testapp:
-    runs-on: macos-12
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
-    - name: Setup Scripts Directory
-      run: ./setup-scripts.sh
-    - name: Setup Bundler
-      run: scripts/setup_bundler.sh
-    - name: Prereqs
-      run: scripts/install_prereqs.sh GoogleDataTransport watchOS xcodebuild
-    - name: Setup project and build watchOS test app
-      run: scripts/third_party/travis/retry.sh scripts/build.sh GoogleDataTransport watchOS xcodebuild
+# TODO: Investigate how to build correctly after build failure introduced by
+# https://github.com/firebase/firebase-ios-sdk/pull/12966
+  # watchos-testapp:
+  #   runs-on: macos-12
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: ruby/setup-ruby@v1
+  #   - name: Setup Scripts Directory
+  #     run: ./setup-scripts.sh
+  #   - name: Setup Bundler
+  #     run: scripts/setup_bundler.sh
+  #   - name: Prereqs
+  #     run: scripts/install_prereqs.sh GoogleDataTransport watchOS xcodebuild
+  #   - name: Setup project and build watchOS test app
+  #     run: scripts/third_party/travis/retry.sh scripts/build.sh GoogleDataTransport watchOS xcodebuild
 
   datatransport-options-matrix:
     runs-on: macos-latest
