@@ -31,7 +31,8 @@ Shared library for iOS SDK data transport needs.
   s.prefix_header_file = false
 
   s.source_files = ['GoogleDataTransport/GDTCORLibrary/**/*',
-                    'GoogleDataTransport/GDTCCTLibrary/**/*']
+                    'GoogleDataTransport/GDTCCTLibrary/**/*',
+                    'third_party/GDTCORClockUtils/**/*.[mh]']
   s.public_header_files = 'GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/*.h'
   s.ios.frameworks = 'SystemConfiguration', 'CoreTelephony'
   s.osx.frameworks = 'SystemConfiguration', 'CoreTelephony'

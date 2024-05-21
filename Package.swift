@@ -51,6 +51,7 @@ let package = Package(
         .product(name: "nanopb", package: "nanopb"),
         .product(name: "FBLPromises", package: "Promises"),
         .product(name: "GULEnvironment", package: "GoogleUtilities"),
+        "third-party-GDTCORClockUtils",
       ],
       path: "GoogleDataTransport",
       exclude: [
@@ -79,6 +80,15 @@ let package = Package(
       linkerSettings: [
         .linkedFramework("SystemConfiguration", .when(platforms: [.iOS, .macOS, .tvOS, .catalyst])),
         .linkedFramework("CoreTelephony", .when(platforms: [.macOS, .iOS, .catalyst])),
+      ]
+    ),
+    .target(
+      name: "third-party-GDTCORClockUtils",
+      path: "third_party/GDTCORClockUtils",
+      exclude: ["LICENSE"],
+      publicHeadersPath: "Public",
+      cSettings: [
+        .headerSearchPath("../../"),
       ]
     ),
     .testTarget(
