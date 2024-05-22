@@ -18,6 +18,8 @@
 
 #import <sys/sysctl.h>
 
+#import "third_party/GDTCORClockUtils/Public/GDTCORClockUtils.h"
+
 // Using a monotonic clock is necessary because CFAbsoluteTimeGetCurrent(), NSDate, and related all
 // are subject to drift. That it to say, multiple consecutive calls do not always result in a
 // time that is in the future. Clocks may be adjusted by the user, NTP, or any number of external
@@ -35,53 +37,14 @@
 // Note: Much of the mach time stuff doesn't work properly in the simulator. So this class can be
 // difficult to unit test.
 
-/** Returns the kernel boottime property from sysctl.
- *
- * Inspired by https://stackoverflow.com/a/40497811
- *
- * @return The KERN_BOOTTIME property from sysctl, in nanoseconds.
- */
-static int64_t KernelBootTimeInNanoseconds(void) {
-  // Caching the result is not possible because clock drift would not be accounted for.
-  struct timeval boottime;
-  int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-  size_t size = sizeof(boottime);
-  int rc = sysctl(mib, 2, &boottime, &size, NULL, 0);
-  if (rc != 0) {
-    return 0;
-  }
-  return (int64_t)boottime.tv_sec * NSEC_PER_SEC + (int64_t)boottime.tv_usec * NSEC_PER_USEC;
-}
-
-/** Returns value of gettimeofday, in nanoseconds.
- *
- * Inspired by https://stackoverflow.com/a/40497811
- *
- * @return The value of gettimeofday, in nanoseconds.
- */
-static int64_t UptimeInNanoseconds(void) {
-  int64_t before_now_nsec;
-  int64_t after_now_nsec;
-  struct timeval now;
-
-  before_now_nsec = KernelBootTimeInNanoseconds();
-  // Addresses a race condition in which the system time has updated, but the boottime has not.
-  do {
-    gettimeofday(&now, NULL);
-    after_now_nsec = KernelBootTimeInNanoseconds();
-  } while (after_now_nsec != before_now_nsec);
-  return (int64_t)now.tv_sec * NSEC_PER_SEC + (int64_t)now.tv_usec * NSEC_PER_USEC -
-         before_now_nsec;
-}
-
 // TODO: Consider adding a 'trustedTime' property that can be populated by the response from a BE.
 @implementation GDTCORClock
 
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _kernelBootTimeNanoseconds = KernelBootTimeInNanoseconds();
-    _uptimeNanoseconds = UptimeInNanoseconds();
+    _kernelBootTimeNanoseconds = GDTCORKernelBootTimeInNanoseconds();
+    _uptimeNanoseconds = GDTCORUptimeInNanoseconds();
     _timeMillis =
         (int64_t)((CFAbsoluteTimeGetCurrent() + kCFAbsoluteTimeIntervalSince1970) * NSEC_PER_USEC);
     _timezoneOffsetSeconds = [[NSTimeZone systemTimeZone] secondsFromGMT];
