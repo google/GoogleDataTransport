@@ -94,7 +94,7 @@ The release process is as follows:
   > before proceeding.
 
   ```console
-  pod trunk push ~/.cocoapods/repos/staging/GoogleDataTransport/{version}/GoogleDataTransport.podspec --skip-tests
+  pod trunk push ~/.cocoapods/repos/staging/GoogleDataTransport/{version}/GoogleDataTransport.podspec.json --skip-tests
   ```
 
   The pod push was successful if the above command logs: `🚀  GoogleDataTransport ({version}) successfully published`.
