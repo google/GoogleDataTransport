@@ -40,7 +40,7 @@ let package = Package(
     .package(
       name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
-      "7.2.1" ..< "8.0.0"
+      "8.0.0" ..< "9.0.0"
     ),
   ],
   // TODO: Restructure directory structure to simplify the excludes here.
