@@ -40,7 +40,8 @@ let package = Package(
     .package(
       name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
-      "8.0.0" ..< "9.0.0"
+      // TODO: Update to '"8.0.0" ..< "9.0.0"' when ready.
+      branch: "release-8.0"
     ),
   ],
   // TODO: Restructure directory structure to simplify the excludes here.
