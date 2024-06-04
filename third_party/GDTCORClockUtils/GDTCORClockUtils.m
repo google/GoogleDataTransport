@@ -1,6 +1,6 @@
 #import <sys/sysctl.h>
 
-#include <dispatch/dispatch.h>
+#include <dispatch/time.h>
 
 // Using a monotonic clock is necessary because CFAbsoluteTimeGetCurrent(), NSDate, and related all
 // are subject to drift. That it to say, multiple consecutive calls do not always result in a
