@@ -15,10 +15,10 @@ Shared library for iOS SDK data transport needs.
     :tag => 'CocoaPods-' + s.version.to_s
   }
 
-  ios_deployment_target = '9.0'
-  osx_deployment_target = '10.12'
-  tvos_deployment_target = '10.0'
-  watchos_deployment_target = '6.0'
+  ios_deployment_target = '12.0'
+  osx_deployment_target = '10.15'
+  tvos_deployment_target = '13.0'
+  watchos_deployment_target = '7.0'
 
   s.ios.deployment_target = ios_deployment_target
   s.osx.deployment_target = osx_deployment_target
@@ -40,8 +40,8 @@ Shared library for iOS SDK data transport needs.
   s.libraries = ['z']
 
   s.dependency 'GoogleUtilities/Environment', '~> 8.0'
-  s.dependency 'nanopb', '>= 2.30908.0', '< 2.30911.0'
-  s.dependency 'PromisesObjC', '>= 1.2', '< 3.0'
+  s.dependency 'nanopb', '~> 3.30910.0'
+  s.dependency 'PromisesObjC', '~> 2.4'
 
   header_search_paths = {
     'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/"'

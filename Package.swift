@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // Copyright 2021 Google LLC
@@ -19,7 +19,7 @@ import PackageDescription
 
 let package = Package(
   name: "GoogleDataTransport",
-  platforms: [.iOS(.v10), .macOS(.v10_12), .tvOS(.v10), .watchOS(.v6)],
+  platforms: [.iOS(.v12), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v7)],
   products: [
     .library(
       name: "GoogleDataTransport",
@@ -28,20 +28,17 @@ let package = Package(
   ],
   dependencies: [
     .package(
-      name: "nanopb",
       url: "https://github.com/firebase/nanopb.git",
       "2.30908.0" ..< "2.30911.0"
     ),
     .package(
-      name: "Promises",
       url: "https://github.com/google/promises.git",
-      "1.2.8" ..< "3.0.0"
+      "2.4.0" ..< "3.0.0"
     ),
     .package(
-      name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
       // TODO: Update to '"8.0.0" ..< "9.0.0"' when ready.
-      .branch("release-8.0")
+      branch: "release-8.0"
     ),
   ],
   // TODO: Restructure directory structure to simplify the excludes here.

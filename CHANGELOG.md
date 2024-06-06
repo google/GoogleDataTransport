@@ -1,5 +1,12 @@
-# Unreleased
+# v10.0.0
 - Fix null pointer warning from profiler. (#124)
+- [changed] **Breaking change**: Platform Minimum supported version updates:
+    - | Platform  | GoogleUtilities 8.0|
+      | ------------- | ------------- |
+      | iOS  | **12.0**  |
+      | tvOS  | **13.0**  |
+      | macOS  | **10.15**  |
+      | watchOS  | **7.0**  |
 
 # v9.4.1 (CocoaPods Only)
 - The v9.4.0 podspec did not include the intended dependency range for nanopb

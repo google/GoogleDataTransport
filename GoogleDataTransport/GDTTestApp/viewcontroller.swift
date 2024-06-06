@@ -64,28 +64,20 @@ public extension ViewController {
   }
 
   @IBAction func generateTestEvents(button: UIButton) {
-    if #available(iOS 12.0, *) {
-      let numberOfEvents = 10000
-      set(status: "Generating \(numberOfEvents) events")
+    let numberOfEvents = 10000
+    set(status: "Generating \(numberOfEvents) events")
 
-      EventCleanupPerfTest.generateTestEvents(count: numberOfEvents) {
-        self.set(status: "Generated \(numberOfEvents) events")
-      }
-    } else {
-      print("Performance testing set up for iOS 12.0 and later")
+    EventCleanupPerfTest.generateTestEvents(count: numberOfEvents) {
+      self.set(status: "Generated \(numberOfEvents) events")
     }
   }
 
   @IBAction func runEventCleanupPerformanceTest(button: UIButton) {
-    if #available(iOS 12.0, *) {
-      set(status: "Event Cleanup Performance Test started")
-      EventCleanupPerfTest.run {
-        DispatchQueue.main.async {
-          self.set(status: "Event Cleanup Performance Test finished")
-        }
+    set(status: "Event Cleanup Performance Test started")
+    EventCleanupPerfTest.run {
+      DispatchQueue.main.async {
+        self.set(status: "Event Cleanup Performance Test finished")
       }
-    } else {
-      print("Performance testing set up for iOS 12.0 and later")
     }
   }
 
