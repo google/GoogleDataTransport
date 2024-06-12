@@ -1,7 +1,7 @@
 # v10.0.0
 - Fix null pointer warning from profiler. (#124)
 - [changed] **Breaking change**: Platform Minimum supported version updates:
-    - | Platform  | GoogleUtilities 8.0|
+    - | Platform  | GoogleDataTransport 10.0|
       | ------------- | ------------- |
       | iOS  | **12.0**  |
       | tvOS  | **13.0**  |

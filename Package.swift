@@ -35,11 +35,6 @@ let package = Package(
       url: "https://github.com/google/promises.git",
       "2.4.0" ..< "3.0.0"
     ),
-    .package(
-      url: "https://github.com/google/GoogleUtilities.git",
-      // TODO: Update to '"8.0.0" ..< "9.0.0"' when ready.
-      branch: "release-8.0"
-    ),
   ],
   // TODO: Restructure directory structure to simplify the excludes here.
   targets: [
@@ -48,7 +43,6 @@ let package = Package(
       dependencies: [
         .product(name: "nanopb", package: "nanopb"),
         .product(name: "FBLPromises", package: "Promises"),
-        .product(name: "GULEnvironment", package: "GoogleUtilities"),
       ],
       path: "GoogleDataTransport",
       exclude: [
