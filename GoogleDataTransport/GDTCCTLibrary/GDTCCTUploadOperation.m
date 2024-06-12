@@ -34,11 +34,11 @@
 #import <nanopb/pb_decode.h>
 #import <nanopb/pb_encode.h>
 
-#import <GoogleUtilities/GULURLSessionDataResponse.h>
-#import <GoogleUtilities/NSURLSession+GULPromises.h>
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTCompressionHelper.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
+#import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTURLSessionDataResponse.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCOREvent+GDTMetricsSupport.h"
+#import "GoogleDataTransport/GDTCCTLibrary/Private/NSURLSession+GDTCCTPromises.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
@@ -227,7 +227,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   // 1. Send URL request.
   return [self sendURLRequestWithBatch:batch target:target]
       .thenOn(self.uploaderQueue,
-              ^FBLPromise *(GULURLSessionDataResponse *response) {
+              ^FBLPromise *(GDTCCTURLSessionDataResponse *response) {
                 // 2. Update the next upload time and process response.
                 [self updateNextUploadTimeWithResponse:response forTarget:target];
 
@@ -246,7 +246,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 }
 
 /** Processes a URL session response for a given batch from storage. */
-- (FBLPromise<NSNull *> *)processResponse:(GULURLSessionDataResponse *)response
+- (FBLPromise<NSNull *> *)processResponse:(GDTCCTURLSessionDataResponse *)response
                                  forBatch:(GDTCORUploadBatch *)batch
                                   storage:(id<GDTCORStoragePromiseProtocol>)storage {
   // Cleanup batch based on the response's status code.
@@ -286,8 +286,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 }
 
 /** Composes and sends URL request. */
-- (FBLPromise<GULURLSessionDataResponse *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
-                                                              target:(GDTCORTarget)target {
+- (FBLPromise<GDTCCTURLSessionDataResponse *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
+                                                                 target:(GDTCORTarget)target {
   return [FBLPromise
              onQueue:self.uploaderQueue
                   do:^NSURLRequest * {
@@ -307,13 +307,13 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
                     return request;
                   }]
       .thenOn(self.uploaderQueue,
-              ^FBLPromise<GULURLSessionDataResponse *> *(NSURLRequest *request) {
+              ^FBLPromise<GDTCCTURLSessionDataResponse *> *(NSURLRequest *request) {
                 // 2. Send URL request.
-                return
-                    [[self uploaderSessionCreateIfNeeded] gul_dataTaskPromiseWithRequest:request];
+                return [[self uploaderSessionCreateIfNeeded]
+                    gdtcct_dataTaskPromiseWithRequest:request];
               })
       .thenOn(self.uploaderQueue,
-              ^GULURLSessionDataResponse *(GULURLSessionDataResponse *response) {
+              ^GDTCCTURLSessionDataResponse *(GDTCCTURLSessionDataResponse *response) {
                 // Invalidate session to release the delegate (which is `self`) to break the retain
                 // cycle.
                 [self.uploaderSession finishTasksAndInvalidate];
@@ -328,7 +328,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 }
 
 /** Parses server response and update next upload time for the specified target based on it. */
-- (void)updateNextUploadTimeWithResponse:(GULURLSessionDataResponse *)response
+- (void)updateNextUploadTimeWithResponse:(GDTCCTURLSessionDataResponse *)response
                                forTarget:(GDTCORTarget)target {
   GDTCORClock *futureUploadTime;
   if (response.HTTPBody) {
