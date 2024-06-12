@@ -34,11 +34,11 @@
 #import <nanopb/pb_decode.h>
 #import <nanopb/pb_encode.h>
 
-#import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTURLSessionDataResponse.h"
-#import "GoogleDataTransport/GDTCCTLibrary/Private/NSURLSession+GDTCCTPromises.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTCompressionHelper.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
+#import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTURLSessionDataResponse.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCOREvent+GDTMetricsSupport.h"
+#import "GoogleDataTransport/GDTCCTLibrary/Private/NSURLSession+GDTCCTPromises.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
@@ -287,7 +287,7 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 
 /** Composes and sends URL request. */
 - (FBLPromise<GDTCCTURLSessionDataResponse *> *)sendURLRequestWithBatch:(GDTCORUploadBatch *)batch
-                                                              target:(GDTCORTarget)target {
+                                                                 target:(GDTCORTarget)target {
   return [FBLPromise
              onQueue:self.uploaderQueue
                   do:^NSURLRequest * {
@@ -309,8 +309,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       .thenOn(self.uploaderQueue,
               ^FBLPromise<GDTCCTURLSessionDataResponse *> *(NSURLRequest *request) {
                 // 2. Send URL request.
-                return
-                    [[self uploaderSessionCreateIfNeeded] gdtcct_dataTaskPromiseWithRequest:request];
+                return [[self uploaderSessionCreateIfNeeded]
+                    gdtcct_dataTaskPromiseWithRequest:request];
               })
       .thenOn(self.uploaderQueue,
               ^GDTCCTURLSessionDataResponse *(GDTCCTURLSessionDataResponse *response) {
