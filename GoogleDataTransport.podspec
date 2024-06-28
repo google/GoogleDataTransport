@@ -55,7 +55,7 @@ Shared library for iOS SDK data transport needs.
   # (or larger) fields, so we'd have to set at least PB_FIELD_16BIT
   # anyways.)
   preprocessor_definitions =
-      'PB_FIELD_32BIT=1 PB_NO_PACKED_STRUCTS=1 PB_ENABLE_MALLOC=1'\
+      'PB_FIELD_32BIT=1 PB_NO_PACKED_STRUCTS=1 PB_ENABLE_MALLOC=1' \
       'GDTCOR_VERSION=' + s.version.to_s
 
   if ENV['GDT_TEST'] && ENV['GDT_TEST'] == '1' then
