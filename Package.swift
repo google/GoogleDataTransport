@@ -29,7 +29,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/firebase/nanopb.git",
-      "2.30908.0" ..< "2.30911.0"
+      "2.30910.0" ..< "2.30911.0"
     ),
     .package(
       url: "https://github.com/google/promises.git",
