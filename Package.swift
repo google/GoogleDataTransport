@@ -69,7 +69,10 @@ let package = Package(
         .define("PB_ENABLE_MALLOC", to: "1"),
       ],
       linkerSettings: [
-        .linkedFramework("SystemConfiguration", .when(platforms: [.iOS, .macOS, .tvOS, .macCatalyst])),
+        .linkedFramework(
+          "SystemConfiguration",
+          .when(platforms: [.iOS, .macOS, .tvOS, .macCatalyst])
+        ),
         .linkedFramework("CoreTelephony", .when(platforms: [.macOS, .iOS, .macCatalyst])),
       ]
     ),
