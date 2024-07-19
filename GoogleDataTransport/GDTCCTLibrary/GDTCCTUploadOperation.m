@@ -38,7 +38,6 @@
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTURLSessionDataResponse.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCOREvent+GDTMetricsSupport.h"
-#import "GoogleDataTransport/GDTCCTLibrary/Private/NSURLSession+GDTCCTPromises.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
@@ -309,8 +308,23 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       .thenOn(self.uploaderQueue,
               ^FBLPromise<GDTCCTURLSessionDataResponse *> *(NSURLRequest *request) {
                 // 2. Send URL request.
-                return [[self uploaderSessionCreateIfNeeded]
-                    gdtcct_dataTaskPromiseWithRequest:request];
+                NSURLSession *session = [self uploaderSessionCreateIfNeeded];
+                return [FBLPromise wrapObjectOrErrorCompletion:^(
+                                       FBLPromiseObjectOrErrorCompletion _Nonnull handler) {
+                  [[session dataTaskWithRequest:request
+                              completionHandler:^(NSData *_Nullable data,
+                                                  NSURLResponse *_Nullable response,
+                                                  NSError *_Nullable error) {
+                                if (error) {
+                                  handler(nil, error);
+                                } else {
+                                  handler([[GDTCCTURLSessionDataResponse alloc]
+                                              initWithResponse:(NSHTTPURLResponse *)response
+                                                      HTTPBody:data],
+                                          nil);
+                                }
+                              }] resume];
+                }];
               })
       .thenOn(self.uploaderQueue,
               ^GDTCCTURLSessionDataResponse *(GDTCCTURLSessionDataResponse *response) {
