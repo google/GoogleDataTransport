@@ -647,6 +647,22 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
   }
 }
 
+#pragma mark - Force Category Linking
+
+extern void GDTCCTInclude_GDTCOREvent_GDTCCTSupport_Category(void);
+extern void GDTCCTInclude_GDTCOREvent_GDTMetricsSupport_Category(void);
+extern void GDTCCTInclude_GDTCORLogSourceMetrics_Internal_Category(void);
+
+/// Does nothing when called, and not meant to be called.
+///
+/// This method forces the linker to include categories even if
+/// users do not include the '-ObjC' linker flag in their project.
++ (void)noop {
+  GDTCCTInclude_GDTCOREvent_GDTCCTSupport_Category();
+  GDTCCTInclude_GDTCOREvent_GDTMetricsSupport_Category();
+  GDTCCTInclude_GDTCORLogSourceMetrics_Internal_Category();
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
