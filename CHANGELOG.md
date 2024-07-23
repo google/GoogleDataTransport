@@ -1,3 +1,8 @@
+# v10.1.0
+- Fix `[FBLPromise HTTPBody]` SwiftUI Previews crash when using binary
+  distribution. ([firebase-ios-sdk/#13318](https://github.com/firebase/firebase-ios-sdk/issues/13318),
+  [firebase-ios-sdk/#11733](https://github.com/firebase/firebase-ios-sdk/issues/11733))
+
 # v10.0.0
 - Fix null pointer warning from profiler. (#124)
 - [changed] **Breaking change**: Platform Minimum supported version updates:

@@ -38,7 +38,6 @@
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTURLSessionDataResponse.h"
 #import "GoogleDataTransport/GDTCCTLibrary/Private/GDTCOREvent+GDTMetricsSupport.h"
-#import "GoogleDataTransport/GDTCCTLibrary/Private/NSURLSession+GDTCCTPromises.h"
 
 #import "GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h"
 
@@ -309,8 +308,23 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       .thenOn(self.uploaderQueue,
               ^FBLPromise<GDTCCTURLSessionDataResponse *> *(NSURLRequest *request) {
                 // 2. Send URL request.
-                return [[self uploaderSessionCreateIfNeeded]
-                    gdtcct_dataTaskPromiseWithRequest:request];
+                NSURLSession *session = [self uploaderSessionCreateIfNeeded];
+                return [FBLPromise wrapObjectOrErrorCompletion:^(
+                                       FBLPromiseObjectOrErrorCompletion _Nonnull handler) {
+                  [[session dataTaskWithRequest:request
+                              completionHandler:^(NSData *_Nullable data,
+                                                  NSURLResponse *_Nullable response,
+                                                  NSError *_Nullable error) {
+                                if (error) {
+                                  handler(nil, error);
+                                } else {
+                                  handler([[GDTCCTURLSessionDataResponse alloc]
+                                              initWithResponse:(NSHTTPURLResponse *)response
+                                                      HTTPBody:data],
+                                          nil);
+                                }
+                              }] resume];
+                }];
               })
       .thenOn(self.uploaderQueue,
               ^GDTCCTURLSessionDataResponse *(GDTCCTURLSessionDataResponse *response) {
@@ -631,6 +645,22 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       _finished = YES;
     }
   }
+}
+
+#pragma mark - Force Category Linking
+
+extern void GDTCCTInclude_GDTCOREvent_GDTCCTSupport_Category(void);
+extern void GDTCCTInclude_GDTCOREvent_GDTMetricsSupport_Category(void);
+extern void GDTCCTInclude_GDTCORLogSourceMetrics_Internal_Category(void);
+
+/// Does nothing when called, and not meant to be called.
+///
+/// This method forces the linker to include categories even if
+/// users do not include the '-ObjC' linker flag in their project.
++ (void)noop {
+  GDTCCTInclude_GDTCOREvent_GDTCCTSupport_Category();
+  GDTCCTInclude_GDTCOREvent_GDTMetricsSupport_Category();
+  GDTCCTInclude_GDTCORLogSourceMetrics_Internal_Category();
 }
 
 @end
