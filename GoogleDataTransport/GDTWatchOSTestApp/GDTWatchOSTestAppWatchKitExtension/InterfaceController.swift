@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import WatchKit
-import Foundation
 import Dispatch
+import Foundation
+import WatchKit
 
 import GoogleDataTransport
 

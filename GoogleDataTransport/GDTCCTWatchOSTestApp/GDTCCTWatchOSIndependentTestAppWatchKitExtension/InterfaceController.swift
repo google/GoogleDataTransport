@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import WatchKit
 import Foundation
 import GoogleDataTransport
+import WatchKit
 
 class InterfaceController: WKInterfaceController {
   var transport = GDTCORTransport(mappingID: "1018", transformers: nil, target: GDTCORTarget.FLL)!

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import Foundation
 import Dispatch
+import Foundation
 import GoogleDataTransport
 
 public extension ViewController {
