@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import UserNotifications
 import FirebaseMessaging
 import GoogleDataTransport
+import UserNotifications
 
 class NotificationService: UNNotificationServiceExtension {
   var contentHandler: ((UNNotificationContent) -> Void)?
