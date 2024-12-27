@@ -41,7 +41,7 @@ jobs:
     - name: Setup Bundler
       run: scripts/setup_bundler.sh
     - name: Setup project and Test Catalyst
-      run: scripts/third_party/travis/retry.sh scripts/test_catalyst.sh GoogleDataTransport build analyze
+      run: scripts/third_party/travis/retry.sh scripts/test_catalyst.sh GoogleDataTransport build
 
 # TODO: Investigate how to build correctly after build failure introduced by
 # https://github.com/firebase/firebase-ios-sdk/pull/12966
@@ -78,4 +78,4 @@ jobs:
       run: ./scripts/setup_bundler.sh
     - name: PodLibLint DataTransport Cron
       run: |
-        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }} ${{ matrix.flags }}
+        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }} ${{ matrix.flags }} --analyze
