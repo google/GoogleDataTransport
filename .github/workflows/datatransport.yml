@@ -29,7 +29,7 @@ jobs:
       run: ./scripts/setup_bundler.sh
     - name: PodLibLint DataTransport
       run: |
-        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }}
+        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }} --analyze
 
   catalyst:
     runs-on: macOS-latest
@@ -78,4 +78,4 @@ jobs:
       run: ./scripts/setup_bundler.sh
     - name: PodLibLint DataTransport Cron
       run: |
-        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }} ${{ matrix.flags }}
+        scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb GoogleDataTransport.podspec --platforms=${{ matrix.target }} ${{ matrix.flags }} --analyze
