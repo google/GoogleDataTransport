@@ -208,14 +208,6 @@ Alternatively disable signing in each target:
 
 See [firebase-ios-sdk's code formatting docs][firebase-ios-sdk-formatting].
 
-GitHub Actions will verify that any code changes are done in a style compliant
-way. Install `clang-format` and `mint`:
-
-```console
-brew install clang-format@19
-brew install mint
-```
-
 ### Running Unit Tests
 
 Select a scheme and press Command-u to build a component and run its unit tests.
