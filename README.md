@@ -206,9 +206,7 @@ Alternatively disable signing in each target:
 
 ### Code Formatting
 
-To ensure that the code is formatted consistently, run the script
-[./scripts/check.sh](https://github.com/firebase/firebase-ios-sdk/blob/main/scripts/check.sh)
-before creating a PR.
+See [firebase-ios-sdk's code formatting docs][firebase-ios-sdk-formatting].
 
 GitHub Actions will verify that any code changes are done in a style compliant
 way. Install `clang-format` and `mint`:
@@ -234,3 +232,4 @@ The contents of this repository is licensed under the
 
 [gh-actions]: https://github.com/firebase/firebase-ios-sdk/actions
 [gh-datatransport-badge]: https://github.com/firebase/firebase-ios-sdk/workflows/datatransport/badge.svg
+[firebase-ios-sdk-formatting]: https://github.com/firebase/firebase-ios-sdk?tab=readme-ov-file#code-formatting
