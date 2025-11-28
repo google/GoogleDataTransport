@@ -39,8 +39,7 @@
                             withIntermediateDirectories:YES
                                              attributes:nil
                                                   error:nil];
-  GDTCORDirectorySizeTracker *sut =
-      [[GDTCORDirectorySizeTracker alloc] initWithDirectoryPath:dir];
+  GDTCORDirectorySizeTracker *sut = [[GDTCORDirectorySizeTracker alloc] initWithDirectoryPath:dir];
   [[NSFileManager defaultManager] removeItemAtPath:dir error:nil];
 
   // When
