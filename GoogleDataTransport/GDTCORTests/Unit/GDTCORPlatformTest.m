@@ -78,4 +78,26 @@
   XCTAssertNoThrow([application endBackgroundTask:bgID]);
 }
 
+- (void)testGDTCORWriteDataToFile {
+  NSString *directoryPath =
+      [NSTemporaryDirectory() stringByAppendingPathComponent:@"testGDTCORWriteDataToFile"];
+  NSString *filePath = [directoryPath stringByAppendingPathComponent:@"testFile.txt"];
+  NSData *data = [@"testData" dataUsingEncoding:NSUTF8StringEncoding];
+
+  // Clean up any old test artifacts.
+  [[NSFileManager defaultManager] removeItemAtPath:directoryPath error:nil];
+
+  // Write the data to the file.
+  NSError *error;
+  XCTAssertTrue(GDTCORWriteDataToFile(data, filePath, &error));
+  XCTAssertNil(error);
+
+  // Verify that the file was created and contains the correct data.
+  NSData *readData = [NSData dataWithContentsOfFile:filePath];
+  XCTAssertEqualObjects(data, readData);
+
+  // Clean up the test artifacts.
+  [[NSFileManager defaultManager] removeItemAtPath:directoryPath error:nil];
+}
+
 @end

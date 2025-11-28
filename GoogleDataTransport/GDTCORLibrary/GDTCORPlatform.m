@@ -232,28 +232,32 @@ id<NSSecureCoding> _Nullable GDTCORDecodeArchive(Class archiveClass,
 }
 
 BOOL GDTCORWriteDataToFile(NSData *data, NSString *filePath, NSError *_Nullable *outError) {
-  BOOL result = NO;
-  if (filePath.length > 0) {
-    result = [[NSFileManager defaultManager]
-              createDirectoryAtPath:[filePath stringByDeletingLastPathComponent]
-        withIntermediateDirectories:YES
-                         attributes:nil
-                              error:outError];
-    if (result == NO || *outError) {
-      GDTCORLogDebug(@"Attempt to create directory failed: path:%@ error:%@", filePath, *outError);
-      return result;
+  if (filePath.length == 0) {
+    return NO;
+  }
+  NSString *directoryPath = [filePath stringByDeletingLastPathComponent];
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+  if (![fileManager fileExistsAtPath:directoryPath]) {
+    NSError *error = nil;
+    if (![fileManager createDirectoryAtPath:directoryPath
+                withIntermediateDirectories:YES
+                                 attributes:nil
+                                      error:&error]) {
+      GDTCORLogDebug(@"Attempt to create directory failed: path:%@ error:%@", directoryPath, error);
+      if (outError) {
+        *outError = error;
+      }
+      return NO;
     }
   }
 
-  if (filePath.length > 0) {
-    result = [data writeToFile:filePath options:NSDataWritingAtomic error:outError];
-    if (result == NO || *outError) {
-      GDTCORLogDebug(@"Attempt to write archive failed: path:%@ error:%@", filePath, *outError);
-    } else {
-      GDTCORLogDebug(@"Writing archive succeeded: %@", filePath);
-    }
+  BOOL result = [data writeToFile:filePath options:NSDataWritingAtomic error:outError];
+  if (result == NO) {
+    GDTCORLogDebug(@"Attempt to write archive failed: path:%@ error:%@", filePath,
+                   outError ? *outError : nil);
+  } else {
+    GDTCORLogDebug(@"Writing archive succeeded: %@", filePath);
   }
-
   return result;
 }
 
