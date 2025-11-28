@@ -76,7 +76,7 @@
       includingPropertiesForKeys:prefetchedProperties
                          options:NSDirectoryEnumerationSkipsHiddenFiles
                     errorHandler:^BOOL(NSURL *_Nonnull url, NSError *_Nonnull error) {
-                      return YES;
+                      return NO;
                     }];
 
   for (NSURL *fileURL in enumerator) {

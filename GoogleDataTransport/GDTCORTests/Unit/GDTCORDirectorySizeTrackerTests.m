@@ -32,4 +32,22 @@
   XCTAssertNoThrow([tracker directoryContentSize]);
 }
 
+- (void)testDirectoryContentSizeReturnsZeroWhenError {
+  // Given
+  NSString *dir = [NSTemporaryDirectory() stringByAppendingPathComponent:@"a"];
+  [[NSFileManager defaultManager] createDirectoryAtPath:dir
+                            withIntermediateDirectories:YES
+                                             attributes:nil
+                                                  error:nil];
+  GDTCORDirectorySizeTracker *sut =
+      [[GDTCORDirectorySizeTracker alloc] initWithDirectoryPath:dir];
+  [[NSFileManager defaultManager] removeItemAtPath:dir error:nil];
+
+  // When
+  GDTCORStorageSizeBytes size = [sut directoryContentSize];
+
+  // Then
+  XCTAssertEqual(size, 0);
+}
+
 @end
