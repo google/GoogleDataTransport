@@ -777,7 +777,6 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 }
 
 - (void)testBackgroundTaskExpirationFinishesOperation {
-
   // 1. Swizzle the background task method.
 
   Method originalMethod = class_getInstanceMethod(
@@ -786,17 +785,14 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 
   Method swizzledMethod =
 
-      class_getInstanceMethod([self class], @selector(gdt_test_beginBackgroundTaskWithName:expirationHandler:));
+      class_getInstanceMethod([self class], @selector(gdt_test_beginBackgroundTaskWithName:
+                                                                         expirationHandler:));
 
   method_exchangeImplementations(originalMethod, swizzledMethod);
-
-
 
   // 2. Generate a test event.
 
   [self.generator generateEvent:GDTCOREventQoSFast];
-
-
 
   // 3. Set up inverted expectations.
 
@@ -808,27 +804,19 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 
   self.testStorage.removeBatchAndDeleteEventsExpectation.inverted = YES;
 
-
-
   XCTestExpectation *hasEventsExpectation =
 
       [self expectStorageHasEventsForTarget:self.generator.target result:YES];
 
   hasEventsExpectation.inverted = YES;
 
-
-
   // 4. Start the upload.
 
   [self.uploader uploadTarget:self.generator.target withConditions:GDTCORUploadConditionWifiData];
 
-
-
   // 5. Wait for the upload to finish.
 
   [self waitForUploadOperationsToFinish:self.uploader];
-
-
 
   // 6. Wait for all expectations to be fulfilled.
 
@@ -846,12 +834,9 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 
                     timeout:0.5];
 
-
-
   // 7. Unswizzle the background task method.
 
   method_exchangeImplementations(swizzledMethod, originalMethod);
-
 }
 
 #pragma mark - Swizzled Methods
