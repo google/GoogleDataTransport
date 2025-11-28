@@ -135,10 +135,8 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
       beginBackgroundTaskWithName:@"GDTCCTUploader-upload"
                 expirationHandler:^{
                   if (backgroundTaskID != GDTCORBackgroundIdentifierInvalid) {
-                    // Finish the operation.
-                    [self finishOperation];
-                    // End the background task.
-                    backgroundTaskCompletion();
+                    // Cancel the upload and complete delivery.
+                    [self cancel];
                   } else {
                     GDTCORLog(GDTCORMCDDebugLog, GDTCORLoggingLevelWarnings,
                               @"Attempted to cancel invalid background task in "

@@ -777,40 +777,81 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
 }
 
 - (void)testBackgroundTaskExpirationFinishesOperation {
+
   // 1. Swizzle the background task method.
+
   Method originalMethod = class_getInstanceMethod(
+
       [GDTCORApplication class], @selector(beginBackgroundTaskWithName:expirationHandler:));
-  Method swizzledMethod = class_getInstanceMethod(
-      [self class], @selector(gdt_test_beginBackgroundTaskWithName:expirationHandler:));
+
+  Method swizzledMethod =
+
+      class_getInstanceMethod([self class], @selector(gdt_test_beginBackgroundTaskWithName:expirationHandler:));
+
   method_exchangeImplementations(originalMethod, swizzledMethod);
 
+
+
   // 2. Generate a test event.
+
   [self.generator generateEvent:GDTCOREventQoSFast];
 
-  // 3. Set up expectations.
+
+
+  // 3. Set up inverted expectations.
+
   [self setUpStorageExpectations];
+
+  self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = YES;
+
+  self.testStorage.batchWithEventSelectorExpectation.inverted = YES;
+
   self.testStorage.removeBatchAndDeleteEventsExpectation.inverted = YES;
 
-  // 4. Expect hasEventsForTarget:onComplete: to be called.
+
+
   XCTestExpectation *hasEventsExpectation =
+
       [self expectStorageHasEventsForTarget:self.generator.target result:YES];
 
-  // 5. Start the upload.
+  hasEventsExpectation.inverted = YES;
+
+
+
+  // 4. Start the upload.
+
   [self.uploader uploadTarget:self.generator.target withConditions:GDTCORUploadConditionWifiData];
 
-  // 6. Wait for the upload to finish.
+
+
+  // 5. Wait for the upload to finish.
+
   [self waitForUploadOperationsToFinish:self.uploader];
 
-  // 7. Wait for all expectations to be fulfilled.
-  [self waitForExpectations:@[
-    hasEventsExpectation,
-    self.testStorage.batchWithEventSelectorExpectation,
-    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
-  ]
-                    timeout:1];
 
-  // 8. Unswizzle the background task method.
+
+  // 6. Wait for all expectations to be fulfilled.
+
+  [self waitForExpectations:@[
+
+    hasEventsExpectation,
+
+    self.testStorage.batchWithEventSelectorExpectation,
+
+    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
+
+    self.testStorage.removeBatchAndDeleteEventsExpectation,
+
+  ]
+
+                    timeout:0.5];
+
+
+
+  // 7. Unswizzle the background task method.
+
   method_exchangeImplementations(swizzledMethod, originalMethod);
+
 }
 
 #pragma mark - Swizzled Methods
