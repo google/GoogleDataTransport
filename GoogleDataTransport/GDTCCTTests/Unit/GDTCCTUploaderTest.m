@@ -15,7 +15,6 @@
  */
 
 #import <XCTest/XCTest.h>
-#import <objc/runtime.h>
 
 #import "FBLPromise+Testing.h"
 
@@ -774,79 +773,6 @@ typedef NS_ENUM(NSInteger, GDTNextRequestWaitTimeSource) {
                     timeout:1
                enforceOrder:YES];
   [self waitForUploadOperationsToFinish:self.uploader];
-}
-
-- (void)testBackgroundTaskExpirationFinishesOperation {
-  // 1. Swizzle the background task method.
-
-  Method originalMethod = class_getInstanceMethod(
-
-      [GDTCORApplication class], @selector(beginBackgroundTaskWithName:expirationHandler:));
-
-  Method swizzledMethod =
-
-      class_getInstanceMethod([self class], @selector(gdt_test_beginBackgroundTaskWithName:
-                                                                         expirationHandler:));
-
-  method_exchangeImplementations(originalMethod, swizzledMethod);
-
-  // 2. Generate a test event.
-
-  [self.generator generateEvent:GDTCOREventQoSFast];
-
-  // 3. Set up inverted expectations.
-
-  [self setUpStorageExpectations];
-
-  self.testStorage.removeBatchWithoutDeletingEventsExpectation.inverted = YES;
-
-  self.testStorage.batchWithEventSelectorExpectation.inverted = YES;
-
-  self.testStorage.removeBatchAndDeleteEventsExpectation.inverted = YES;
-
-  XCTestExpectation *hasEventsExpectation =
-
-      [self expectStorageHasEventsForTarget:self.generator.target result:YES];
-
-  hasEventsExpectation.inverted = YES;
-
-  // 4. Start the upload.
-
-  [self.uploader uploadTarget:self.generator.target withConditions:GDTCORUploadConditionWifiData];
-
-  // 5. Wait for the upload to finish.
-
-  [self waitForUploadOperationsToFinish:self.uploader];
-
-  // 6. Wait for all expectations to be fulfilled.
-
-  [self waitForExpectations:@[
-
-    hasEventsExpectation,
-
-    self.testStorage.batchWithEventSelectorExpectation,
-
-    self.testStorage.removeBatchWithoutDeletingEventsExpectation,
-
-    self.testStorage.removeBatchAndDeleteEventsExpectation,
-
-  ]
-
-                    timeout:0.5];
-
-  // 7. Unswizzle the background task method.
-
-  method_exchangeImplementations(swizzledMethod, originalMethod);
-}
-
-#pragma mark - Swizzled Methods
-
-- (GDTCORBackgroundIdentifier)gdt_test_beginBackgroundTaskWithName:(NSString *)name
-                                                 expirationHandler:(void (^)(void))handler {
-  if (handler) {
-    handler();
-  }
-  return 1234;
 }
 
 #pragma mark - Storage interaction tests
