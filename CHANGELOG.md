@@ -1,5 +1,3 @@
-# v10.1.1
-- Fix GDTCCTUploader-upload Crash.
 # Unreleased
 - Cancel upload operation when background task expires.
 
