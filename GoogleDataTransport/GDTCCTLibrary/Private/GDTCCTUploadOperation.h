@@ -70,9 +70,6 @@ NS_ASSUME_NONNULL_BEGIN
 /** The queue on which all CCT uploading will occur. */
 @property(nonatomic, readonly) dispatch_queue_t uploaderQueue;
 
-/** The current upload task. */
-@property(nullable, nonatomic, readonly) NSURLSessionUploadTask *currentTask;
-
 @end
 
 NS_ASSUME_NONNULL_END

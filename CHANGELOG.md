@@ -1,3 +1,6 @@
+# Unreleased
+- Cancel upload operation when background task expires.
+
 # v10.1.0
 - Fix `[FBLPromise HTTPBody]` SwiftUI Previews crash when using binary
   distribution. ([firebase-ios-sdk/#13318](https://github.com/firebase/firebase-ios-sdk/issues/13318),
