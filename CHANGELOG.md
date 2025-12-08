@@ -1,6 +1,7 @@
 # v10.1.1
 - Fix GDTCCTUploader-upload Crash.
-  (#156, [firebase-ios-sdk/#15129](https://github.com/firebase/firebase-ios-sdk/issues/15129))
+# Unreleased
+- Cancel upload operation when background task expires.
 
 # v10.1.0
 - Fix `[FBLPromise HTTPBody]` SwiftUI Previews crash when using binary
