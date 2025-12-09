@@ -15,6 +15,7 @@
  */
 
 #import "GoogleDataTransport/GDTCORLibrary/Internal/GDTCORDirectorySizeTracker.h"
+#import "GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h"
 
 @interface GDTCORDirectorySizeTracker ()
 
