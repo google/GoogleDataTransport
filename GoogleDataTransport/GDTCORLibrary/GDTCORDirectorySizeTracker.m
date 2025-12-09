@@ -76,7 +76,10 @@
       includingPropertiesForKeys:prefetchedProperties
                          options:NSDirectoryEnumerationSkipsHiddenFiles
                     errorHandler:^BOOL(NSURL *_Nonnull url, NSError *_Nonnull error) {
-                      return NO;
+                      GDTCORLogWarning(GDTCORMCWFileReadError,
+                                       @"Error enumerating content size for URL %@: %@", url,
+                                       error);
+                      return YES;
                     }];
 
   for (NSURL *fileURL in enumerator) {

@@ -1,6 +1,5 @@
-# v10.1.1
-- Fix `GDTCORDirectorySizeTracker` crash.
-  ([firebase-ios-sdk/#15414](https://github.com/firebase/firebase-ios-sdk/issues/15414))
+# Unreleased
+- Log error when handling directory enumeration.
 
 # v10.1.0
 - Fix `[FBLPromise HTTPBody]` SwiftUI Previews crash when using binary
