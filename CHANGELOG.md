@@ -1,7 +1,6 @@
 # Unreleased
 - Cancel upload operation when background task expires.
 - Log error when handling directory enumeration.
-- Fix a type decoding error.
 
 # v10.1.0
 - Fix `[FBLPromise HTTPBody]` SwiftUI Previews crash when using binary
