@@ -73,9 +73,8 @@ static NSString *const kLogSourceMetrics = @"logSourceMetrics";
 }
 
 - (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
-  NSObject *collectionStartDate =
-      [coder decodeObjectOfClasses:[NSSet setWithArray:@[ [NSDate class], [NSString class] ]]
-                            forKey:kCollectionStartDate];
+  NSDate *collectionStartDate = [coder decodeObjectOfClass:[NSDate class]
+                                                    forKey:kCollectionStartDate];
   GDTCORLogSourceMetrics *logSourceMetrics =
       [coder decodeObjectOfClass:[GDTCORLogSourceMetrics class] forKey:kLogSourceMetrics];
 
@@ -86,8 +85,7 @@ static NSString *const kLogSourceMetrics = @"logSourceMetrics";
     return nil;
   }
 
-  return [self initWithCollectionStartDate:(NSDate *)collectionStartDate
-                          logSourceMetrics:logSourceMetrics];
+  return [self initWithCollectionStartDate:collectionStartDate logSourceMetrics:logSourceMetrics];
 }
 
 - (void)encodeWithCoder:(nonnull NSCoder *)coder {
