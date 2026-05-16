@@ -63,7 +63,7 @@ let package = Package(
       publicHeadersPath: "GDTCORLibrary/Public",
       cSettings: [
         .headerSearchPath("../"),
-        .define("GDTCOR_VERSION", to: "0.0.1"),
+        .define("GDTCOR_VERSION", to: "10.1.0"),
         .define("PB_FIELD_32BIT", to: "1"),
         .define("PB_NO_PACKED_STRUCTS", to: "1"),
         .define("PB_ENABLE_MALLOC", to: "1"),
