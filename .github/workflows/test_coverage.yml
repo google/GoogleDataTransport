@@ -24,8 +24,8 @@ jobs:
       matrix:
         target: [ios]
     steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
@@ -33,7 +33,7 @@ jobs:
     - name: PodLibLint DataTransport
       run: |
         scripts/health_metrics/pod_test_code_coverage_report.sh --sdk=GoogleDataTransport --platform=${{ matrix.target }} --test_spec=Tests-Unit,CCT-Tests-Unit
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
         name: codecoverage
         path: /Users/runner/*.xcresult
@@ -42,11 +42,11 @@ jobs:
     needs: pod_lib_lint
     runs-on: macOS-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       with:
         fetch-depth: 0
-    - uses: ruby/setup-ruby@v1
-    - uses: actions/download-artifact@v4.1.7
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314
+    - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
       id: download
       with:
         path: /Users/runner/test

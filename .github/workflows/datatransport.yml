@@ -21,8 +21,8 @@ jobs:
       matrix:
         target: [ios, tvos, macos]
     steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
@@ -34,8 +34,8 @@ jobs:
   catalyst:
     runs-on: macOS-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
@@ -48,8 +48,8 @@ jobs:
   # watchos-testapp:
   #   runs-on: macos-12
   #   steps:
-  #   - uses: actions/checkout@v3
-  #   - uses: ruby/setup-ruby@v1
+  #   - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+  #   - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314
   #   - name: Setup Scripts Directory
   #     run: ./setup-scripts.sh
   #   - name: Setup Bundler
@@ -70,8 +70,8 @@ jobs:
         ]
     needs: pod_lib_lint
     steps:
-    - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Setup Bundler
