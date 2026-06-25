@@ -35,12 +35,12 @@
 
 #pragma mark - General purpose encoders
 
-pb_bytes_array_t *GDTCCTEncodeString(NSString *string) {
+pb_bytes_array_t *_Nullable GDTCCTEncodeString(NSString *string) {
   NSData *stringBytes = [string dataUsingEncoding:NSUTF8StringEncoding];
   return GDTCCTEncodeData(stringBytes);
 }
 
-pb_bytes_array_t *GDTCCTEncodeData(NSData *data) {
+pb_bytes_array_t *_Nullable GDTCCTEncodeData(NSData *data) {
   pb_bytes_array_t *pbBytesArray = calloc(1, PB_BYTES_ARRAY_T_ALLOCSIZE(data.length));
   if (pbBytesArray != NULL) {
     [data getBytes:pbBytesArray->bytes length:data.length];

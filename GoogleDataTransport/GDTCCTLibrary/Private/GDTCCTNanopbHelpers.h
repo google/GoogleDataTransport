@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param string The string to convert.
  * @return A newly allocated array of bytes representing the UTF8 encoding of the string.
  */
-pb_bytes_array_t *GDTCCTEncodeString(NSString *string);
+pb_bytes_array_t *_Nullable GDTCCTEncodeString(NSString *string);
 
 /** Converts an NSData to a pb_bytes_array_t*.
  *
@@ -43,7 +43,7 @@ pb_bytes_array_t *GDTCCTEncodeString(NSString *string);
  * @param data The data to convert.
  * @return A newly allocated array of bytes with [data bytes] copied into it.
  */
-pb_bytes_array_t *GDTCCTEncodeData(NSData *data);
+pb_bytes_array_t *_Nullable GDTCCTEncodeData(NSData *data);
 
 #pragma mark - CCT object constructors
 
