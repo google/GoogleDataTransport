@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   swift-build-run:
-    runs-on: macOS-latest
+    runs-on: macOS-26
     strategy:
       matrix:
         target: [iOS, tvOS, macOS, catalyst]
@@ -22,7 +22,7 @@ jobs:
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Xcode
-      run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
     - name: Initialize xcodebuild
       run: xcodebuild -list
     - name: iOS Unit Tests
