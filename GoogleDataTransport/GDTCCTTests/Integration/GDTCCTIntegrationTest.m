@@ -64,6 +64,10 @@ static NSString *const kMetricEventMappingID = @"1710";
 @implementation GDTCCTIntegrationTest
 
 - (void)setUp {
+  // Cancel pending operations from previous tests and wait for them to finish.
+  [[GDTCCTUploader sharedInstance].uploadOperationQueue cancelAllOperations];
+  [[GDTCCTUploader sharedInstance] waitForUploadFinishedWithTimeout:5];
+
   // Make sure clean storage state before start.
   [[GDTCORFlatFileStorage sharedInstance] reset];
 
@@ -267,10 +271,9 @@ static NSString *const kMetricEventMappingID = @"1710";
   __auto_type receivedEventsByPayload =
       [self eventsByPayloadWithEvents:[self.serverReceivedEvents copy]];
 
-  XCTAssertTrue(self.serverReceivedEvents.count >= self.scheduledEvents.count);
-  // Verify that all scheduled events are present in the received events.
-  XCTAssertTrue([[NSSet setWithArray:scheduledEventsByPayload.allKeys]
-      isSubsetOfSet:[NSSet setWithArray:receivedEventsByPayload.allKeys]]);
+  XCTAssertEqual(self.scheduledEvents.count, self.serverReceivedEvents.count);
+  XCTAssertEqualObjects([NSSet setWithArray:scheduledEventsByPayload.allKeys],
+                        [NSSet setWithArray:receivedEventsByPayload.allKeys]);
 
   [scheduledEventsByPayload
       enumerateKeysAndObjectsUsingBlock:^(
