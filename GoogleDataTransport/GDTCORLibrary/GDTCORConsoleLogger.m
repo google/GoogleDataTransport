@@ -29,12 +29,12 @@ void GDTCORLog(GDTCORMessageCode code, GDTCORLoggingLevel logLevel, NSString *fo
 // Don't log anything in not debug builds.
 #if !NDEBUG
   if (logLevel >= GDTCORConsoleLoggerLoggingLevel) {
-    NSString *logFormat = [NSString stringWithFormat:@"%@[%@] %@", kGDTCORConsoleLogger,
-                                                     GDTCORMessageCodeEnumToString(code), format];
     va_list args;
     va_start(args, format);
-    NSLogv(logFormat, args);
+    NSString *message = format ? [[NSString alloc] initWithFormat:format arguments:args] : @"";
     va_end(args);
+
+    NSLog(@"%@[%@] %@", kGDTCORConsoleLogger, GDTCORMessageCodeEnumToString(code), message);
   }
 #endif  // !NDEBUG
 }
@@ -44,12 +44,13 @@ void GDTCORLogAssert(
 // Don't log anything in not debug builds.
 #if !NDEBUG
   GDTCORMessageCode code = wasFatal ? GDTCORMCEFatalAssertion : GDTCORMCEGeneralError;
-  NSString *logFormat =
-      [NSString stringWithFormat:@"%@[%@] (%@:%ld) : %@", kGDTCORConsoleLogger,
-                                 GDTCORMessageCodeEnumToString(code), file, (long)line, format];
+
   va_list args;
   va_start(args, format);
-  NSLogv(logFormat, args);
+  NSString *message = format ? [[NSString alloc] initWithFormat:format arguments:args] : @"";
   va_end(args);
+
+  NSLog(@"%@[%@] (%@:%ld) : %@", kGDTCORConsoleLogger, GDTCORMessageCodeEnumToString(code), file,
+        (long)line, message);
 #endif  // !NDEBUG
 }

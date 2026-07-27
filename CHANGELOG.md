@@ -1,4 +1,5 @@
 # Unreleased
+- Fix `EXC_BAD_ACCESS` crash in `GDTCORLogAssert` when a user's project path contains `%` characters. ([#16455](https://github.com/firebase/firebase-ios-sdk/issues/16455))
 - Cancel upload operation when background task expires.
 - Log error when handling directory enumeration.
 
