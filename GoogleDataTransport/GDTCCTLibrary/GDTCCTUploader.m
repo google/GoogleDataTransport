@@ -28,7 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GDTCCTUploader () <NSURLSessionDelegate, GDTCCTUploadMetadataProvider>
 
+#if !GDT_TEST
 @property(nonatomic, readonly) NSOperationQueue *uploadOperationQueue;
+#endif
 @property(nonatomic, readonly) dispatch_queue_t uploadQueue;
 
 @property(nonatomic, readonly)

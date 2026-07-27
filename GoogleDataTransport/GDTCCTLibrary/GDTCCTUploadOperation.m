@@ -630,6 +630,10 @@ typedef void (^GDTCCTUploaderEventBatchBlock)(NSNumber *_Nullable batchID,
 }
 
 - (void)start {
+  if (self.isCancelled) {
+    [self finishOperation];
+    return;
+  }
   [self startOperation];
 
   GDTCORLogDebug(@"Upload operation started: %@", self);

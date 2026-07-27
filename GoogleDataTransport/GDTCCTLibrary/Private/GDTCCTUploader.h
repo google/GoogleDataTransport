@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 /** An upload URL used across all targets. For testing only. */
 @property(class, nullable, nonatomic) NSURL *testServerURL;
 
+/** The queue on which upload operations run. For testing only. */
+@property(nonatomic, readonly) NSOperationQueue *uploadOperationQueue;
+
 /** Spins runloop until upload finishes or timeout.
  *  @return YES if upload finishes, NO in the case of timeout.
  */

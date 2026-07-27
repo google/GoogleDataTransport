@@ -64,6 +64,10 @@ static NSString *const kMetricEventMappingID = @"1710";
 @implementation GDTCCTIntegrationTest
 
 - (void)setUp {
+  // Cancel pending operations from previous tests and wait for them to finish.
+  [[GDTCCTUploader sharedInstance].uploadOperationQueue cancelAllOperations];
+  [[GDTCCTUploader sharedInstance] waitForUploadFinishedWithTimeout:5];
+
   // Make sure clean storage state before start.
   [[GDTCORFlatFileStorage sharedInstance] reset];
 
