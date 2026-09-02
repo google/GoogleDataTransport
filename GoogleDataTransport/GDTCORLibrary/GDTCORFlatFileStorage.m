@@ -134,6 +134,13 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
                   bgID = GDTCORBackgroundIdentifierInvalid;
                 }];
 
+  dispatch_block_t endBackgroundTaskIfNeeded = ^{
+    if (bgID != GDTCORBackgroundIdentifierInvalid) {
+      [[GDTCORApplication sharedApplication] endBackgroundTask:bgID];
+      bgID = GDTCORBackgroundIdentifierInvalid;
+    }
+  };
+
   dispatch_async(_storageQueue, ^{
     // Check that a backend implementation is available for this target.
     GDTCORTarget target = event.target;
@@ -146,6 +153,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     NSData *encodedEvent = GDTCOREncodeArchive(event, nil, &error);
     if (error) {
       completion(NO, error);
+      endBackgroundTaskIfNeeded();
       return;
     }
 
@@ -164,6 +172,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
         [self.delegate storage:self didDropEvent:event];
       }
       completion(NO, error);
+      endBackgroundTaskIfNeeded();
       return;
     }
 
@@ -172,6 +181,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     if (writeResult == NO || error) {
       GDTCORLogDebug(@"Attempt to write archive failed: path:%@ error:%@", filePath, error);
       completion(NO, error);
+      endBackgroundTaskIfNeeded();
       return;
     } else {
       GDTCORLogDebug(@"Writing archive succeeded: %@", filePath);
@@ -188,8 +198,7 @@ const uint64_t kGDTCORFlatFileStorageSizeLimit = 20 * 1000 * 1000;  // 20 MB.
     }
 
     // Cancel or end the associated background task if it's still valid.
-    [[GDTCORApplication sharedApplication] endBackgroundTask:bgID];
-    bgID = GDTCORBackgroundIdentifierInvalid;
+    endBackgroundTaskIfNeeded();
   });
 }
 
