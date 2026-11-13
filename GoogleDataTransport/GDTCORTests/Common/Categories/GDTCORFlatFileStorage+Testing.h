@@ -19,6 +19,7 @@
 #import "GoogleDataTransport/GDTCORLibrary/Private/GDTCORFlatFileStorage.h"
 
 @class GDTCORDirectorySizeTracker;
+@protocol GDTCORApplicationProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,6 +32,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reset;
 
 @property(nonatomic, readonly) GDTCORDirectorySizeTracker *sizeTracker;
+
+@end
+
+/** Members declared privately in GDTCORFlatFileStorage.m and exposed for tests. */
+@interface GDTCORFlatFileStorage ()
+
+/** The application instance used by -storeEvent:onComplete: to begin/end its background task. */
+@property(nonatomic, readonly) id<GDTCORApplicationProtocol> application;
+
+/** Creates a storage instance that uses the given (fake) application for background tasks. */
+- (instancetype)initWithApplication:(id<GDTCORApplicationProtocol>)application;
 
 @end
 

@@ -1,3 +1,7 @@
+# Unreleased
+- Fix leaked `GDTStorage` background task when an event cannot be stored (encode failure,
+  storage size limit reached, or write failure). ([firebase-ios-sdk/#15129](https://github.com/firebase/firebase-ios-sdk/issues/15129))
+
 # 10.1.1
 - Fix `EXC_BAD_ACCESS` crash in `GDTCORLogAssert` when a user's project path contains `%` characters. ([#16455](https://github.com/firebase/firebase-ios-sdk/issues/16455))
 - Fix test flakiness in `GDTCCTIntegrationTest` and `GDTCCTUploaderTest` related to background task cancellation.
