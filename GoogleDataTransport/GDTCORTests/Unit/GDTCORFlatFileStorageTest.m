@@ -34,6 +34,7 @@
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCOREventGenerator.h"
 #import "GoogleDataTransport/GDTCORTests/Unit/Helpers/GDTCORTestUploader.h"
 
+#import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORApplicationFake.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORMetricsControllerFake.h"
 #import "GoogleDataTransport/GDTCORTests/Common/Fakes/GDTCORUploadCoordinatorFake.h"
 
@@ -98,6 +99,10 @@
 /** Tests the singleton pattern. */
 - (void)testInit {
   XCTAssertEqual([GDTCORFlatFileStorage sharedInstance], [GDTCORFlatFileStorage sharedInstance]);
+  XCTAssertEqualObjects([GDTCORFlatFileStorage sharedInstance].application,
+                        [GDTCORApplication sharedApplication]);
+  XCTAssertEqualObjects([[GDTCORFlatFileStorage alloc] init].application,
+                        [GDTCORApplication sharedApplication]);
 }
 
 /** Tests storing an event. */
@@ -1381,7 +1386,145 @@
   XCTAssertEqual([self storageSize], [self storageEventSize:event] + lastBatchIDSize);
 }
 
+- (void)testStoreEvent_WhenEventIsWritten_ThenBackgroundTaskIsEnded {
+  GDTCORApplicationFake *fakeApplication = [[GDTCORApplicationFake alloc] init];
+  NSArray<XCTestExpectation *> *taskExpectations =
+      [self expectationsBackgroundTaskBeginAndEndOnceWithApplication:fakeApplication];
+  GDTCORFlatFileStorage *storage =
+      [[GDTCORFlatFileStorage alloc] initWithApplication:fakeApplication];
+  storage.uploadCoordinator = self.uploaderFake;
+
+  GDTCOREvent *event = [GDTCOREventGenerator generateEventForTarget:kGDTCORTargetTest
+                                                            qosTier:nil
+                                                          mappingID:nil];
+  XCTestExpectation *storeExpectation = [self expectationWithDescription:@"storeExpectation"];
+  [storage storeEvent:event
+           onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
+             XCTAssertTrue(wasWritten);
+             XCTAssertNil(error);
+             [storeExpectation fulfill];
+           }];
+  [self waitForExpectations:[taskExpectations arrayByAddingObject:storeExpectation] timeout:5];
+
+  // Drain the queue so that a second end of the task, if any, happens within this test.
+  dispatch_sync(storage.storageQueue, ^{
+                });
+}
+
+- (void)testStoreEvent_WhenSizeLimitReached_ThenBackgroundTaskIsEnded {
+  // 1. Fill the storage up to the limit through the shared instance.
+  [self generateAndStoreEventsWithTotalSizeUpTo:kGDTCORFlatFileStorageSizeLimit];
+
+  // An event with a larger payload than the generated ones, so that it can't fit in the space left.
+  GDTCOREvent *event = [GDTCOREventGenerator generateEventForTarget:kGDTCORTargetTest
+                                                            qosTier:nil
+                                                          mappingID:nil];
+  event.dataObject = [[GDTCORDataObjectTesterSimple alloc]
+      initWithString:[@"" stringByPaddingToLength:1024 withString:@"x" startingAtIndex:0]];
+  XCTAssertGreaterThan([self storageSize] + [self storageEventSize:event],
+                       kGDTCORFlatFileStorageSizeLimit);
+
+  // 2. Store one more event through a new instance with a fake application. It uses the same
+  // directory, so the event is expected to be dropped.
+  GDTCORApplicationFake *fakeApplication = [[GDTCORApplicationFake alloc] init];
+  NSArray<XCTestExpectation *> *taskExpectations =
+      [self expectationsBackgroundTaskBeginAndEndOnceWithApplication:fakeApplication];
+  GDTCORFlatFileStorage *storage =
+      [[GDTCORFlatFileStorage alloc] initWithApplication:fakeApplication];
+  storage.uploadCoordinator = self.uploaderFake;
+
+  XCTestExpectation *storeExpectation = [self expectationWithDescription:@"storeExpectation"];
+  [storage storeEvent:event
+           onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
+             XCTAssertFalse(wasWritten);
+             XCTAssertEqualObjects(error.domain, GDTCORFlatFileStorageErrorDomain);
+             XCTAssertEqual(error.code, GDTCORFlatFileStorageErrorSizeLimitReached);
+             [storeExpectation fulfill];
+           }];
+
+  // 3. Expect the background task to be ended although the event was not stored.
+  [self waitForExpectations:[taskExpectations arrayByAddingObject:storeExpectation] timeout:5];
+
+  // Drain the queue so that a second end of the task, if any, happens within this test.
+  dispatch_sync(storage.storageQueue, ^{
+                });
+}
+
+- (void)testStoreEvent_WhenWritingFails_ThenBackgroundTaskIsEnded {
+  GDTCOREvent *event = [GDTCOREventGenerator generateEventForTarget:kGDTCORTargetTest
+                                                            qosTier:nil
+                                                          mappingID:nil];
+
+  // 1. Make writing fail: a regular file where the event's directory would be created.
+  NSString *eventFilePath = [GDTCORFlatFileStorage pathForTarget:event.target
+                                                         eventID:event.eventID
+                                                         qosTier:@(event.qosTier)
+                                                  expirationDate:event.expirationDate
+                                                       mappingID:event.mappingID];
+  XCTAssertTrue([[NSFileManager defaultManager]
+      createFileAtPath:[eventFilePath stringByDeletingLastPathComponent]
+              contents:[NSData data]
+            attributes:nil]);
+
+  // 2. Store the event with a fake application.
+  GDTCORApplicationFake *fakeApplication = [[GDTCORApplicationFake alloc] init];
+  NSArray<XCTestExpectation *> *taskExpectations =
+      [self expectationsBackgroundTaskBeginAndEndOnceWithApplication:fakeApplication];
+  GDTCORFlatFileStorage *storage =
+      [[GDTCORFlatFileStorage alloc] initWithApplication:fakeApplication];
+  storage.uploadCoordinator = self.uploaderFake;
+
+  XCTestExpectation *storeExpectation = [self expectationWithDescription:@"storeExpectation"];
+  [storage storeEvent:event
+           onComplete:^(BOOL wasWritten, NSError *_Nullable error) {
+             XCTAssertFalse(wasWritten);
+             XCTAssertNotNil(error);
+             XCTAssertNotEqualObjects(error.domain, GDTCORFlatFileStorageErrorDomain);
+             [storeExpectation fulfill];
+           }];
+
+  // 3. Expect the background task to be ended although the event was not written.
+  [self waitForExpectations:[taskExpectations arrayByAddingObject:storeExpectation] timeout:5];
+
+  // Drain the queue so that a second end of the task, if any, happens within this test.
+  dispatch_sync(storage.storageQueue, ^{
+                });
+}
+
 #pragma mark - Helpers
+
+/** Sets GDTCORApplicationFake handlers to expect a "GDTStorage" background task to begin exactly
+ * once and to be ended exactly once with the identifier returned on begin.
+ *  @return An array with the task begin and end XCTestExpectation.
+ */
+- (NSArray<XCTestExpectation *> *)expectationsBackgroundTaskBeginAndEndOnceWithApplication:
+    (GDTCORApplicationFake *)fakeApplication {
+  XCTestExpectation *beginExpectation = [self expectationWithDescription:@"Background task begin"];
+  beginExpectation.assertForOverFulfill = YES;
+  XCTestExpectation *endExpectation = [self expectationWithDescription:@"Background task end"];
+  endExpectation.assertForOverFulfill = YES;
+
+  // Any identifier other than GDTCORBackgroundIdentifierInvalid.
+  GDTCORBackgroundIdentifier taskID = 42;
+
+  __auto_type __weak weakSelf = self;
+
+  fakeApplication.beginTaskHandler =
+      ^GDTCORBackgroundIdentifier(NSString *_Nonnull name, dispatch_block_t _Nonnull handler) {
+        __unused __auto_type self = weakSelf;
+        XCTAssertEqualObjects(name, @"GDTStorage");
+        [beginExpectation fulfill];
+        return taskID;
+      };
+
+  fakeApplication.endTaskHandler = ^(GDTCORBackgroundIdentifier endTaskID) {
+    __unused __auto_type self = weakSelf;
+    XCTAssert(endTaskID == taskID);
+    [endExpectation fulfill];
+  };
+
+  return @[ beginExpectation, endExpectation ];
+}
 
 /** Generates and returns a set of events that are generated randomly and stored.
  *
